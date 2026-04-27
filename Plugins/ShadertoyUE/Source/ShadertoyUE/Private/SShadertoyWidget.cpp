@@ -22,11 +22,15 @@ void SShadertoyWidget::Construct(const FArguments& InArgs)
 	// Load target material
 	TargetMaterial = LoadObject<UMaterial>(nullptr, TEXT("/Game/M_ShadertoyBridge.M_ShadertoyBridge"));
 	
-	if (TargetMaterial)
+	if (!MaterialBrush.IsValid())
 	{
 		MaterialBrush = MakeShareable(new FSlateBrush());
-		MaterialBrush->SetResourceObject(TargetMaterial);
 		MaterialBrush->ImageSize = FVector2D(512.f, 512.f);
+	}
+
+	if (TargetMaterial)
+	{
+		MaterialBrush->SetResourceObject(TargetMaterial);
 	}
 
 	ChildSlot
@@ -73,8 +77,19 @@ FReply SShadertoyWidget::OnCompileClicked()
 		// Flush shader cache
 		FlushShaderFileCache();
 
+		if (!TargetMaterial)
+		{
+			// Try to load again if it wasn't loaded in Construct
+			TargetMaterial = LoadObject<UMaterial>(nullptr, TEXT("/Game/M_ShadertoyBridge.M_ShadertoyBridge"));
+		}
+
 		if (TargetMaterial)
 		{
+			if (MaterialBrush.IsValid() && MaterialBrush->GetResourceObject() != TargetMaterial)
+			{
+				MaterialBrush->SetResourceObject(TargetMaterial);
+			}
+
 			// Force recompile
 			TargetMaterial->ForceRecompileForRendering();
 		}
