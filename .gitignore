@@ -75,6 +75,12 @@ DerivedDataCache/*
 Plugins/**/Binaries/*
 Plugins/**/Intermediate/*
 
+# Content folder (assets)
+Content/*
+
+# Plugin Shaders
+Plugins/**/Shaders/*
+
 # Ignore Visual Studio Code workspace and settings
 *.code-workspace
 .vscode/
