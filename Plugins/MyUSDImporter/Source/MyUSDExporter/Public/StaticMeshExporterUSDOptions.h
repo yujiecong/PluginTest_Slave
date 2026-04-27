@@ -1,0 +1,44 @@
+// Copyright Epic Games, Inc. All Rights Reserved.
+
+#pragma once
+
+#include "MyUSDAssetOptions.h"
+#include "MyUSDMetadataExportOptions.h"
+#include "MyUSDStageOptions.h"
+
+#include "StaticMeshExporterUSDOptions.generated.h"
+
+struct FAnalyticsEventAttribute;
+
+/**
+ * Options for exporting static meshes to USD format.
+ */
+UCLASS(MinimalAPI, Config = Editor, Blueprintable)
+class UStaticMeshExporterUSDOptions : public UObject
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(EditAnywhere, config, BlueprintReadWrite, Category = "Stage options", meta = (ShowOnlyInnerProperties))
+	FMyUsdStageOptions StageOptions;
+
+	UPROPERTY(EditAnywhere, config, BlueprintReadWrite, Category = "Mesh options", meta = (ShowOnlyInnerProperties))
+	FMyUsdMeshAssetOptions MeshAssetOptions;
+
+	UPROPERTY(EditAnywhere, config, BlueprintReadWrite, Category = "Metadata options", meta = (ShowOnlyInnerProperties))
+	FMyUsdMetadataExportOptions MetadataOptions;
+
+	/**
+	 * Whether to export any asset (StaticMesh, Material, etc.) even if the existing file already describes the same version of a compatible asset.
+	 * This is only checked when bReplaceIdentical is set on the asset export task. Otherwise we'll never overwrite files.
+	 */
+	UPROPERTY(EditAnywhere, config, BlueprintReadWrite, Category = "Collision", meta = (DisplayName = "Re-export Identical Assets"))
+	bool bReExportIdenticalAssets = false;
+};
+
+namespace UsdUtils
+{
+	MYUSDEXPORTER_API void AddAnalyticsAttributes(const UStaticMeshExporterUSDOptions& Options, TArray<FAnalyticsEventAttribute>& InOutAttributes);
+
+	MYUSDEXPORTER_API void HashForStaticMeshExport(const UStaticMeshExporterUSDOptions& Options, FSHA1& HashToUpdate);
+}

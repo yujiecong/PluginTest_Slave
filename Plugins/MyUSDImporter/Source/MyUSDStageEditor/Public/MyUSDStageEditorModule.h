@@ -1,0 +1,58 @@
+// Copyright Epic Games, Inc. All Rights Reserved.
+
+#pragma once
+
+#include "MyUsdWrappers/ForwardDeclarations.h"
+
+#include "Containers/Array.h"
+#include "Modules/ModuleInterface.h"
+
+class AMyUsdStageActor;
+class UMyUsdStageImportOptions;
+namespace UE
+{
+	class FMyUsdPrim;
+	class FMyUsdAttribute;
+}
+
+class IMyUsdStageEditorModule : public IModuleInterface
+{
+public:
+
+	/**
+	 * Check out MyUSDStageEditorBlueprintLibrary.h for documentation regarding these functions.
+	 */
+
+	bool OpenStageEditor() const;
+	bool CloseStageEditor() const;
+	bool IsStageEditorOpened() const;
+
+	AMyUsdStageActor* GetAttachedStageActor() const;
+	bool SetAttachedStageActor(AMyUsdStageActor* NewActor) const;
+
+	TArray<UE::FSdfLayer> GetSelectedLayers() const;
+	void SetSelectedLayers(const TArray<UE::FSdfLayer>& NewSelection) const;
+
+	TArray<UE::FMyUsdPrim> GetSelectedPrims() const;
+	void SetSelectedPrims(const TArray<UE::FMyUsdPrim>& NewSelection) const;
+
+	TArray<FString> GetSelectedPropertyNames() const;
+	void SetSelectedPropertyNames(const TArray<FString>& NewSelection) const;
+
+	TArray<FString> GetSelectedPropertyMetadataNames() const;
+	void SetSelectedPropertyMetadataNames(const TArray<FString>& NewSelection) const;
+
+	// For all of these, providing an empty path will cause us to pop open a dialog to let the user pick the path
+	// instead.
+	void FileNew() const;
+	void FileOpen(const FString& FilePath) const;
+	void FileSave(const FString& OutputFilePathIfUnsaved) const;
+	void FileExportAllLayers(const FString& OutputDirectory) const;
+	void FileExportFlattenedStage(const FString& OutputLayer) const;
+	void FileExportFlattenedLayerStack(const FString& OutputLayer) const;
+	void FileReload() const;
+	void FileReset() const;
+	void FileClose() const;
+	void ActionsImport(const FString& OutputContentFolder, UMyUsdStageImportOptions* Options) const;
+	void ExportSelectedLayers(const FString& OutputLayerOrDirectory) const;
+};
