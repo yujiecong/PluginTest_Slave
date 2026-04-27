@@ -1143,7 +1143,7 @@ bool FMyUsdGeomXformableTranslator::CollapsesChildren(ECollapsingType Collapsing
 		if (bCollapsesChildren)
 		{
 			// This indicates whether the subtree *can* be collapsed
-			TOptional<bool> bSubtreeCanBeCollapsed = FUsdGeomXformableTranslator::CallCanXformableSubtreeBeCollapsed(Context->UsdInfoCache.Get(), PrimPath, *Context);
+			TOptional<bool> bSubtreeCanBeCollapsed = FUsdGeomXformableTranslator::CallCanXformableSubtreeBeCollapsed(Context->UsdInfoCache, PrimPath, *Context);
 			if (bSubtreeCanBeCollapsed.IsSet())
 			{
 				return bSubtreeCanBeCollapsed.GetValue();
