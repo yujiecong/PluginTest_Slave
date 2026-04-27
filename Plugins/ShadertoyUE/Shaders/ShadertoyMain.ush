@@ -1,0 +1,3 @@
+float4 mainImage(float2 UV, float Time) {
+    return float4(UV.x, UV.y, 0, 1);
+}

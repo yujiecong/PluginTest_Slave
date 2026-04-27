@@ -1,0 +1,84 @@
+#include "SShadertoyWidget.h"
+#include "Widgets/Layout/SSplitter.h"
+#include "Widgets/Images/SImage.h"
+#include "Widgets/Input/SButton.h"
+#include "Widgets/Text/STextBlock.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
+#include "Interfaces/IPluginManager.h"
+#include "ShaderCompiler.h"
+#include "ShaderCore.h"
+#include "Materials/Material.h"
+#include "UObject/ConstructorHelpers.h"
+
+void SShadertoyWidget::Construct(const FArguments& InArgs)
+{
+	// Load default shader text
+	FString ShaderDir = FPaths::Combine(IPluginManager::Get().FindPlugin(TEXT("ShadertoyUE"))->GetBaseDir(), TEXT("Shaders"));
+	FString ShaderPath = FPaths::Combine(ShaderDir, TEXT("ShadertoyMain.ush"));
+	FString ShaderText;
+	FFileHelper::LoadFileToString(ShaderText, *ShaderPath);
+
+	// Load target material
+	TargetMaterial = LoadObject<UMaterial>(nullptr, TEXT("/Game/M_ShadertoyBridge.M_ShadertoyBridge"));
+	
+	if (TargetMaterial)
+	{
+		MaterialBrush = MakeShareable(new FSlateBrush());
+		MaterialBrush->SetResourceObject(TargetMaterial);
+		MaterialBrush->ImageSize = FVector2D(512.f, 512.f);
+	}
+
+	ChildSlot
+	[
+		SNew(SVerticalBox)
+		+ SVerticalBox::Slot()
+		.AutoHeight()
+		.Padding(5.f)
+		[
+			SNew(SButton)
+			.Text(FText::FromString(TEXT("Compile")))
+			.OnClicked(this, &SShadertoyWidget::OnCompileClicked)
+		]
+		+ SVerticalBox::Slot()
+		.FillHeight(1.0f)
+		[
+			SNew(SSplitter)
+			.Orientation(Orient_Horizontal)
+			+ SSplitter::Slot()
+			.Value(0.5f)
+			[
+				SAssignNew(CodeEditor, SMultiLineEditableText)
+				.Text(FText::FromString(ShaderText))
+			]
+			+ SSplitter::Slot()
+			.Value(0.5f)
+			[
+				SNew(SImage)
+				.Image(MaterialBrush.IsValid() ? MaterialBrush.Get() : nullptr)
+			]
+		]
+	];
+}
+
+FReply SShadertoyWidget::OnCompileClicked()
+{
+	if (CodeEditor.IsValid())
+	{
+		FString Code = CodeEditor->GetText().ToString();
+		FString ShaderPath = FPaths::Combine(IPluginManager::Get().FindPlugin(TEXT("ShadertoyUE"))->GetBaseDir(), TEXT("Shaders"), TEXT("ShadertoyMain.ush"));
+		
+		FFileHelper::SaveStringToFile(Code, *ShaderPath);
+
+		// Flush shader cache
+		FlushShaderFileCache();
+
+		if (TargetMaterial)
+		{
+			// Force recompile
+			TargetMaterial->ForceRecompileForRendering();
+		}
+	}
+
+	return FReply::Handled();
+}
