@@ -9,7 +9,7 @@ class FUsdSchemasModule
 public:
     static void CallResetExternalTranslatorCount(FUsdSchemaTranslatorRegistry& Registry)
     {
-        FUsdSchemasModule::CallResetExternalTranslatorCount(Registry);
+        Registry.ResetExternalTranslatorCount();
     }
 };
 
