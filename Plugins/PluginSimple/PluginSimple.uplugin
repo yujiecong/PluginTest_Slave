@@ -1,0 +1,15 @@
+{
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "1.0",
+  "FriendlyName": "Plugin Simple",
+  "Description": "A minimal Slate plugin with a Dockable tab and a separate SWindow, added to a top-level menu.",
+  "Category": "Tools",
+  "Modules": [
+    {
+      "Name": "PluginSimple",
+      "Type": "Editor",
+      "LoadingPhase": "Default"
+    }
+  ]
+}

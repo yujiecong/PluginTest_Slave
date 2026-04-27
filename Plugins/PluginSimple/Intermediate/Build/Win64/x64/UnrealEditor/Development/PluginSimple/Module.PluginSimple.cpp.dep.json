@@ -1,0 +1,15 @@
+{
+    "Version": "1.2",
+    "Data": {
+        "Source": "c:\\users\\42458\\documents\\unreal projects\\plugintest\\plugins\\pluginsimple\\intermediate\\build\\win64\\x64\\unrealeditor\\development\\pluginsimple\\module.pluginsimple.cpp",
+        "ProvidedModule": "",
+        "PCH": "c:\\users\\42458\\documents\\unreal projects\\plugintest\\intermediate\\build\\win64\\x64\\plugintesteditor\\development\\unrealed\\sharedpch.unrealed.project.valapi.valexpapi.cpp20.h.pch",
+        "Includes": [
+            "c:\\users\\42458\\documents\\unreal projects\\plugintest\\plugins\\pluginsimple\\intermediate\\build\\win64\\x64\\unrealeditor\\development\\pluginsimple\\definitions.pluginsimple.h",
+            "c:\\users\\42458\\documents\\unreal projects\\plugintest\\plugins\\pluginsimple\\intermediate\\build\\win64\\x64\\unrealeditor\\development\\pluginsimple\\permoduleinline.gen.cpp",
+            "c:\\program files\\epic games\\ue_5.7\\engine\\source\\runtime\\core\\public\\hal\\permoduleinline.inl"
+        ],
+        "ImportedModules": [],
+        "ImportedHeaderUnits": []
+    }
+}

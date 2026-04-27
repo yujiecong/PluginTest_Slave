@@ -1,0 +1,13 @@
+/NOLOGO
+/errorReport:prompt
+/MACHINE:x64
+/SUBSYSTEM:WINDOWS
+/DEF
+/NAME:"UnrealEditor-PluginSimple.dll"
+/IGNORE:4221
+/NODEFAULTLIB
+"C:/Users/42458/Documents/Unreal Projects/PluginTest/Intermediate/Build/Win64/x64/PluginTestEditor/Development/UnrealEd/SharedPCH.UnrealEd.Project.ValApi.ValExpApi.Cpp20.h.obj"
+"C:/Users/42458/Documents/Unreal Projects/PluginTest/Plugins/PluginSimple/Intermediate/Build/Win64/x64/UnrealEditor/Development/PluginSimple/Module.PluginSimple.cpp.obj"
+"C:/Users/42458/Documents/Unreal Projects/PluginTest/Plugins/PluginSimple/Intermediate/Build/Win64/x64/UnrealEditor/Development/PluginSimple/PluginSimple.cpp.obj"
+"C:/Users/42458/Documents/Unreal Projects/PluginTest/Plugins/PluginSimple/Intermediate/Build/Win64/x64/UnrealEditor/Development/PluginSimple/Default.rc2.res"
+/OUT:"C:/Users/42458/Documents/Unreal Projects/PluginTest/Plugins/PluginSimple/Intermediate/Build/Win64/x64/UnrealEditor/Development/PluginSimple/UnrealEditor-PluginSimple.lib"
