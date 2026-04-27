@@ -18,9 +18,9 @@
 #include "Misc/Paths.h"
 #include "Modules/ModuleManager.h"
 
-#include UE_INLINE_GENERATED_CPP_BY_NAME(MyUSDStageAssetImportFactory)
+#include UE_INLINE_GENERATED_CPP_BY_NAME(USDStageAssetImportFactory)
 
-#define LOCTEXT_NAMESPACE "MyUSDStageAssetImportFactory"
+#define LOCTEXT_NAMESPACE "USDStageAssetImportFactory"
 
 UMyUsdStageAssetImportFactory::UMyUsdStageAssetImportFactory(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -139,7 +139,7 @@ bool UMyUsdStageAssetImportFactory::CanReimport(UObject* Obj, TArray<FString>& O
 		return false;
 	}
 
-	// Try looking for the exact UMyUsdAssetImportData the MyUSDImporter emits
+	// Try looking for the exact UUsdAssetImportData the MyUSDImporter emits
 	bool bFromOtherImporter = false;
 	UAssetImportData* ImportData = UsdUnreal::ObjectUtils::GetAssetImportData(Obj);
 
@@ -199,7 +199,7 @@ void UMyUsdStageAssetImportFactory::SetReimportPaths(UObject* Obj, const TArray<
 		return;
 	}
 
-	if (UMyUsdAssetImportData* ImportData = UsdUnreal::ObjectUtils::GetAssetImportData(Obj))
+	if (UUsdAssetImportData* ImportData = UsdUnreal::ObjectUtils::GetAssetImportData(Obj))
 	{
 		ImportData->UpdateFilenameOnly(NewReimportPaths[0]);
 	}
@@ -221,7 +221,7 @@ EReimportResult::Type UMyUsdStageAssetImportFactory::Reimport(UObject* Obj)
 
 	if (IInterface_AssetUserData* UserDataInterface = Cast<IInterface_AssetUserData>(Obj))
 	{
-		if (UMyUsdAssetUserData* UserData = UserDataInterface->GetAssetUserData<UMyUsdAssetUserData>())
+		if (UUsdAssetUserData* UserData = UserDataInterface->GetAssetUserData<UUsdAssetUserData>())
 		{
 			if (!UserData->PrimPaths.IsEmpty())
 			{
@@ -230,7 +230,7 @@ EReimportResult::Type UMyUsdStageAssetImportFactory::Reimport(UObject* Obj)
 		}
 	}
 
-	if (UMyUsdAssetImportData* ImportData = UsdUnreal::ObjectUtils::GetAssetImportData(Obj))
+	if (UUsdAssetImportData* ImportData = UsdUnreal::ObjectUtils::GetAssetImportData(Obj))
 	{
 		ReimportFilePath = ImportData->GetFirstFilename();
 		ReimportOptions = ImportData->ImportOptions;
@@ -249,7 +249,7 @@ EReimportResult::Type UMyUsdStageAssetImportFactory::Reimport(UObject* Obj)
 	{
 		// Duplicate this as we may update these options on the Init call below, and if we just imported a scene and
 		// all assets are in memory (sharing the same import options object), that update would otherwise affect all the
-		// UMyUsdAssetImportData objects, which is not what we would expect
+		// UUsdAssetImportData objects, which is not what we would expect
 		ImportContext.ImportOptions = Cast<UMyUsdStageImportOptions>(DuplicateObject(ReimportOptions, GetTransientPackage()));
 	}
 

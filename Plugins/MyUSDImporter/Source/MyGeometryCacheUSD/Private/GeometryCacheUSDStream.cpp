@@ -1,6 +1,6 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "MyGeometryCacheUSDStream.h"
+#include "GeometryCacheUSDStream.h"
 
 #include "MyUSDGeomMeshConversion.h"
 
@@ -44,10 +44,10 @@ private:
 public:
 #if USE_USD_SDK
 	static FString GetUsdStreamDDCKey(
-		const UE::FMyUsdStage& Stage,
+		const UE::FUsdStage& Stage,
 		const FString& PrimPath,
 		int32 FrameIndex,
-		const UsdToUnreal::FMyUsdMeshConversionOptions& MeshConversionOptions
+		const UsdToUnreal::FUsdMeshConversionOptions& MeshConversionOptions
 	)
 	{
 		FString Hash;
@@ -59,7 +59,7 @@ public:
 			// Also hash these options because they may affect how the mesh conversion functions end up parsing
 			// the mesh data. This may seem a bit awkward, but it would be weirder still to provide MeshConversionOptions
 			// to HashGeomMeshPrim directly, as it already has a TimeCode parameter.
-			// To remove that and just use the TimeCode within the FMyUsdMeshConversionOptions instead would mean we would
+			// To remove that and just use the TimeCode within the FUsdMeshConversionOptions instead would mean we would
 			// need to take a local copy of MeshConversionOptions to set FrameIndex as its TimeCode in here (as we can't
 			// modify MeshConversionOptions directly as it's owned by the UsdTrack and we may be called from a thread)
 			MD5.Update((uint8*)&MeshConversionOptions.SubdivisionLevel, sizeof(MeshConversionOptions.SubdivisionLevel));

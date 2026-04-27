@@ -18,9 +18,9 @@ namespace UE::UsdStagePreviewTree::Private
 {
 	const float CheckBoxColumnWidth = 24.0f;
 
-	bool AreAllViewsCheckedRecursive(const SMyUsdStagePreviewTree& Tree, const TArray<FMyUsdPrimPreviewModelViewRef>& Views)
+	bool AreAllViewsCheckedRecursive(const SMyUsdStagePreviewTree& Tree, const TArray<FUsdPrimPreviewModelViewRef>& Views)
 	{
-		for (const FMyUsdPrimPreviewModelViewRef& View : Views)
+		for (const FUsdPrimPreviewModelViewRef& View : Views)
 		{
 			if (!Tree.GetModel(View->ModelIndex).bShouldImport)
 			{
@@ -39,7 +39,7 @@ class FMyUsdPreviewTreeImportColumn : public FMyUsdTreeViewColumn
 public:
 	virtual TSharedRef<SWidget> GenerateWidget(const TSharedPtr<IMyUsdTreeViewItem> InTreeItem, const TSharedPtr<ITableRow> TableRow) override
 	{
-		const FMyUsdPrimPreviewModelViewWeak WeakTreeItem = StaticCastSharedPtr<FMyUsdPrimPreviewModelView>(InTreeItem);
+		const FUsdPrimPreviewModelViewWeak WeakTreeItem = StaticCastSharedPtr<FMyUsdPrimPreviewModelView>(InTreeItem);
 		TSharedPtr<SMyUsdStagePreviewTreeRow> Row = StaticCastSharedPtr<SMyUsdStagePreviewTreeRow>(TableRow);
 		TWeakPtr<SMyUsdStagePreviewTree> WeakTree = Row ? Row->GetOwnerTree() : nullptr;
 
@@ -52,7 +52,7 @@ public:
 				SNew(SCheckBox)
 				.IsChecked_Lambda([WeakTreeItem, WeakTree]() -> ECheckBoxState
 				{
-					FMyUsdPrimPreviewModelViewPtr PinnedTreeItem = WeakTreeItem.Pin();
+					FUsdPrimPreviewModelViewPtr PinnedTreeItem = WeakTreeItem.Pin();
 					TSharedPtr<SMyUsdStagePreviewTree> PinnedTree = WeakTree.Pin();
 					if(PinnedTreeItem && PinnedTree)
 					{
@@ -64,7 +64,7 @@ public:
 				})
 				.OnCheckStateChanged_Lambda([WeakTreeItem, WeakTree](ECheckBoxState NewCheckedState)
 				{
-					FMyUsdPrimPreviewModelViewPtr PinnedTreeItem = WeakTreeItem.Pin();
+					FUsdPrimPreviewModelViewPtr PinnedTreeItem = WeakTreeItem.Pin();
 					TSharedPtr<SMyUsdStagePreviewTree> PinnedTree = WeakTree.Pin();
 					if (PinnedTreeItem && PinnedTree)
 					{
@@ -109,7 +109,7 @@ class FMyUsdPreviewTreeNameColumn : public FMyUsdTreeViewColumn
 public:
 	virtual TSharedRef<SWidget> GenerateWidget(const TSharedPtr<IMyUsdTreeViewItem> InTreeItem, const TSharedPtr<ITableRow> TableRow) override
 	{
-		FMyUsdPrimPreviewModelViewPtr TreeItem = StaticCastSharedPtr<FMyUsdPrimPreviewModelView>(InTreeItem);
+		FUsdPrimPreviewModelViewPtr TreeItem = StaticCastSharedPtr<FMyUsdPrimPreviewModelView>(InTreeItem);
 		TSharedPtr<SMyUsdStagePreviewTreeRow> Row = StaticCastSharedPtr<SMyUsdStagePreviewTreeRow>(TableRow);
 		TSharedPtr<SMyUsdStagePreviewTree> Tree = Row ? Row->GetOwnerTree() : nullptr;
 
@@ -137,7 +137,7 @@ class FMyUsdPreviewTreeTypeColumn : public FMyUsdTreeViewColumn
 public:
 	virtual TSharedRef<SWidget> GenerateWidget(const TSharedPtr<IMyUsdTreeViewItem> InTreeItem, const TSharedPtr<ITableRow> TableRow) override
 	{
-		FMyUsdPrimPreviewModelViewPtr TreeItem = StaticCastSharedPtr<FMyUsdPrimPreviewModelView>(InTreeItem);
+		FUsdPrimPreviewModelViewPtr TreeItem = StaticCastSharedPtr<FMyUsdPrimPreviewModelView>(InTreeItem);
 		TSharedPtr<SMyUsdStagePreviewTreeRow> Row = StaticCastSharedPtr<SMyUsdStagePreviewTreeRow>(TableRow);
 		TSharedPtr<SMyUsdStagePreviewTree> Tree = Row ? Row->GetOwnerTree() : nullptr;
 
@@ -160,19 +160,19 @@ public:
 	}
 };
 
-void SMyUsdStagePreviewTree::Construct(const FArguments& InArgs, const UE::FMyUsdStage& InStage)
+void SMyUsdStagePreviewTree::Construct(const FArguments& InArgs, const UE::FUsdStage& InStage)
 {
 	SMyUsdTreeView::Construct(SMyUsdTreeView::FArguments());
 
 	OnContextMenuOpening = FOnContextMenuOpening::CreateSP(this, &SMyUsdStagePreviewTree::ConstructPrimContextMenu);
 	OnExpansionChanged = FOnExpansionChanged::CreateLambda(
-		[this](FMyUsdPrimPreviewModelViewRef Item, bool bIsExpanded)
+		[this](FUsdPrimPreviewModelViewRef Item, bool bIsExpanded)
 		{
 			ItemModels[Item->ModelIndex].bIsExpanded = bIsExpanded;
 		}
 	);
 	OnSetExpansionRecursive = FOnSetExpansionRecursive::CreateLambda(
-		[this](FMyUsdPrimPreviewModelViewRef Item, bool bShouldExpand)
+		[this](FUsdPrimPreviewModelViewRef Item, bool bShouldExpand)
 		{
 			ExpandItemsRecursively({Item}, bShouldExpand);
 		}
@@ -180,20 +180,20 @@ void SMyUsdStagePreviewTree::Construct(const FArguments& InArgs, const UE::FMyUs
 
 	if (InStage)
 	{
-		if (UE::FMyUsdPrim RootPrim = InStage.GetPseudoRoot())
+		if (UE::FUsdPrim RootPrim = InStage.GetPseudoRoot())
 		{
-			TFunction<int32(const UE::FMyUsdPrim&)> RecursivelyAddModels;
-			RecursivelyAddModels = [this, &RecursivelyAddModels](const UE::FMyUsdPrim& Prim) -> int32
+			TFunction<int32(const UE::FUsdPrim&)> RecursivelyAddModels;
+			RecursivelyAddModels = [this, &RecursivelyAddModels](const UE::FUsdPrim& Prim) -> int32
 			{
 				int32 NewIndex = ItemModels.Num();
 				FMyUsdPrimPreviewModel& NewPrimModel = ItemModels.Emplace_GetRef();
 				NewPrimModel.Name = FText::FromName(Prim.GetName());
 				NewPrimModel.TypeName = FText::FromName(Prim.GetTypeName());
 
-				TArray<UE::FMyUsdPrim> ChildPrims = Prim.GetChildren();
+				TArray<UE::FUsdPrim> ChildPrims = Prim.GetChildren();
 				NewPrimModel.ChildIndices.Reset(ChildPrims.Num());
 				ItemModels.Reserve(ItemModels.Num() + ChildPrims.Num());
-				for (const UE::FMyUsdPrim& ChildPrim : ChildPrims)
+				for (const UE::FUsdPrim& ChildPrim : ChildPrims)
 				{
 					// WARNING: This will likely invalidate the NewPrimModel reference! Don't use it past this line!
 					int32 NewChildIndex = RecursivelyAddModels(ChildPrim);
@@ -205,9 +205,9 @@ void SMyUsdStagePreviewTree::Construct(const FArguments& InArgs, const UE::FMyUs
 				return NewIndex;
 			};
 
-			TArray<UE::FMyUsdPrim> TopLevelPrims = RootPrim.GetChildren();
+			TArray<UE::FUsdPrim> TopLevelPrims = RootPrim.GetChildren();
 			ItemModels.Reset(TopLevelPrims.Num());	  // Not the best guess but better than nothing
-			for (const UE::FMyUsdPrim& TopLevelPrim : TopLevelPrims)
+			for (const UE::FUsdPrim& TopLevelPrim : TopLevelPrims)
 			{
 				RecursivelyAddModels(TopLevelPrim);
 			}
@@ -282,7 +282,7 @@ TArray<FString> SMyUsdStagePreviewTree::GetSelectedFullPrimPaths() const
 
 	TArray<int32> RootItemModels;
 	RootItemModels.Reserve(RootItems.Num());
-	for (const FMyUsdPrimPreviewModelViewRef& RootItem : RootItems)
+	for (const FUsdPrimPreviewModelViewRef& RootItem : RootItems)
 	{
 		RootItemModels.Add(RootItem->ModelIndex);
 	}
@@ -299,12 +299,12 @@ void SMyUsdStagePreviewTree::SetFilterText(const FText& NewText)
 	RebuildModelViews();
 }
 
-TSharedRef<ITableRow> SMyUsdStagePreviewTree::OnGenerateRow(FMyUsdPrimPreviewModelViewRef InDisplayNode, const TSharedRef<STableViewBase>& OwnerTable)
+TSharedRef<ITableRow> SMyUsdStagePreviewTree::OnGenerateRow(FUsdPrimPreviewModelViewRef InDisplayNode, const TSharedRef<STableViewBase>& OwnerTable)
 {
 	return SNew(SMyUsdStagePreviewTreeRow, InDisplayNode, OwnerTable, SharedData);
 }
 
-void SMyUsdStagePreviewTree::OnGetChildren(FMyUsdPrimPreviewModelViewRef InParent, TArray<FMyUsdPrimPreviewModelViewRef>& OutChildren) const
+void SMyUsdStagePreviewTree::OnGetChildren(FUsdPrimPreviewModelViewRef InParent, TArray<FUsdPrimPreviewModelViewRef>& OutChildren) const
 {
 	OutChildren = InParent->Children;
 }
@@ -368,21 +368,21 @@ void SMyUsdStagePreviewTree::SetupColumns()
 	}
 }
 
-TArray<FMyUsdPrimPreviewModelViewRef> SMyUsdStagePreviewTree::GetAncestorSelectedViews()
+TArray<FUsdPrimPreviewModelViewRef> SMyUsdStagePreviewTree::GetAncestorSelectedViews()
 {
-	TArray<FMyUsdPrimPreviewModelViewRef> SelectedViews = GetSelectedItems();
+	TArray<FUsdPrimPreviewModelViewRef> SelectedViews = GetSelectedItems();
 
 	TSet<int32> SelectedIndices;
 	SelectedIndices.Reserve(SelectedViews.Num());
-	for (const FMyUsdPrimPreviewModelViewRef& SelectedItem : SelectedViews)
+	for (const FUsdPrimPreviewModelViewRef& SelectedItem : SelectedViews)
 	{
 		SelectedIndices.Add(SelectedItem->ModelIndex);
 	}
 
-	TArray<FMyUsdPrimPreviewModelViewRef> AncestorSelectedViews;
+	TArray<FUsdPrimPreviewModelViewRef> AncestorSelectedViews;
 	AncestorSelectedViews.Reserve(SelectedViews.Num());
 
-	for (const FMyUsdPrimPreviewModelViewRef& SelectedView : SelectedViews)
+	for (const FUsdPrimPreviewModelViewRef& SelectedView : SelectedViews)
 	{
 		bool bIsAncestor = true;
 
@@ -528,7 +528,7 @@ void SMyUsdStagePreviewTree::RebuildModelViews()
 	ItemModelsToViews.Reserve(ItemModels.Num());
 
 	// Create a view for each model *that passes the filter*, having nullptr instead if they don't
-	TArray<FMyUsdPrimPreviewModelViewPtr> LinearViews;
+	TArray<FUsdPrimPreviewModelViewPtr> LinearViews;
 	LinearViews.SetNum(ItemModels.Num());
 	for (int32 Index = 0; Index < ItemModels.Num(); ++Index)
 	{
@@ -536,7 +536,7 @@ void SMyUsdStagePreviewTree::RebuildModelViews()
 
 		if (Model.bPassesFilter)
 		{
-			FMyUsdPrimPreviewModelViewRef View = MakeShared<FMyUsdPrimPreviewModelView>();
+			FUsdPrimPreviewModelViewRef View = MakeShared<FMyUsdPrimPreviewModelView>();
 			View->ModelIndex = Index;
 
 			ItemModelsToViews.Add(Index, View);
@@ -550,7 +550,7 @@ void SMyUsdStagePreviewTree::RebuildModelViews()
 	for (int32 Index = 0; Index < ItemModels.Num(); ++Index)
 	{
 		const FMyUsdPrimPreviewModel& Model = ItemModels[Index];
-		FMyUsdPrimPreviewModelViewPtr& View = LinearViews[Index];
+		FUsdPrimPreviewModelViewPtr& View = LinearViews[Index];
 		if (!View)
 		{
 			// Model didn't pass the filter
@@ -586,12 +586,12 @@ void SMyUsdStagePreviewTree::RebuildModelViews()
 	RequestTreeRefresh();
 }
 
-void SMyUsdStagePreviewTree::CheckItemsRecursively(const TArray<FMyUsdPrimPreviewModelViewRef>& Items, bool bCheck)
+void SMyUsdStagePreviewTree::CheckItemsRecursively(const TArray<FUsdPrimPreviewModelViewRef>& Items, bool bCheck)
 {
-	TFunction<void(const TArray<FMyUsdPrimPreviewModelViewRef>&)> CheckViewsRecursively;
-	CheckViewsRecursively = [this, &CheckViewsRecursively](const TArray<FMyUsdPrimPreviewModelViewRef>& Views)
+	TFunction<void(const TArray<FUsdPrimPreviewModelViewRef>&)> CheckViewsRecursively;
+	CheckViewsRecursively = [this, &CheckViewsRecursively](const TArray<FUsdPrimPreviewModelViewRef>& Views)
 	{
-		for (const FMyUsdPrimPreviewModelViewRef& View : Views)
+		for (const FUsdPrimPreviewModelViewRef& View : Views)
 		{
 			ItemModels[View->ModelIndex].bShouldImport = true;
 			CheckViewsRecursively(View->Children);
@@ -624,7 +624,7 @@ void SMyUsdStagePreviewTree::CheckItemsRecursively(const TArray<FMyUsdPrimPrevie
 		CheckViewsRecursively(Items);
 
 		// If we want to check a view, all of its ancestor *models* must also be checked, regardless of what is shown
-		for (const FMyUsdPrimPreviewModelViewRef& View : Items)
+		for (const FUsdPrimPreviewModelViewRef& View : Items)
 		{
 			int32 ParentIndex = ItemModels[View->ModelIndex].ParentIndex;
 			while (ParentIndex != INDEX_NONE)
@@ -639,7 +639,7 @@ void SMyUsdStagePreviewTree::CheckItemsRecursively(const TArray<FMyUsdPrimPrevie
 	{
 		TArray<int32> ModelIndices;
 		ModelIndices.Reserve(Items.Num());
-		for (const FMyUsdPrimPreviewModelViewRef& Item : Items)
+		for (const FUsdPrimPreviewModelViewRef& Item : Items)
 		{
 			ModelIndices.Add(Item->ModelIndex);
 		}
@@ -683,12 +683,12 @@ void SMyUsdStagePreviewTree::CheckItemsRecursively(const TArray<FMyUsdPrimPrevie
 	}
 }
 
-void SMyUsdStagePreviewTree::ExpandItemsRecursively(const TArray<FMyUsdPrimPreviewModelViewRef>& Items, bool bExpand)
+void SMyUsdStagePreviewTree::ExpandItemsRecursively(const TArray<FUsdPrimPreviewModelViewRef>& Items, bool bExpand)
 {
-	TFunction<void(const TArray<FMyUsdPrimPreviewModelViewRef>&)> ExpandRecursively;
-	ExpandRecursively = [this, &ExpandRecursively, bExpand](const TArray<FMyUsdPrimPreviewModelViewRef>& Views)
+	TFunction<void(const TArray<FUsdPrimPreviewModelViewRef>&)> ExpandRecursively;
+	ExpandRecursively = [this, &ExpandRecursively, bExpand](const TArray<FUsdPrimPreviewModelViewRef>& Views)
 	{
-		for (const FMyUsdPrimPreviewModelViewRef& View : Views)
+		for (const FUsdPrimPreviewModelViewRef& View : Views)
 		{
 			FMyUsdPrimPreviewModel& Model = ItemModels[View->ModelIndex];
 			Model.bIsExpanded = bExpand;
@@ -708,13 +708,13 @@ void SMyUsdStagePreviewTree::ExpandItemsRecursively(const TArray<FMyUsdPrimPrevi
 
 void SMyUsdStagePreviewTreeRow::Construct(
 	const FArguments& InArgs,
-	FMyUsdPrimPreviewModelViewRef InTreeItem,
+	FUsdPrimPreviewModelViewRef InTreeItem,
 	const TSharedRef<STableViewBase>& OwnerTable,
 	TSharedPtr<FSharedUsdTreeData> InSharedData
 )
 {
-	SMyUsdTreeRow<FMyUsdPrimPreviewModelViewRef>::Construct(
-		typename SMyUsdTreeRow<FMyUsdPrimPreviewModelViewRef>::FArguments(),
+	SMyUsdTreeRow<FUsdPrimPreviewModelViewRef>::Construct(
+		typename SMyUsdTreeRow<FUsdPrimPreviewModelViewRef>::FArguments(),
 		InTreeItem,
 		OwnerTable,
 		InSharedData

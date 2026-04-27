@@ -92,7 +92,7 @@ namespace USDObjectFieldListImpl
 		{
 			LabelType = EWidgetLabelTypes::RGBA;
 		}
-		else if (NumComponents > 1 && NumComponents <= 4 && FieldValue.SourceType != UsdUtils::EMyUsdBasicDataTypes::Matrix2d)
+		else if (NumComponents > 1 && NumComponents <= 4 && FieldValue.SourceType != UsdUtils::EUsdBasicDataTypes::Matrix2d)
 		{
 			LabelType = EWidgetLabelTypes::XYZW;
 		}
@@ -100,52 +100,52 @@ namespace USDObjectFieldListImpl
 		return LabelType;
 	}
 
-	EWidgetType GetWidgetType(UsdUtils::EMyUsdBasicDataTypes SourceType)
+	EWidgetType GetWidgetType(UsdUtils::EUsdBasicDataTypes SourceType)
 	{
 		using namespace UsdUtils;
 
 		switch (SourceType)
 		{
-			case EMyUsdBasicDataTypes::Bool:
+			case EUsdBasicDataTypes::Bool:
 				return EWidgetType::Bool;
-			case EMyUsdBasicDataTypes::Uchar:
+			case EUsdBasicDataTypes::Uchar:
 				return EWidgetType::U8;
-			case EMyUsdBasicDataTypes::Int:
-			case EMyUsdBasicDataTypes::Int2:
-			case EMyUsdBasicDataTypes::Int3:
-			case EMyUsdBasicDataTypes::Int4:
+			case EUsdBasicDataTypes::Int:
+			case EUsdBasicDataTypes::Int2:
+			case EUsdBasicDataTypes::Int3:
+			case EUsdBasicDataTypes::Int4:
 				return EWidgetType::I32;
-			case EMyUsdBasicDataTypes::Uint:
+			case EUsdBasicDataTypes::Uint:
 				return EWidgetType::U32;
-			case EMyUsdBasicDataTypes::Int64:
+			case EUsdBasicDataTypes::Int64:
 				return EWidgetType::I64;
-			case EMyUsdBasicDataTypes::Uint64:
+			case EUsdBasicDataTypes::Uint64:
 				return EWidgetType::U64;
-			case EMyUsdBasicDataTypes::Half:
-			case EMyUsdBasicDataTypes::Half2:
-			case EMyUsdBasicDataTypes::Half3:
-			case EMyUsdBasicDataTypes::Half4:
-			case EMyUsdBasicDataTypes::Quath:
-			case EMyUsdBasicDataTypes::Float:
-			case EMyUsdBasicDataTypes::Float2:
-			case EMyUsdBasicDataTypes::Float3:
-			case EMyUsdBasicDataTypes::Float4:
-			case EMyUsdBasicDataTypes::Quatf:
+			case EUsdBasicDataTypes::Half:
+			case EUsdBasicDataTypes::Half2:
+			case EUsdBasicDataTypes::Half3:
+			case EUsdBasicDataTypes::Half4:
+			case EUsdBasicDataTypes::Quath:
+			case EUsdBasicDataTypes::Float:
+			case EUsdBasicDataTypes::Float2:
+			case EUsdBasicDataTypes::Float3:
+			case EUsdBasicDataTypes::Float4:
+			case EUsdBasicDataTypes::Quatf:
 				return EWidgetType::F32;
-			case EMyUsdBasicDataTypes::Double:
-			case EMyUsdBasicDataTypes::Double2:
-			case EMyUsdBasicDataTypes::Double3:
-			case EMyUsdBasicDataTypes::Double4:
-			case EMyUsdBasicDataTypes::Timecode:
-			case EMyUsdBasicDataTypes::Matrix2d:
-			case EMyUsdBasicDataTypes::Matrix3d:
-			case EMyUsdBasicDataTypes::Matrix4d:
-			case EMyUsdBasicDataTypes::Quatd:
+			case EUsdBasicDataTypes::Double:
+			case EUsdBasicDataTypes::Double2:
+			case EUsdBasicDataTypes::Double3:
+			case EUsdBasicDataTypes::Double4:
+			case EUsdBasicDataTypes::Timecode:
+			case EUsdBasicDataTypes::Matrix2d:
+			case EUsdBasicDataTypes::Matrix3d:
+			case EUsdBasicDataTypes::Matrix4d:
+			case EUsdBasicDataTypes::Quatd:
 				return EWidgetType::F64;
-			case EMyUsdBasicDataTypes::Token:
+			case EUsdBasicDataTypes::Token:
 				return EWidgetType::Dropdown;
-			case EMyUsdBasicDataTypes::String:
-			case EMyUsdBasicDataTypes::Asset:
+			case EUsdBasicDataTypes::String:
+			case EUsdBasicDataTypes::Asset:
 				return EWidgetType::Text;
 			default:
 				break;
@@ -716,7 +716,7 @@ TSharedRef<ITableRow> SMyUsdObjectFieldList::OnGenerateRow(
 	return SNew(SMyUsdObjectFieldRow, InDisplayNode, OwnerTable);
 }
 
-void SMyUsdObjectFieldList::GenerateFieldList(const UE::FMyUsdStageWeak& UsdStage, const TCHAR* InObjectPath)
+void SMyUsdObjectFieldList::GenerateFieldList(const UE::FUsdStageWeak& UsdStage, const TCHAR* InObjectPath)
 {
 	const float TimeCode = 0.f;
 	ViewModel.Refresh(UsdStage, InObjectPath, TimeCode);
@@ -741,7 +741,7 @@ EColumnSortMode::Type SMyUsdObjectFieldList::GetColumnSortMode(const FName Colum
 	return ViewModel.CurrentSortMode;
 }
 
-void SMyUsdObjectFieldList::SetObjectPath(const UE::FMyUsdStageWeak& UsdStage, const TCHAR* InObjectPath)
+void SMyUsdObjectFieldList::SetObjectPath(const UE::FUsdStageWeak& UsdStage, const TCHAR* InObjectPath)
 {
 	GenerateFieldList(UsdStage, InObjectPath);
 
@@ -787,7 +787,7 @@ void SMyUsdObjectFieldList::SetSelectedFieldNames(const TArray<FString>& NewSele
 	SetItemSelection(NewItemSelection, bSelected);
 }
 
-UE::FMyUsdStageWeak SMyUsdObjectFieldList::GetUsdStage() const
+UE::FUsdStageWeak SMyUsdObjectFieldList::GetUsdStage() const
 {
 	return ViewModel.GetUsdStage();
 }

@@ -43,7 +43,7 @@ void FMyUsdVariantSetViewModel::SetVariantSelection(const TSharedPtr<FString>& I
 	std::string UsdVariantSetName = UnrealToUsd::ConvertString(*SetName).Get();
 	std::string UsdVariantSelection = VariantSelection ? UnrealToUsd::ConvertString(*(*VariantSelection)).Get() : std::string{};
 
-	if (const UE::FMyUsdPrim& Prim = Owner->UsdStage.GetPrimAtPath(UE::FSdfPath{*Owner->PrimPath}))
+	if (const UE::FUsdPrim& Prim = Owner->UsdStage.GetPrimAtPath(UE::FSdfPath{*Owner->PrimPath}))
 	{
 		pxr::UsdVariantSets UsdVariantSets = pxr::UsdPrim{Prim}.GetVariantSets();
 		UsdVariantSets.SetSelection(UsdVariantSetName, UsdVariantSelection);
@@ -52,7 +52,7 @@ void FMyUsdVariantSetViewModel::SetVariantSelection(const TSharedPtr<FString>& I
 #endif	  // #if USE_USD_SDK
 }
 
-void FMyUsdVariantSetsViewModel::UpdateVariantSets(const UE::FMyUsdStageWeak& InUsdStage, const TCHAR* InPrimPath)
+void FMyUsdVariantSetsViewModel::UpdateVariantSets(const UE::FUsdStageWeak& InUsdStage, const TCHAR* InPrimPath)
 {
 #if USE_USD_SDK
 	VariantSets.Reset();
@@ -64,7 +64,7 @@ void FMyUsdVariantSetsViewModel::UpdateVariantSets(const UE::FMyUsdStageWeak& In
 		return;
 	}
 
-	UE::FMyUsdPrim UsdPrim = UsdStage.GetPrimAtPath(UE::FSdfPath(*PrimPath));
+	UE::FUsdPrim UsdPrim = UsdStage.GetPrimAtPath(UE::FSdfPath(*PrimPath));
 	if (!UsdPrim)
 	{
 		return;

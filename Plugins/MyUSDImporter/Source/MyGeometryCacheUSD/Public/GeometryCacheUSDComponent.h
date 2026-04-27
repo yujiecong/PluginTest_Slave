@@ -5,11 +5,11 @@
 #include "CoreMinimal.h"
 #include "GeometryCacheComponent.h"
 
-#include "MyGeometryCacheUSDComponent.generated.h"
+#include "GeometryCacheUSDComponent.generated.h"
 
 #define UE_API MYGEOMETRYCACHEUSD_API
 
-/** MyGeometryCacheUSDComponent, encapsulates a transient GeometryCache asset instance that fetches its data from a USD file and implements
+/** GeometryCacheUSDComponent, encapsulates a transient GeometryCache asset instance that fetches its data from a USD file and implements
  * functionality for rendering and playback */
 UCLASS(HideDropDown, ClassGroup = (Rendering), meta = (DisplayName = "USD Geometry Cache"), Experimental, ClassGroup = Experimental)
 

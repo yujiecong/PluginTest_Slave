@@ -8,7 +8,7 @@
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "Containers/Ticker.h"
 
-void UsdUnreal::TranslatorUtils::AbandonFailedAsset(UObject* Asset, UMyUsdAssetCache3* AssetCache, FMyUsdPrimLinkCache* PrimLinkCache)
+void UsdUnreal::TranslatorUtils::AbandonFailedAsset(UObject* Asset, UUsdAssetCache3* AssetCache, FUsdPrimLinkCache* PrimLinkCache)
 {
 	if (!Asset)
 	{

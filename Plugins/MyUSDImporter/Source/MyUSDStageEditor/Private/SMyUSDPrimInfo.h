@@ -18,7 +18,7 @@ public:
 	SLATE_END_ARGS()
 
 	void Construct(const FArguments& InArgs);
-	void SetPrimPath(const UE::FMyUsdStageWeak& UsdStage, const TCHAR* PrimPath);
+	void SetPrimPath(const UE::FUsdStageWeak& UsdStage, const TCHAR* PrimPath);
 
 private:
 	friend class SMyUsdStage;

@@ -7,22 +7,22 @@
 #include "CoreMinimal.h"
 #include "Modules/ModuleInterface.h"
 
-class FMyUsdRenderContextRegistry;
-class FMyUsdSchemaTranslatorRegistry;
+class FUsdRenderContextRegistry;
+class FUsdSchemaTranslatorRegistry;
 
 class IMyUsdSchemasModule : public IModuleInterface
 {
 public:
-	UE_DEPRECATED(5.6, "Use FMyUsdSchemaTranslatorRegistry::Get() from Objects/USDSchemaTranslator.h file in the USDUtilities module (USDCore plugin).")
-	virtual FMyUsdSchemaTranslatorRegistry& GetTranslatorRegistry() = 0;
+	UE_DEPRECATED(5.6, "Use FUsdSchemaTranslatorRegistry::Get() from Objects/USDSchemaTranslator.h file in the USDUtilities module (USDCore plugin).")
+	virtual FUsdSchemaTranslatorRegistry& GetTranslatorRegistry() = 0;
 
 	PRAGMA_DISABLE_DEPRECATION_WARNINGS
-	virtual FMyUsdRenderContextRegistry& GetRenderContextRegistry() = 0;
+	virtual FUsdRenderContextRegistry& GetRenderContextRegistry() = 0;
 	PRAGMA_ENABLE_DEPRECATION_WARNINGS
 };
 
 namespace UsdUnreal::Analytics
 {
 	/** Collects analytics about custom schemas, unsupported native schemas, and the count of custom registered schema translators */
-	MYUSDSCHEMAS_API void CollectSchemaAnalytics(const UE::FMyUsdStage& Stage, const FString& EventName);
+	MYUSDSCHEMAS_API void CollectSchemaAnalytics(const UE::FUsdStage& Stage, const FString& EventName);
 }

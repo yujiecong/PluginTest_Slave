@@ -25,8 +25,8 @@ class FMyUsdLayerViewModel : public IMyUsdTreeViewItem
 public:
 	UE_API explicit FMyUsdLayerViewModel(
 		FMyUsdLayerViewModel* InParentItem,
-		const UE::FMyUsdStageWeak& InUsdStage,
-		const UE::FMyUsdStageWeak& InIsolatedStage,
+		const UE::FUsdStageWeak& InUsdStage,
+		const UE::FUsdStageWeak& InIsolatedStage,
 		const FString& InLayerIdentifier
 	);
 
@@ -65,8 +65,8 @@ public:
 	FMyUsdLayerViewModel* ParentItem;
 	TArray<TSharedRef<FMyUsdLayerViewModel>> Children;
 
-	UE::FMyUsdStageWeak UsdStage;
-	UE::FMyUsdStageWeak IsolatedStage;
+	UE::FUsdStageWeak UsdStage;
+	UE::FUsdStageWeak IsolatedStage;
 	FString LayerIdentifier;
 };
 

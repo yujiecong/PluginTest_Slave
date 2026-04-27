@@ -13,7 +13,7 @@
 
 #if USE_USD_SDK
 
-#define LOCTEXT_NAMESPACE "SMyUSDPrimInfo"
+#define LOCTEXT_NAMESPACE "SUSDPrimInfo"
 
 void SMyUsdPrimInfo::Construct(const FArguments& InArgs)
 {
@@ -98,7 +98,7 @@ void SMyUsdPrimInfo::Construct(const FArguments& InArgs)
 	// clang-format on
 }
 
-void SMyUsdPrimInfo::SetPrimPath(const UE::FMyUsdStageWeak& UsdStage, const TCHAR* PrimPath)
+void SMyUsdPrimInfo::SetPrimPath(const UE::FUsdStageWeak& UsdStage, const TCHAR* PrimPath)
 {
 	if (PropertiesList)
 	{

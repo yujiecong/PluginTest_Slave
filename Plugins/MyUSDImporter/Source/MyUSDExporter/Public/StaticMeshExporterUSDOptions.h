@@ -20,7 +20,7 @@ class UStaticMeshExporterUSDOptions : public UObject
 
 public:
 	UPROPERTY(EditAnywhere, config, BlueprintReadWrite, Category = "Stage options", meta = (ShowOnlyInnerProperties))
-	FMyUsdStageOptions StageOptions;
+	FUsdStageOptions StageOptions;
 
 	UPROPERTY(EditAnywhere, config, BlueprintReadWrite, Category = "Mesh options", meta = (ShowOnlyInnerProperties))
 	FMyUsdMeshAssetOptions MeshAssetOptions;

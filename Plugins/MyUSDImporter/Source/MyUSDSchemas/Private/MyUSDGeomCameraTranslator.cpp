@@ -22,8 +22,8 @@ USceneComponent* FMyUsdGeomCameraTranslator::CreateComponents()
 {
 	USceneComponent* Component = nullptr;
 
-	EMyUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(GetPrim());
-	if (DrawMode != EMyUsdDrawMode::Default)
+	EUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(GetPrim());
+	if (DrawMode != EUsdDrawMode::Default)
 	{
 		Component = CreateAlternativeDrawModeComponents(DrawMode);
 	}
@@ -119,8 +119,8 @@ bool FMyUsdGeomCameraTranslator::CollapsesChildren(ECollapsingType CollapsingTyp
 {
 	// If we have a custom draw mode, it means we should draw bounds/cards/etc. instead
 	// of our entire subtree, which is basically the same thing as collapsing
-	EMyUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(GetPrim());
-	if (DrawMode != EMyUsdDrawMode::Default)
+	EUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(GetPrim());
+	if (DrawMode != EUsdDrawMode::Default)
 	{
 		return true;
 	}

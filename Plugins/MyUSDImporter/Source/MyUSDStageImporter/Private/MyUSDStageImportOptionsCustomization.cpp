@@ -148,7 +148,7 @@ void FMyUsdStageImportOptionsCustomization::CustomizeDetails(IDetailLayoutBuilde
 					};
 
 					// Add additional purposes from project settings
-					if (const UMyUsdProjectSettings* ProjectSettings = GetDefault<UMyUsdProjectSettings>())
+					if (const UUsdProjectSettings* ProjectSettings = GetDefault<UUsdProjectSettings>())
 					{
 						MaterialPurposeComboBoxItems.Reserve(MaterialPurposeComboBoxItems.Num() + ProjectSettings->AdditionalMaterialPurposes.Num());
 
@@ -229,7 +229,7 @@ void FMyUsdStageImportOptionsCustomization::CustomizeDetails(IDetailLayoutBuilde
 
 						if (bIsNew)
 						{
-							if (UMyUsdProjectSettings* ProjectSettings = GetMutableDefault<UMyUsdProjectSettings>())
+							if (UUsdProjectSettings* ProjectSettings = GetMutableDefault<UUsdProjectSettings>())
 							{
 								ProjectSettings->AdditionalMaterialPurposes.AddUnique(NewPurpose);
 								ProjectSettings->SaveConfig();

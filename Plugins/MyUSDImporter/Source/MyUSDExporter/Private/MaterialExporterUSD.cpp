@@ -57,14 +57,14 @@ namespace UE::MaterialExporterUSD::Private
 			return;
 		}
 
-		const FString ClassName = IMyUsdClassesModule::GetClassNameForAnalytics(&Material);
+		const FString ClassName = IUsdClassesModule::GetClassNameForAnalytics(&Material);
 
 		TArray<FAnalyticsEventAttribute> EventAttributes;
 		EventAttributes.Emplace(TEXT("AssetType"), ClassName);
 
 		UsdUtils::AddAnalyticsAttributes(Options, EventAttributes);
 
-		IMyUsdClassesModule::SendAnalytics(
+		IUsdClassesModule::SendAnalytics(
 			MoveTemp(EventAttributes),
 			FString::Printf(TEXT("Export.%s"), *ClassName),
 			bAutomated,
@@ -306,12 +306,12 @@ bool UMaterialExporterUsd::ExportMaterial(
 			// Don't use the asset cache here as we want this stage to close within this scope in case
 			// we have to overwrite its files due to e.g. missing payload or anything like that
 			const bool bUseAssetCache = false;
-			const EMyUsdInitialLoadSet InitialLoadSet = EMyUsdInitialLoadSet::LoadNone;
-			if (UE::FMyUsdStage TempStage = UnrealUSDWrapper::OpenStage(*FilePath.FilePath, InitialLoadSet, bUseAssetCache))
+			const EUsdInitialLoadSet InitialLoadSet = EUsdInitialLoadSet::LoadNone;
+			if (UE::FUsdStage TempStage = UnrealUSDWrapper::OpenStage(*FilePath.FilePath, InitialLoadSet, bUseAssetCache))
 			{
-				if (UE::FMyUsdPrim DefaultPrim = TempStage.GetDefaultPrim())
+				if (UE::FUsdPrim DefaultPrim = TempStage.GetDefaultPrim())
 				{
-					FMyUsdUnrealAssetInfo Info = UsdUtils::GetPrimAssetInfo(DefaultPrim);
+					FUsdUnrealAssetInfo Info = UsdUtils::GetPrimAssetInfo(DefaultPrim);
 
 					const bool bVersionMatches = !Info.Version.IsEmpty() && Info.Version == MaterialHashString;
 
@@ -337,7 +337,7 @@ bool UMaterialExporterUsd::ExportMaterial(
 
 	double StartTime = FPlatformTime::Cycles64();
 
-	UE::FMyUsdStage UsdStage = UnrealUSDWrapper::NewStage(*FilePath.FilePath);
+	UE::FUsdStage UsdStage = UnrealUSDWrapper::NewStage(*FilePath.FilePath);
 	if (!UsdStage)
 	{
 		return false;
@@ -345,7 +345,7 @@ bool UMaterialExporterUsd::ExportMaterial(
 
 	FString RootPrimPath = TEXT("/") + UsdUtils::SanitizeUsdIdentifier(*Material.GetName());
 
-	UE::FMyUsdPrim RootPrim = UsdStage.DefinePrim(UE::FSdfPath(*RootPrimPath), TEXT("Material"));
+	UE::FUsdPrim RootPrim = UsdStage.DefinePrim(UE::FSdfPath(*RootPrimPath), TEXT("Material"));
 	if (!RootPrim)
 	{
 		return false;
@@ -366,7 +366,7 @@ bool UMaterialExporterUsd::ExportMaterial(
 
 	if (MetadataOptions.bExportAssetInfo)
 	{
-		FMyUsdUnrealAssetInfo Info;
+		FUsdUnrealAssetInfo Info;
 		Info.Name = Material.GetName();
 		Info.Identifier = UExporter::CurrentFilename;
 		Info.Version = MaterialHashString;
@@ -380,7 +380,7 @@ bool UMaterialExporterUsd::ExportMaterial(
 
 	if (MetadataOptions.bExportAssetMetadata)
 	{
-		if (UMyUsdAssetUserData* UserData = UsdUnreal::ObjectUtils::GetAssetUserData(&Material))
+		if (UUsdAssetUserData* UserData = UsdUnreal::ObjectUtils::GetAssetUserData(&Material))
 		{
 			UnrealToUsd::ConvertMetadata(UserData, RootPrim, MetadataOptions.BlockedPrefixFilters, MetadataOptions.bInvertFilters);
 		}
@@ -506,9 +506,9 @@ bool UMaterialExporterUsd::ExportMaterialsForStage(
 	// We can only open the stage *after* we finished exporting the materials. This because if we're exporting over
 	// existing files, it could be that this stage still references the existing material layers that the individual
 	// material exports would try to replace, meaning the exports would fail as those files would be currently open.
-	const EMyUsdInitialLoadSet InitialLoadSet = EMyUsdInitialLoadSet::LoadAll;
+	const EUsdInitialLoadSet InitialLoadSet = EUsdInitialLoadSet::LoadAll;
 	const bool bUseStageCache = false;
-	UE::FMyUsdStage Stage = UnrealUSDWrapper::OpenStage(*StageRootLayerPath, InitialLoadSet, bUseStageCache);
+	UE::FUsdStage Stage = UnrealUSDWrapper::OpenStage(*StageRootLayerPath, InitialLoadSet, bUseStageCache);
 	if (!Stage)
 	{
 		return false;

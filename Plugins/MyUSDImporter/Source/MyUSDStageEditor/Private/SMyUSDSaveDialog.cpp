@@ -310,7 +310,7 @@ public:
 			if (Item)
 			{
 				FString Text;
-				for (const UE::FMyUsdStageWeak& Stage : Item->ConsumerStages)
+				for (const UE::FUsdStageWeak& Stage : Item->ConsumerStages)
 				{
 					if (Stage)
 					{

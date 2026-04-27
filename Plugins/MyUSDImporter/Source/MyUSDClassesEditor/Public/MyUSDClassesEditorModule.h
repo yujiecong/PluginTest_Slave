@@ -4,7 +4,7 @@
 
 #include "Modules/ModuleInterface.h"
 
-class UMyUsdAssetCache2;
+class UUsdAssetCache2;
 
 enum class EDefaultAssetCacheDialogOption : uint8
 {
@@ -19,11 +19,11 @@ class IMyUsdClassesEditorModule : public IModuleInterface
 public:
 	/** Shows the dialog that asks the user to set a default asset cache for the project */
 	UE_DEPRECATED(5.3, "Use the other signature that also returns whether the user accepted the dialog or not")
-	MYUSDCLASSESEDITOR_API static UMyUsdAssetCache2* ShowMissingDefaultAssetCacheDialog();
+	MYUSDCLASSESEDITOR_API static UUsdAssetCache2* ShowMissingDefaultAssetCacheDialog();
 
 	UE_DEPRECATED(5.4, "Use the other signature that also returns the dialog outcome as an Enum")
-	MYUSDCLASSESEDITOR_API static void ShowMissingDefaultAssetCacheDialog(UMyUsdAssetCache2*& OutCreatedCache, bool& bOutUserAccepted);
+	MYUSDCLASSESEDITOR_API static void ShowMissingDefaultAssetCacheDialog(UUsdAssetCache2*& OutCreatedCache, bool& bOutUserAccepted);
 
 	UE_DEPRECATED(5.5, "The Default Asset Cache dialog has been deprecated. An asset cache for the project will always be created on-demand now")
-	MYUSDCLASSESEDITOR_API static EDefaultAssetCacheDialogOption ShowMissingDefaultAssetCacheDialog(UMyUsdAssetCache2*& OutCreatedCache);
+	MYUSDCLASSESEDITOR_API static EDefaultAssetCacheDialogOption ShowMissingDefaultAssetCacheDialog(UUsdAssetCache2*& OutCreatedCache);
 };

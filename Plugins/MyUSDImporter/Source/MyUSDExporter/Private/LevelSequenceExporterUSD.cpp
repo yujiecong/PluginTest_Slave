@@ -75,7 +75,7 @@ namespace UE::LevelSequenceExporterUSD::Private
 	void SendAnalytics(
 		const ULevelSequence* LevelSequence,
 		const ULevelSequenceExporterUsdOptions* Options,
-		const TArray<UE::FMyUsdStage>& ExportedStages,
+		const TArray<UE::FUsdStage>& ExportedStages,
 		bool bAutomated,
 		double ElapsedSeconds,
 		const FString& Extension,
@@ -87,7 +87,7 @@ namespace UE::LevelSequenceExporterUSD::Private
 			return;
 		}
 
-		const FString ClassName = IMyUsdClassesModule::GetClassNameForAnalytics(LevelSequence);
+		const FString ClassName = IUsdClassesModule::GetClassNameForAnalytics(LevelSequence);
 
 		EventAttributes.Emplace(TEXT("AssetType"), ClassName);
 		EventAttributes.Emplace(TEXT("NumExportedLevelSequenceLayers"), ExportedStages.Num());
@@ -112,7 +112,7 @@ namespace UE::LevelSequenceExporterUSD::Private
 		TArray<FAnalyticsEventAttribute> UniqueAttributes;
 		AttributesByName.GenerateValueArray(UniqueAttributes);
 
-		IMyUsdClassesModule::SendAnalytics(
+		IUsdClassesModule::SendAnalytics(
 			MoveTemp(UniqueAttributes),
 			FString::Printf(TEXT("Export.%s"), *ClassName),
 			bAutomated,
@@ -758,7 +758,7 @@ namespace UE::LevelSequenceExporterUSD::Private
 	void ExportAudioTrack(
 		const UMovieSceneAudioTrack& AudioTrack,
 		const FMovieSceneSequenceTransform& SequenceTransform,
-		UE::FMyUsdPrim& Prim,
+		UE::FUsdPrim& Prim,
 		TMap<FString, int32>& AudioTracksPerPrim
 	)
 	{
@@ -814,7 +814,7 @@ namespace UE::LevelSequenceExporterUSD::Private
 		UMovieSceneSequence& MovieSceneSequence,
 		const TMap<UMovieSceneSequence*, TArray<FMovieSceneSequenceID>>& SequenceInstances,
 		const FMovieSceneSequenceHierarchy& HierarchyCache,
-		UE::FMyUsdStage& UsdStage,
+		UE::FUsdStage& UsdStage,
 		TMap<USceneComponent*, FCombinedComponentBakers>& InOutComponentBakers
 	)
 	{
@@ -1047,7 +1047,7 @@ namespace UE::LevelSequenceExporterUSD::Private
 							{
 								UE::FSdfPath SdfPrimPathInSourceStage{*PrimPathInSourceStage};
 
-								UE::FMyUsdStage LoadedStage = StageActor->GetBaseUsdStage();
+								UE::FUsdStage LoadedStage = StageActor->GetBaseUsdStage();
 								UE::FSdfPath DefaultPrimPath = LoadedStage.GetDefaultPrim().GetPrimPath();
 
 								if (!LoadedStage.GetRootLayer().IsAnonymous() && !DefaultPrimPath.IsEmpty()
@@ -1083,7 +1083,7 @@ namespace UE::LevelSequenceExporterUSD::Private
 				}
 			}
 
-			auto GetPrimForComponent = [&Context, &UsdStage](const USceneComponent& Component, FString* PrimPathStr = nullptr) -> UE::FMyUsdPrim
+			auto GetPrimForComponent = [&Context, &UsdStage](const USceneComponent& Component, FString* PrimPathStr = nullptr) -> UE::FUsdPrim
 			{
 				FString PrimPath = PrimPathStr ? *PrimPathStr
 											   : UsdUtils::GetPrimPathForObject(
@@ -1108,7 +1108,7 @@ namespace UE::LevelSequenceExporterUSD::Private
 				return UsdStage.DefinePrim(UE::FSdfPath{*PrimPath}, *SchemaName);
 			};
 
-			UE::FMyUsdPrim Prim = GetPrimForComponent(*BoundComponent, &PrimPath);
+			UE::FUsdPrim Prim = GetPrimForComponent(*BoundComponent, &PrimPath);
 			if (!Prim)
 			{
 				continue;
@@ -1133,9 +1133,9 @@ namespace UE::LevelSequenceExporterUSD::Private
 				{
 					if (bBakeAsSkeletal)
 					{
-						UE::FMyUsdPrim SkelAnimPrim = UsdStage.DefinePrim(UE::FSdfPath{*PrimPath}.AppendChild(TEXT("Anim")), TEXT("SkelAnimation"));
+						UE::FUsdPrim SkelAnimPrim = UsdStage.DefinePrim(UE::FSdfPath{*PrimPath}.AppendChild(TEXT("Anim")), TEXT("SkelAnimation"));
 
-						UE::FMyUsdPrim SkeletonPrim = UsdStage.DefinePrim(
+						UE::FUsdPrim SkeletonPrim = UsdStage.DefinePrim(
 							UE::FSdfPath{*PrimPath}.AppendChild(UnrealIdentifiers::ExportedSkeletonPrimName),
 							TEXT("Skeleton")
 						);
@@ -1167,7 +1167,7 @@ namespace UE::LevelSequenceExporterUSD::Private
 				// RailMountComponent since that is where children camera will be attached to.
 				const static FString TransformPropertyPath = UnrealIdentifiers::TransformPropertyName.ToString();
 				USceneComponent* RailMountComponent = RailActor->GetDefaultAttachComponent();
-				UE::FMyUsdPrim RailMountPrim = GetPrimForComponent(*RailMountComponent);
+				UE::FUsdPrim RailMountPrim = GetPrimForComponent(*RailMountComponent);
 				if (RailMountPrim)
 				{
 					UnrealToUsd::FComponentBaker Baker;
@@ -1359,7 +1359,7 @@ namespace UE::LevelSequenceExporterUSD::Private
 	void BakeMovieSceneSequence(
 		FLevelSequenceExportContext& Context,
 		UMovieSceneSequence& MovieSceneSequence,
-		UE::FMyUsdStage& UsdStage,
+		UE::FUsdStage& UsdStage,
 		const TMap<USceneComponent*, FCombinedComponentBakers>& ComponentBakers
 	)
 	{
@@ -1467,10 +1467,10 @@ namespace UE::LevelSequenceExporterUSD::Private
 		// previously have it - it's only supposed to carry animation data)
 		// We need to do this in this way because when going from 'def' to 'over' we need to do it from leaf towards the
 		// root, as USD doesn't like a parent 'over' with a child 'def'
-		TFunction<void(FMyUsdPrim&)> RecursiveSetOver;
-		RecursiveSetOver = [&RecursiveSetOver](FMyUsdPrim& Prim)
+		TFunction<void(FUsdPrim&)> RecursiveSetOver;
+		RecursiveSetOver = [&RecursiveSetOver](FUsdPrim& Prim)
 		{
-			for (FMyUsdPrim& Child : Prim.GetChildren())
+			for (FUsdPrim& Child : Prim.GetChildren())
 			{
 				RecursiveSetOver(Child);
 			}
@@ -1482,8 +1482,8 @@ namespace UE::LevelSequenceExporterUSD::Private
 				Prim.SetSpecifier(ESdfSpecifier::Over);
 			}
 		};
-		FMyUsdPrim Root = UsdStage.GetPseudoRoot();
-		for (FMyUsdPrim& TopLevelPrim : Root.GetChildren())
+		FUsdPrim Root = UsdStage.GetPseudoRoot();
+		for (FUsdPrim& TopLevelPrim : Root.GetChildren())
 		{
 			RecursiveSetOver(TopLevelPrim);
 		}
@@ -1493,7 +1493,7 @@ namespace UE::LevelSequenceExporterUSD::Private
 		FLevelSequenceExportContext& Context,
 		UMovieSceneSequence& MovieSceneSequence,
 		const FString& FilePath,
-		TArray<UE::FMyUsdStage>& InOutExportedStages
+		TArray<UE::FUsdStage>& InOutExportedStages
 	)
 	{
 		TRACE_CPUPROFILER_EVENT_SCOPE(ULevelSequenceExporterUsd::ExportMovieSceneSequence);
@@ -1607,12 +1607,12 @@ namespace UE::LevelSequenceExporterUSD::Private
 				// Don't use the stage cache here as we want this stage to close within this scope in case
 				// we have to overwrite its files due to e.g. missing payload or anything like that
 				const bool bUseStageCache = false;
-				const EMyUsdInitialLoadSet InitialLoadSet = EMyUsdInitialLoadSet::LoadNone;
-				if (UE::FMyUsdStage TempStage = UnrealUSDWrapper::OpenStage(*UniqueFilePath, InitialLoadSet, bUseStageCache))
+				const EUsdInitialLoadSet InitialLoadSet = EUsdInitialLoadSet::LoadNone;
+				if (UE::FUsdStage TempStage = UnrealUSDWrapper::OpenStage(*UniqueFilePath, InitialLoadSet, bUseStageCache))
 				{
-					if (UE::FMyUsdPrim RootPrim = TempStage.GetDefaultPrim())
+					if (UE::FUsdPrim RootPrim = TempStage.GetDefaultPrim())
 					{
-						FMyUsdUnrealAssetInfo Info = UsdUtils::GetPrimAssetInfo(RootPrim);
+						FUsdUnrealAssetInfo Info = UsdUtils::GetPrimAssetInfo(RootPrim);
 
 						const bool bVersionMatches = !Info.Version.IsEmpty() && Info.Version == LevelSequenceVersion;
 
@@ -1636,7 +1636,7 @@ namespace UE::LevelSequenceExporterUSD::Private
 			}
 		}
 
-		UE::FMyUsdStage UsdStage = UnrealUSDWrapper::NewStage(*UniqueFilePath);
+		UE::FUsdStage UsdStage = UnrealUSDWrapper::NewStage(*UniqueFilePath);
 		if (!UsdStage)
 		{
 			return;
@@ -1654,7 +1654,7 @@ namespace UE::LevelSequenceExporterUSD::Private
 		UsdStage.SetFramesPerSecond(MovieScene->GetDisplayRate().AsDecimal());
 
 		const FString RootPrimPath = TEXT("/") + UsdUtils::SanitizeUsdIdentifier(*Context.ExportOptions->LevelExportOptions.RootPrimName);
-		UE::FMyUsdPrim RootPrim = UsdStage.OverridePrim(UE::FSdfPath(*RootPrimPath));
+		UE::FUsdPrim RootPrim = UsdStage.OverridePrim(UE::FSdfPath(*RootPrimPath));
 		if (!RootPrim)
 		{
 			return;
@@ -1694,11 +1694,11 @@ namespace UE::LevelSequenceExporterUSD::Private
 			UsdUtils::InsertSubLayer(UsdStage.GetRootLayer(), *Context.LevelFilePath);
 		}
 
-		if (UE::FMyUsdPrim AssetDefaultPrim = UsdStage.GetDefaultPrim())
+		if (UE::FUsdPrim AssetDefaultPrim = UsdStage.GetDefaultPrim())
 		{
 			if (Context.ExportOptions->LevelExportOptions.MetadataOptions.bExportAssetInfo)
 			{
-				FMyUsdUnrealAssetInfo Info;
+				FUsdUnrealAssetInfo Info;
 				Info.Name = MovieSceneSequence.GetName();
 				Info.Identifier = UniqueFilePath;
 				Info.Version = LevelSequenceVersion;
@@ -1712,7 +1712,7 @@ namespace UE::LevelSequenceExporterUSD::Private
 
 			if (Context.ExportOptions->LevelExportOptions.MetadataOptions.bExportAssetMetadata)
 			{
-				if (UMyUsdAssetUserData* UserData = UsdUnreal::ObjectUtils::GetAssetUserData(Cast<ULevelSequence>(&MovieSceneSequence)))
+				if (UUsdAssetUserData* UserData = UsdUnreal::ObjectUtils::GetAssetUserData(Cast<ULevelSequence>(&MovieSceneSequence)))
 				{
 					UnrealToUsd::ConvertMetadata(
 						UserData,
@@ -1784,7 +1784,7 @@ bool ULevelSequenceExporterUsd::ExportBinary(
 		// Prefill the level to export with the current level
 		if (!Options->Level.Get())
 		{
-			Options->Level = IMyUsdClassesModule::GetCurrentWorld();
+			Options->Level = IUsdClassesModule::GetCurrentWorld();
 		}
 
 		// Prompt with an options dialog if we can
@@ -1832,7 +1832,7 @@ bool ULevelSequenceExporterUsd::ExportBinary(
 	if (!World)
 	{
 		const bool bEditorWorldsOnly = true;
-		World = IMyUsdClassesModule::GetCurrentWorld(bEditorWorldsOnly);
+		World = IUsdClassesModule::GetCurrentWorld(bEditorWorldsOnly);
 	}
 	Params.PlaybackContext = TAttribute<UObject*>::Create(TAttribute<UObject*>::FGetter::CreateLambda(
 		[World]()
@@ -1971,22 +1971,22 @@ bool ULevelSequenceExporterUsd::ExportBinary(
 			LevelExportTask->bAutomated = true;	   // Pretend this is an automated task so it doesn't pop the options dialog
 
 			// We don't want the level export to send a separate event
-			IMyUsdClassesModule::BlockAnalyticsEvents();
+			IUsdClassesModule::BlockAnalyticsEvents();
 			{
 				UExporter::RunAssetExportTask(LevelExportTask);
 			}
-			IMyUsdClassesModule::ResumeAnalyticsEvents();
+			IUsdClassesModule::ResumeAnalyticsEvents();
 
 			// Grab the analytics that the level exporter produced, because that also includes some asset counts that would be
 			// awkward to collect from here
-			if (const TArray<FAnalyticsEventAttribute>* LevelAnalytics = IMyUsdClassesModule::GetAccumulatedAnalytics().Find(TEXT("Export.World")))
+			if (const TArray<FAnalyticsEventAttribute>* LevelAnalytics = IUsdClassesModule::GetAccumulatedAnalytics().Find(TEXT("Export.World")))
 			{
 				AnalyticsAttributes = *LevelAnalytics;
 			}
 		}
 	}
 
-	TArray<UE::FMyUsdStage> ExportedStages;
+	TArray<UE::FUsdStage> ExportedStages;
 	LevelSequenceExporterImpl::ExportMovieSceneSequence(Context, *LevelSequence, TargetFileName, ExportedStages);
 
 	// Set this back to Stopped or else it will keep the editor viewport controls permanently hidden

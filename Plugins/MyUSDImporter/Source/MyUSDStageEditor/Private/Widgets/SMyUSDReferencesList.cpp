@@ -211,7 +211,7 @@ void SMyUsdReferencesList::ReloadReference()
 	}
 }
 
-void SMyUsdReferencesList::SetPrimPath(const UE::FMyUsdStageWeak& UsdStage, const TCHAR* PrimPath)
+void SMyUsdReferencesList::SetPrimPath(const UE::FUsdStageWeak& UsdStage, const TCHAR* PrimPath)
 {
 	ViewModel.UpdateReferences(UsdStage, PrimPath);
 

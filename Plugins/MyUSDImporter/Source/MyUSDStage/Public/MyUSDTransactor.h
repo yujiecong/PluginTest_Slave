@@ -31,7 +31,7 @@ namespace UE
 /**
  * Class that allows us to log prim attribute changes into the unreal transaction buffer.
  * The AMyUsdStageActor owns one of these, and whenever a USD notice is fired this class transacts and serializes
- * the notice data with itself. When undo/redoing it applies its values to the AMyUsdStageActors' current stage.
+ * the notice data with itself. When undo/redoing it applies its values to the AUsdStageActors' current stage.
  *
  * Additionally this class naturally allows multi-user (ConcertSync) support for USD stage interactions, by letting
  * these notice data to be mirrored on other clients.

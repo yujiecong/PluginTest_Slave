@@ -96,14 +96,14 @@ template<typename ItemType>
 class SMyUsdTreeRow : public SMultiColumnTableRow<ItemType>
 {
 public:
-	typedef typename STableRow<ItemType>::FOnCanAcceptDrop FMyUsdOnCanAcceptDrop;
-	typedef typename STableRow<ItemType>::FOnAcceptDrop FMyUsdOnAcceptDrop;
+	typedef typename STableRow<ItemType>::FOnCanAcceptDrop FUsdOnCanAcceptDrop;
+	typedef typename STableRow<ItemType>::FOnAcceptDrop FUsdOnAcceptDrop;
 
 	SLATE_BEGIN_ARGS(SMyUsdTreeRow)
 	{
 	}
-	SLATE_EVENT(FMyUsdOnCanAcceptDrop, OnCanAcceptDrop)
-	SLATE_EVENT(FMyUsdOnAcceptDrop, OnAcceptDrop)
+	SLATE_EVENT(FUsdOnCanAcceptDrop, OnCanAcceptDrop)
+	SLATE_EVENT(FUsdOnAcceptDrop, OnAcceptDrop)
 	SLATE_EVENT(FOnDragDetected, OnDragDetected)
 	SLATE_EVENT(FOnTableRowDragEnter, OnDragEnter)
 	SLATE_EVENT(FOnTableRowDragLeave, OnDragLeave)

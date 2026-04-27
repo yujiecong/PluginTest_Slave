@@ -11,12 +11,12 @@
 
 class AMyUsdStageActor;
 
-using FMyUsdLayerViewModelRef = TSharedRef<class FMyUsdLayerViewModel>;
-using FMyUsdLayerViewModelWeak = TWeakPtr<class FMyUsdLayerViewModel>;
+using FUsdLayerViewModelRef = TSharedRef<class FMyUsdLayerViewModel>;
+using FUsdLayerViewModelWeak = TWeakPtr<class FMyUsdLayerViewModel>;
 
 DECLARE_DELEGATE_OneParam(FOnLayerIsolated, const UE::FSdfLayer&);
 
-class SMyUsdLayersTreeView : public SMyUsdTreeView<FMyUsdLayerViewModelRef>
+class SMyUsdLayersTreeView : public SMyUsdTreeView<FUsdLayerViewModelRef>
 {
 public:
 	SLATE_BEGIN_ARGS(SMyUsdLayersTreeView)
@@ -26,13 +26,13 @@ public:
 	SLATE_END_ARGS()
 
 	void Construct(const FArguments& InArgs);
-	void Refresh(const UE::FMyUsdStageWeak& NewStage, const UE::FMyUsdStageWeak& IsolatedStage = {}, bool bResync = false);
+	void Refresh(const UE::FUsdStageWeak& NewStage, const UE::FUsdStageWeak& IsolatedStage = {}, bool bResync = false);
 
 	// Drag and drop interface for our rows
 	FReply OnRowDragDetected(const FGeometry& Geometry, const FPointerEvent& PointerEvent);
 	void OnRowDragLeave(const FDragDropEvent& Event);
-	TOptional<EItemDropZone> OnRowCanAcceptDrop(const FDragDropEvent& Event, EItemDropZone Zone, FMyUsdLayerViewModelRef Item);
-	FReply OnRowAcceptDrop(const FDragDropEvent& Event, EItemDropZone Zone, FMyUsdLayerViewModelRef Item);
+	TOptional<EItemDropZone> OnRowCanAcceptDrop(const FDragDropEvent& Event, EItemDropZone Zone, FUsdLayerViewModelRef Item);
+	FReply OnRowAcceptDrop(const FDragDropEvent& Event, EItemDropZone Zone, FUsdLayerViewModelRef Item);
 	// End drag and drop interface
 
 	TArray<UE::FSdfLayer> GetSelectedLayers() const;
@@ -40,14 +40,14 @@ public:
 
 	void ExportSelectedLayers(const FString& OutputDirectory = {}) const;
 
-	const UE::FMyUsdStageWeak& GetStage() const
+	const UE::FUsdStageWeak& GetStage() const
 	{
 		return UsdStage;
 	}
 
 private:
-	virtual TSharedRef<ITableRow> OnGenerateRow(FMyUsdLayerViewModelRef InDisplayNode, const TSharedRef<STableViewBase>& OwnerTable) override;
-	virtual void OnGetChildren(FMyUsdLayerViewModelRef InParent, TArray<FMyUsdLayerViewModelRef>& OutChildren) const override;
+	virtual TSharedRef<ITableRow> OnGenerateRow(FUsdLayerViewModelRef InDisplayNode, const TSharedRef<STableViewBase>& OwnerTable) override;
+	virtual void OnGetChildren(FUsdLayerViewModelRef InParent, TArray<FUsdLayerViewModelRef>& OutChildren) const override;
 
 	virtual void SetupColumns() override;
 
@@ -77,7 +77,7 @@ private:
 	void OnAddSubLayer();
 	void OnNewSubLayer();
 
-	bool CanRemoveLayer(FMyUsdLayerViewModelRef LayerItem) const;
+	bool CanRemoveLayer(FUsdLayerViewModelRef LayerItem) const;
 	bool CanRemoveSelectedLayers() const;
 	void OnRemoveSelectedLayers();
 
@@ -101,14 +101,14 @@ public:
 
 private:
 	// Should always be valid, we keep the one we're given on Refresh()
-	UE::FMyUsdStageWeak UsdStage;
+	UE::FUsdStageWeak UsdStage;
 
 	// A stage we create based on one of the sublayers of UsdStage
-	UE::FMyUsdStageWeak IsolatedStage;
+	UE::FUsdStageWeak IsolatedStage;
 
 	// So that we can store these across refreshes
 	TMap<FString, bool> TreeItemExpansionStates;
 
-	// Used so that we can isolate the new layer without coupling to the SMyUSDStage widget too much
+	// Used so that we can isolate the new layer without coupling to the SUSDStage widget too much
 	FOnLayerIsolated LayerIsolatedDelegate;
 };

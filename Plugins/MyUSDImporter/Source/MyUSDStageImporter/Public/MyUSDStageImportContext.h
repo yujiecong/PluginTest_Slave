@@ -14,8 +14,8 @@
 
 #define UE_API MYUSDSTAGEIMPORTER_API
 
-class UMyUsdAssetCache2;
-class UMyUsdAssetCache3;
+class UUsdAssetCache2;
+class UUsdAssetCache3;
 class UMyUsdStageImportOptions;
 class FTokenizedMessage;
 
@@ -62,20 +62,20 @@ struct FMyUsdStageImportContext
 	FMyUsdLevelSequenceHelper LevelSequenceHelper;
 
 	UPROPERTY()
-	TObjectPtr<UMyUsdAssetCache3> UsdAssetCache;
+	TObjectPtr<UUsdAssetCache3> UsdAssetCache;
 
-	UE_DEPRECATED(5.5, "Use the 'UsdAssetCache' member instead, which is of the new UMyUsdAssetCache3 type")
+	UE_DEPRECATED(5.5, "Use the 'UsdAssetCache' member instead, which is of the new UUsdAssetCache3 type")
 	UPROPERTY()
-	TObjectPtr<UMyUsdAssetCache2> AssetCache;
+	TObjectPtr<UUsdAssetCache2> AssetCache;
 
 	PRAGMA_DISABLE_DEPRECATION_WARNINGS
 	/** Caches various information about prims that are expensive to query */
 	UE_DEPRECATED(5.3, "The import process now always builds its own InfoCache, so this member is no longer used")
-	TSharedPtr<FMyUsdInfoCache> InfoCache;
+	TSharedPtr<FUsdInfoCache> InfoCache;
 	PRAGMA_ENABLE_DEPRECATION_WARNINGS
 
 	/** Bounding box cache used for the USD stage in case we have to spawn bounds components */
-	TSharedPtr<UE::FMyUsdGeomBBoxCache> BBoxCache;
+	TSharedPtr<UE::FUsdGeomBBoxCache> BBoxCache;
 
 	/**
 	 * When parsing materials, we keep track of which primvar we mapped to which UV channel.
@@ -84,7 +84,7 @@ struct FMyUsdStageImportContext
 	TMap<FString, TMap<FString, int32>> MaterialToPrimvarToUVIndex;
 
 	/** USD Stage to import */
-	UE::FMyUsdStage Stage;
+	UE::FUsdStage Stage;
 
 	/** Object flags to apply to newly imported objects */
 	EObjectFlags ImportObjectFlags;
@@ -104,7 +104,7 @@ struct FMyUsdStageImportContext
 	/** We modify the stage with our meters per unit import option on import. If the stage was already open, we use this to undo the changes after
 	 * import */
 	double OriginalMetersPerUnit;
-	EMyUsdUpAxis OriginalUpAxis;
+	EUsdUpAxis OriginalUpAxis;
 
 	/** If we need to run GC after the import is complete */
 	bool bNeedsGarbageCollection;

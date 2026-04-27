@@ -575,8 +575,8 @@ void FMyUsdVolVolumeTranslator::CreateAssets()
 	}
 
 	// Don't bother generating assets if we're going to just draw some bounds for this prim instead
-	EMyUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(GetPrim());
-	if (DrawMode != EMyUsdDrawMode::Default)
+	EUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(GetPrim());
+	if (DrawMode != EUsdDrawMode::Default)
 	{
 		CreateAlternativeDrawModeAssets(DrawMode);
 		return;
@@ -704,7 +704,7 @@ void FMyUsdVolVolumeTranslator::CreateAssets()
 			{
 				// Set an asset import data into the texture as it won't do that on its own, and we would otherwise
 				// lose the source .vdb file information downstream
-				UMyUsdAssetImportData* ImportData = NewObject<UMyUsdAssetImportData>(SparseVolumeTexture);
+				UUsdAssetImportData* ImportData = NewObject<UUsdAssetImportData>(SparseVolumeTexture);
 				ImportData->UpdateFilenameOnly(VDBFilePath);
 
 				StreamableTexture->AssetImportData = ImportData;
@@ -715,8 +715,8 @@ void FMyUsdVolVolumeTranslator::CreateAssets()
 		{
 			Context->PrimLinkCache->LinkAssetToPrim(PrimPath, SparseVolumeTexture);
 
-			if (UMyUsdSparseVolumeTextureAssetUserData* UserData = UsdUnreal::ObjectUtils::GetOrCreateAssetUserData<
-					UMyUsdSparseVolumeTextureAssetUserData>(SparseVolumeTexture))
+			if (UUsdSparseVolumeTextureAssetUserData* UserData = UsdUnreal::ObjectUtils::GetOrCreateAssetUserData<
+					UUsdSparseVolumeTextureAssetUserData>(SparseVolumeTexture))
 			{
 				UserData->PrimPaths.AddUnique(VolumePrimPathString);
 				UserData->SourceOpenVDBAssetPrimPaths = SparseVolumeTextureInfo.InnerInfo->SourceOpenVDBAssetPrimPaths;
@@ -784,10 +784,10 @@ void FMyUsdVolVolumeTranslator::CreateAssets()
 		}
 	}
 	// Fall back to the default SVT material instead
-	const UMyUsdProjectSettings* ProjectSettings = nullptr;
+	const UUsdProjectSettings* ProjectSettings = nullptr;
 	if (!ReferenceMaterial)
 	{
-		ProjectSettings = GetDefault<UMyUsdProjectSettings>();
+		ProjectSettings = GetDefault<UUsdProjectSettings>();
 		if (!ProjectSettings)
 		{
 			return;
@@ -904,7 +904,7 @@ void FMyUsdVolVolumeTranslator::CreateAssets()
 	{
 		Context->PrimLinkCache->LinkAssetToPrim(PrimPath, MaterialInstance);
 
-		if (UMyUsdAssetUserData* UserData = UsdUnreal::ObjectUtils::GetOrCreateAssetUserData<UMyUsdAssetUserData>(MaterialInstance))
+		if (UUsdAssetUserData* UserData = UsdUnreal::ObjectUtils::GetOrCreateAssetUserData<UUsdAssetUserData>(MaterialInstance))
 		{
 			UserData->PrimPaths.AddUnique(VolumePrimPathString);
 
@@ -934,8 +934,8 @@ USceneComponent* FMyUsdVolVolumeTranslator::CreateComponents()
 	USceneComponent* SceneComponent = nullptr;
 
 #if WITH_EDITOR
-	EMyUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(GetPrim());
-	if (DrawMode == EMyUsdDrawMode::Default)
+	EUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(GetPrim());
+	if (DrawMode == EUsdDrawMode::Default)
 	{
 		if (Context->bAllowParsingSparseVolumeTextures)
 		{
@@ -991,18 +991,18 @@ void FMyUsdVolVolumeTranslator::UpdateComponents(USceneComponent* SceneComponent
 				{
 					if (SparseVolumeTexture->GetNumFrames() > 1)
 					{
-						if (UMyUsdSparseVolumeTextureAssetUserData* UserData = Cast<UMyUsdSparseVolumeTextureAssetUserData>(
+						if (UUsdSparseVolumeTextureAssetUserData* UserData = Cast<UUsdSparseVolumeTextureAssetUserData>(
 								UsdUnreal::ObjectUtils::GetAssetUserData(SparseVolumeTexture)
 							))
 						{
-							UE::FMyUsdPrim VolumePrim = GetPrim();
-							UE::FMyUsdStage Stage = VolumePrim.GetStage();
+							UE::FUsdPrim VolumePrim = GetPrim();
+							UE::FUsdStage Stage = VolumePrim.GetStage();
 
-							UE::FMyUsdPrim PrimForOffsetCalculation = VolumePrim;
+							UE::FUsdPrim PrimForOffsetCalculation = VolumePrim;
 							if (UserData->SourceOpenVDBAssetPrimPaths.Num() > 0)
 							{
 								const FString& FirstAssetPrimPath = UserData->SourceOpenVDBAssetPrimPaths[0];
-								UE::FMyUsdPrim FirstAssetPrim = Stage.GetPrimAtPath(UE::FSdfPath{*FirstAssetPrimPath});
+								UE::FUsdPrim FirstAssetPrim = Stage.GetPrimAtPath(UE::FSdfPath{*FirstAssetPrimPath});
 								if (FirstAssetPrim)
 								{
 									PrimForOffsetCalculation = FirstAssetPrim;
@@ -1052,8 +1052,8 @@ bool FMyUsdVolVolumeTranslator::CollapsesChildren(ECollapsingType CollapsingType
 {
 	// If we have a custom draw mode, it means we should draw bounds/cards/etc. instead
 	// of our entire subtree, which is basically the same thing as collapsing
-	EMyUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(GetPrim());
-	if (DrawMode != EMyUsdDrawMode::Default)
+	EUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(GetPrim());
+	if (DrawMode != EUsdDrawMode::Default)
 	{
 		return true;
 	}

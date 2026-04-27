@@ -160,7 +160,7 @@ void FMyUsdStageActorCustomization::CustomizeDetails(IDetailLayoutBuilder& Detai
 					};
 
 					// Add additional purposes from project settings
-					if (const UMyUsdProjectSettings* ProjectSettings = GetDefault<UMyUsdProjectSettings>())
+					if (const UUsdProjectSettings* ProjectSettings = GetDefault<UUsdProjectSettings>())
 					{
 						MaterialPurposeComboBoxItems.Reserve(MaterialPurposeComboBoxItems.Num() + ProjectSettings->AdditionalMaterialPurposes.Num());
 
@@ -241,7 +241,7 @@ void FMyUsdStageActorCustomization::CustomizeDetails(IDetailLayoutBuilder& Detai
 
 						if (bIsNew)
 						{
-							if (UMyUsdProjectSettings* ProjectSettings = GetMutableDefault<UMyUsdProjectSettings>())
+							if (UUsdProjectSettings* ProjectSettings = GetMutableDefault<UUsdProjectSettings>())
 							{
 								ProjectSettings->AdditionalMaterialPurposes.AddUnique(NewPurpose);
 								ProjectSettings->SaveConfig();

@@ -17,7 +17,7 @@ struct FMyUsdSaveDialogRowData
 {
 	bool bSaveLayer = true;
 	UE::FSdfLayerWeak Layer;
-	TArray<UE::FMyUsdStageWeak> ConsumerStages;
+	TArray<UE::FUsdStageWeak> ConsumerStages;
 	TSet<AMyUsdStageActor*> ConsumerActors;
 };
 

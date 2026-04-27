@@ -29,7 +29,7 @@ public:
 		using namespace UE::UniversalObjectLocator;
 
 		IUniversalObjectLocatorModule& UolModule = FModuleManager::Get().LoadModuleChecked<IUniversalObjectLocatorModule>("UniversalObjectLocator");
-		FFragmentTypeParameters Parameters{"usdprim", NSLOCTEXT("MyUSDStageModule", "UsdPrimLocatorFragment", "UsdPrim")};
+		FFragmentTypeParameters Parameters{"usdprim", NSLOCTEXT("USDStageModule", "UsdPrimLocatorFragment", "UsdPrim")};
 		Parameters.PrimaryEditorType = "UsdPrim";
 		FMyUsdPrimLocatorFragment::FragmentType = UolModule.RegisterFragmentType<FMyUsdPrimLocatorFragment>(Parameters);
 

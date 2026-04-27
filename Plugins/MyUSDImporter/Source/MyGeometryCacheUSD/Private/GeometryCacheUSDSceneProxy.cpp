@@ -1,8 +1,8 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "MyGeometryCacheUSDSceneProxy.h"
+#include "GeometryCacheUSDSceneProxy.h"
 #include "GeometryCacheTrackUSD.h"
-#include "MyGeometryCacheUSDComponent.h"
+#include "GeometryCacheUSDComponent.h"
 #include "SceneInterface.h"
 
 FGeometryCacheUsdSceneProxy::FGeometryCacheUsdSceneProxy(UGeometryCacheUsdComponent* Component)

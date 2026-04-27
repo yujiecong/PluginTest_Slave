@@ -9,14 +9,14 @@
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FVtValueTests, "Editor.Import.USD.VtValueConversions", EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
-using FMyUsdMetadataMap = TMap<FString, UE::FVtValue>;  // Can't have a comma in the SPECIALIZE() argument list or the preprocessor thinks it's two arguments
+using FUsdMetadataMap = TMap<FString, UE::FVtValue>;  // Can't have a comma in the SPECIALIZE() argument list or the preprocessor thinks it's two arguments
 
 bool operator==(const FVector2DHalf& A, const FVector2DHalf& B)
 {
 	return A.X == B.X && A.Y == B.Y;
 }
 
-bool operator==(const FMyUsdMetadataMap& A, const FMyUsdMetadataMap& B)
+bool operator==(const FUsdMetadataMap& A, const FUsdMetadataMap& B)
 {
 	return A.OrderIndependentCompareEqual(B);
 }
@@ -74,7 +74,7 @@ bool FVtValueTests::RunTest(const FString& Parameters)
 	TEST_TYPE(FVector4h, FVector4f(150.0f, -203.0f, 4500.7f, -2.0f));
 	TEST_TYPE(FIntRect, FIntRect(50, -6, 200, 2));
 
-	FMyUsdMetadataMap MetadataMap;
+	FUsdMetadataMap MetadataMap;
 	UE::FVtValue First;
 	First.Set<int32>(4651);
 	UE::FVtValue Second;
@@ -83,7 +83,7 @@ bool FVtValueTests::RunTest(const FString& Parameters)
 	MetadataMap.Add(TEXT("Firstkey"), First);
 	MetadataMap.Add(TEXT("SecondKey"), Second);
 	MetadataMap.Add(TEXT("ThirdKey"), Third);
-	TEST_TYPE(FMyUsdMetadataMap, MetadataMap);
+	TEST_TYPE(FUsdMetadataMap, MetadataMap);
 
 	TEST_TYPE(TArray<bool>, TArray<bool>({false, true, true, false}));
 	TEST_TYPE(TArray<uint8>, TArray<uint8>({0x7f, 65}));

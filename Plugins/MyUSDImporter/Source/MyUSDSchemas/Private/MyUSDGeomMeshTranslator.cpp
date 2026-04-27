@@ -106,9 +106,9 @@ namespace UsdGeomMeshTranslatorImpl
 {
 	bool ShouldEnableNanite(
 		const TArray<FMeshDescription>& LODIndexToMeshDescription,
-		const TArray<UsdUtils::FMyUsdPrimMaterialAssignmentInfo>& LODIndexToMaterialInfo,
-		const FMyUsdSchemaTranslationContext& Context,
-		const UE::FMyUsdPrim& Prim
+		const TArray<UsdUtils::FUsdPrimMaterialAssignmentInfo>& LODIndexToMaterialInfo,
+		const FUsdSchemaTranslationContext& Context,
+		const UE::FUsdPrim& Prim
 	)
 	{
 		if (LODIndexToMeshDescription.Num() < 1)
@@ -200,10 +200,10 @@ namespace UsdGeomMeshTranslatorImpl
 	/** Returns true if material infos have changed on the StaticMesh */
 	bool ProcessStaticMeshMaterials(
 		const pxr::UsdPrim& UsdPrim,
-		const TArray<UsdUtils::FMyUsdPrimMaterialAssignmentInfo>& LODIndexToMaterialInfo,
+		const TArray<UsdUtils::FUsdPrimMaterialAssignmentInfo>& LODIndexToMaterialInfo,
 		UStaticMesh& StaticMesh,
-		UMyUsdAssetCache3& AssetCache,
-		FMyUsdPrimLinkCache& PrimLinkCache,
+		UUsdAssetCache3& AssetCache,
+		FUsdPrimLinkCache& PrimLinkCache,
 		float Time,
 		EObjectFlags Flags,
 		bool bShareAssetsForIdenticalPrims
@@ -217,7 +217,7 @@ namespace UsdGeomMeshTranslatorImpl
 			ExistingAssignments.Add(StaticMaterial.MaterialInterface);
 		}
 
-		TMap<const UsdUtils::FMyUsdPrimMaterialSlot*, UMaterialInterface*> ResolvedMaterials = MeshTranslationImpl::ResolveMaterialAssignmentInfo(
+		TMap<const UsdUtils::FUsdPrimMaterialSlot*, UMaterialInterface*> ResolvedMaterials = MeshTranslationImpl::ResolveMaterialAssignmentInfo(
 			UsdPrim,
 			LODIndexToMaterialInfo,
 			AssetCache,
@@ -229,11 +229,11 @@ namespace UsdGeomMeshTranslatorImpl
 		uint32 StaticMeshSlotIndex = 0;
 		for (int32 LODIndex = 0; LODIndex < LODIndexToMaterialInfo.Num(); ++LODIndex)
 		{
-			const TArray<UsdUtils::FMyUsdPrimMaterialSlot>& LODSlots = LODIndexToMaterialInfo[LODIndex].Slots;
+			const TArray<UsdUtils::FUsdPrimMaterialSlot>& LODSlots = LODIndexToMaterialInfo[LODIndex].Slots;
 
 			for (int32 LODSlotIndex = 0; LODSlotIndex < LODSlots.Num(); ++LODSlotIndex, ++StaticMeshSlotIndex)
 			{
-				const UsdUtils::FMyUsdPrimMaterialSlot& Slot = LODSlots[LODSlotIndex];
+				const UsdUtils::FUsdPrimMaterialSlot& Slot = LODSlots[LODSlotIndex];
 
 				UMaterialInterface* Material = UMaterial::GetDefaultMaterial(MD_Surface);
 				if (UMaterialInterface** FoundMaterial = ResolvedMaterials.Find(&Slot))
@@ -305,12 +305,12 @@ namespace UsdGeomMeshTranslatorImpl
 	// here). We use a separate function for this because there is a very specific set of conditions where we successfully can do this, and we want to
 	// fall back to just parsing UsdMesh as a simple single-LOD mesh if we fail.
 	bool TryLoadingMultipleLODs(
-		const UE::FMyUsdPrim& MeshPrim,
+		const UE::FUsdPrim& MeshPrim,
 		TArray<FMeshDescription>& OutLODIndexToMeshDescription,
-		TArray<UsdUtils::FMyUsdPrimMaterialAssignmentInfo>& OutLODIndexToMaterialInfo,
-		FMyUsdCombinedPrimMetadata& OutLODMetadata,
-		const UsdToUnreal::FMyUsdMeshConversionOptions& Options,
-		const FMyUsdMetadataImportOptions& MetadataOptions
+		TArray<UsdUtils::FUsdPrimMaterialAssignmentInfo>& OutLODIndexToMaterialInfo,
+		FUsdCombinedPrimMetadata& OutLODMetadata,
+		const UsdToUnreal::FUsdMeshConversionOptions& Options,
+		const FUsdMetadataImportOptions& MetadataOptions
 	)
 	{
 		if (!MeshPrim)
@@ -318,12 +318,12 @@ namespace UsdGeomMeshTranslatorImpl
 			return false;
 		}
 
-		UE::FMyUsdPrim ParentPrim = MeshPrim.GetParent();
+		UE::FUsdPrim ParentPrim = MeshPrim.GetParent();
 
 		TMap<int32, FMeshDescription> LODIndexToMeshDescriptionMap;
-		TMap<int32, UsdUtils::FMyUsdPrimMaterialAssignmentInfo> LODIndexToMaterialInfoMap;
+		TMap<int32, UsdUtils::FUsdPrimMaterialAssignmentInfo> LODIndexToMaterialInfoMap;
 
-		UsdToUnreal::FMyUsdMeshConversionOptions OptionsCopy = Options;
+		UsdToUnreal::FUsdMeshConversionOptions OptionsCopy = Options;
 
 		TSet<FString> AllPrimvars;
 		TSet<FString> PreferredPrimvars;
@@ -366,7 +366,7 @@ namespace UsdGeomMeshTranslatorImpl
 			FMeshDescription TempMeshDescription;
 
 			// When merging slots we combine all our assignments on a single MaterialAssignmentInfo
-			UsdUtils::FMyUsdPrimMaterialAssignmentInfo& TempMaterialInfo = LODIndexToMaterialInfoMap.FindOrAdd(
+			UsdUtils::FUsdPrimMaterialAssignmentInfo& TempMaterialInfo = LODIndexToMaterialInfoMap.FindOrAdd(
 				Options.bMergeIdenticalMaterialSlots ? 0 : LODIndex
 			);
 			TempMaterialInfo.PrimvarToUVIndex = PrimvarToUVIndex;
@@ -443,7 +443,7 @@ namespace UsdGeomMeshTranslatorImpl
 
 			LODIndexToMaterialInfoMap.KeySort(TLess<int32>());
 			OutLODIndexToMaterialInfo.Reset(LODIndexToMaterialInfoMap.Num());
-			for (TPair<int32, UsdUtils::FMyUsdPrimMaterialAssignmentInfo>& Entry : LODIndexToMaterialInfoMap)
+			for (TPair<int32, UsdUtils::FUsdPrimMaterialAssignmentInfo>& Entry : LODIndexToMaterialInfoMap)
 			{
 				const int32 OldLODIndex = Entry.Key;
 				OutLODIndexToMaterialInfo.Add(MoveTemp(LODIndexToMaterialInfoMap[OldLODIndex]));
@@ -454,12 +454,12 @@ namespace UsdGeomMeshTranslatorImpl
 	}
 
 	void LoadMeshDescriptions(
-		UE::FMyUsdPrim MeshPrim,
+		UE::FUsdPrim MeshPrim,
 		TArray<FMeshDescription>& OutLODIndexToMeshDescription,
-		TArray<UsdUtils::FMyUsdPrimMaterialAssignmentInfo>& OutLODIndexToMaterialInfo,
-		FMyUsdCombinedPrimMetadata& OutLODMetadata,
-		const UsdToUnreal::FMyUsdMeshConversionOptions& Options,
-		const FMyUsdMetadataImportOptions& MetadataOptions,
+		TArray<UsdUtils::FUsdPrimMaterialAssignmentInfo>& OutLODIndexToMaterialInfo,
+		FUsdCombinedPrimMetadata& OutLODMetadata,
+		const UsdToUnreal::FUsdMeshConversionOptions& Options,
+		const FUsdMetadataImportOptions& MetadataOptions,
 		bool bInterpretLODs
 	)
 	{
@@ -468,7 +468,7 @@ namespace UsdGeomMeshTranslatorImpl
 			return;
 		}
 
-		UE::FMyUsdStage Stage = MeshPrim.GetStage();
+		UE::FUsdStage Stage = MeshPrim.GetStage();
 		UE::FSdfPath Path = MeshPrim.GetPrimPath();
 
 		bool bInterpretedLODs = false;
@@ -497,20 +497,20 @@ namespace UsdGeomMeshTranslatorImpl
 		{
 			// TODO: Handle resetXformOp here
 			bool bResetXformStack = false;
-			bSuccess &= UsdToUnreal::ConvertXformable(Stage, UE::FMyUsdTyped{MeshPrim}, MeshTransform, Options.TimeCode.GetValue(), &bResetXformStack);
+			bSuccess &= UsdToUnreal::ConvertXformable(Stage, UE::FUsdTyped{MeshPrim}, MeshTransform, Options.TimeCode.GetValue(), &bResetXformStack);
 		}
 
 		if (!bInterpretedLODs)
 		{
 			FMeshDescription TempMeshDescription;
-			UsdUtils::FMyUsdPrimMaterialAssignmentInfo TempMaterialInfo;
+			UsdUtils::FUsdPrimMaterialAssignmentInfo TempMaterialInfo;
 
 			FStaticMeshAttributes StaticMeshAttributes(TempMeshDescription);
 			StaticMeshAttributes.Register();
 
 			if (bSuccess)
 			{
-				UsdToUnreal::FMyUsdMeshConversionOptions OptionsCopy = Options;
+				UsdToUnreal::FUsdMeshConversionOptions OptionsCopy = Options;
 				OptionsCopy.AdditionalTransform = MeshTransform * Options.AdditionalTransform;
 				OptionsCopy.bMergeIdenticalMaterialSlots = false;	 // We only merge for collapsed meshes
 
@@ -541,9 +541,9 @@ namespace UsdGeomMeshTranslatorImpl
 
 	void GetCollisionSettings(
 		const pxr::UsdPrim& InUsdPrim,
-		EMyUsdCollisionType InFallbackCollisionType,
+		EUsdCollisionType InFallbackCollisionType,
 		bool& OutEnableCollision,
-		EMyUsdCollisionType& OutApproximationType
+		EUsdCollisionType& OutApproximationType
 	)
 	{
 		bool bPrimEnablesCollision = false;
@@ -559,11 +559,11 @@ namespace UsdGeomMeshTranslatorImpl
 		static IConsoleVariable* CVar = IConsoleManager::Get().FindConsoleVariable(TEXT("USD.EnableCollision"));
 		const bool bCvarEnablesCollision = CVar && CVar->GetBool();
 
-		OutEnableCollision = bCvarEnablesCollision && (bPrimEnablesCollision || InFallbackCollisionType != EMyUsdCollisionType::None);
+		OutEnableCollision = bCvarEnablesCollision && (bPrimEnablesCollision || InFallbackCollisionType != EUsdCollisionType::None);
 
 		if (!OutEnableCollision)
 		{
-			OutApproximationType = EMyUsdCollisionType::None;	   // It doesn't matter, so let's always return None for consistency (helps with hashing)
+			OutApproximationType = EUsdCollisionType::None;	   // It doesn't matter, so let's always return None for consistency (helps with hashing)
 			return;
 		}
 
@@ -571,9 +571,9 @@ namespace UsdGeomMeshTranslatorImpl
 	}
 
 	UStaticMesh* CreateStaticMesh(
-		const UE::FMyUsdPrim& Prim,
+		const UE::FUsdPrim& Prim,
 		TArray<FMeshDescription>& LODIndexToMeshDescription,
-		FMyUsdSchemaTranslationContext& Context,
+		FUsdSchemaTranslationContext& Context,
 		const FString& MeshName,
 		const bool bShouldEnableNanite,
 		bool& bOutIsNew
@@ -628,7 +628,7 @@ namespace UsdGeomMeshTranslatorImpl
 			// We don't want to reuse static meshes if they need different collision shapes
 			{
 				bool bIsCollisionEnabled = false;
-				EMyUsdCollisionType Approximation = EMyUsdCollisionType::None;
+				EUsdCollisionType Approximation = EUsdCollisionType::None;
 				GetCollisionSettings(Prim, Context.FallbackCollisionType, bIsCollisionEnabled, Approximation);
 
 				SHA1.Update(reinterpret_cast<const uint8*>(&bIsCollisionEnabled), sizeof(bIsCollisionEnabled));
@@ -1311,8 +1311,8 @@ namespace UE::UsdCollision::Private
 	void CollectCustomCollisionShapes(const pxr::UsdPrim& UsdPrim, FKAggregateGeom& CollisionShapes)
 	{
 		using namespace UsdUtils;
-		UsdToUnreal::FMyUsdMeshConversionOptions Options;
-		Options.PurposesToLoad = EMyUsdPurpose::Guide;	// custom collision mesh must have guide purpose
+		UsdToUnreal::FUsdMeshConversionOptions Options;
+		Options.PurposesToLoad = EUsdPurpose::Guide;	// custom collision mesh must have guide purpose
 		Options.bMergeIdenticalMaterialSlots = false;
 
 		FTransform ParentTransform;
@@ -1323,7 +1323,7 @@ namespace UE::UsdCollision::Private
 			if (UsdUtils::IsCollisionMesh(ChildPrim))
 			{
 				FMeshDescription MeshDescription;
-				UsdUtils::FMyUsdPrimMaterialAssignmentInfo MaterialAssignments;
+				UsdUtils::FUsdPrimMaterialAssignmentInfo MaterialAssignments;
 
 				FStaticMeshAttributes MeshAttributes(MeshDescription);
 				MeshAttributes.Register();
@@ -1338,41 +1338,41 @@ namespace UE::UsdCollision::Private
 				if (UsdToUnreal::ConvertGeomMesh(UsdMesh, MeshDescription, MaterialAssignments, Options))
 				{
 					// By default, use the custom mesh as convex hull, which takes care of the UCX_ prefix
-					EMyUsdCollisionType Approximation{EMyUsdCollisionType::ConvexHull};
+					EUsdCollisionType Approximation{EUsdCollisionType::ConvexHull};
 
 					// Use the FBX custom collision name convention as a hint
 					FString PrimName(UsdToUnreal::ConvertToken(ChildPrim.GetName()));
 					if (PrimName.StartsWith(TEXT("UBX_")))
 					{
-						Approximation = EMyUsdCollisionType::Cube;
+						Approximation = EUsdCollisionType::Cube;
 					}
 					else if (PrimName.StartsWith(TEXT("UCP_")))
 					{
-						Approximation = EMyUsdCollisionType::Capsule;
+						Approximation = EUsdCollisionType::Capsule;
 					}
 					else if (PrimName.StartsWith(TEXT("USP_")))
 					{
-						Approximation = EMyUsdCollisionType::Sphere;
+						Approximation = EUsdCollisionType::Sphere;
 					}
 
 					switch (Approximation)
 					{
-						case EMyUsdCollisionType::ConvexHull:
+						case EUsdCollisionType::ConvexHull:
 						{
 							GenerateKDopAsSimpleCollision(MeshDescription, KDopDir18, CollisionShapes);
 							break;
 						}
-						case EMyUsdCollisionType::Cube:
+						case EUsdCollisionType::Cube:
 						{
 							GenerateBoxAsSimpleCollision(MeshDescription, CollisionShapes);
 							break;
 						}
-						case EMyUsdCollisionType::Capsule:
+						case EUsdCollisionType::Capsule:
 						{
 							GenerateSphylAsSimpleCollision(MeshDescription, CollisionShapes);
 							break;
 						}
-						case EMyUsdCollisionType::Sphere:
+						case EUsdCollisionType::Sphere:
 						{
 							GenerateSphereAsSimpleCollision(MeshDescription, CollisionShapes);
 							break;
@@ -1383,7 +1383,7 @@ namespace UE::UsdCollision::Private
 		}
 	}
 
-	void SetupSimpleCollision(const pxr::UsdPrim& UsdPrim, UStaticMesh& StaticMesh, EMyUsdCollisionType FallbackCollisionType)
+	void SetupSimpleCollision(const pxr::UsdPrim& UsdPrim, UStaticMesh& StaticMesh, EUsdCollisionType FallbackCollisionType)
 	{
 		using namespace UsdUtils;
 
@@ -1400,7 +1400,7 @@ namespace UE::UsdCollision::Private
 		}
 
 		bool bIsCollisionEnabled = false;
-		EMyUsdCollisionType Approximation = EMyUsdCollisionType::None;
+		EUsdCollisionType Approximation = EUsdCollisionType::None;
 		UsdGeomMeshTranslatorImpl::GetCollisionSettings(UsdPrim, FallbackCollisionType, bIsCollisionEnabled, Approximation);
 
 		if (!bIsCollisionEnabled)
@@ -1424,7 +1424,7 @@ namespace UE::UsdCollision::Private
 
 		switch (Approximation)
 		{
-			case EMyUsdCollisionType::None:
+			case EUsdCollisionType::None:
 			{
 				// No approximation but allow for custom collision shapes
 				// If there are no custom collision shapes, then use complex as simple
@@ -1441,8 +1441,8 @@ namespace UE::UsdCollision::Private
 				break;
 			}
 #if WITH_EDITOR
-			case EMyUsdCollisionType::ConvexDecomposition:
-			case EMyUsdCollisionType::MeshSimplification:
+			case EUsdCollisionType::ConvexDecomposition:
+			case EUsdCollisionType::MeshSimplification:
 			{
 				// Could use IMeshReduction for MeshSimplification, but it will get converted to a single convex hull
 				// so the result would be not as good as convex decomposition anyway
@@ -1471,27 +1471,27 @@ namespace UE::UsdCollision::Private
 				break;
 			}
 #endif	  // WITH_EDITOR
-			case EMyUsdCollisionType::ConvexHull:
+			case EUsdCollisionType::ConvexHull:
 			{
 				GenerateKDopAsSimpleCollision(MeshData, KDopDir18, BodySetup->AggGeom);
 				break;
 			}
-			case EMyUsdCollisionType::Sphere:
+			case EUsdCollisionType::Sphere:
 			{
 				GenerateSphereAsSimpleCollision(MeshData, BodySetup->AggGeom);
 				break;
 			}
-			case EMyUsdCollisionType::Cube:
+			case EUsdCollisionType::Cube:
 			{
 				GenerateBoxAsSimpleCollision(MeshData, BodySetup->AggGeom);
 				break;
 			}
-			case EMyUsdCollisionType::Capsule:
+			case EUsdCollisionType::Capsule:
 			{
 				GenerateSphylAsSimpleCollision(MeshData, BodySetup->AggGeom);
 				break;
 			}
-			case EMyUsdCollisionType::CustomMesh:
+			case EUsdCollisionType::CustomMesh:
 			{
 				ConvertMeshToSimpleCollision(MeshData, BodySetup->AggGeom);
 				break;
@@ -1512,7 +1512,7 @@ namespace UE::UsdCollision::Private
 }	 // namespace UE::UsdCollision::Private
 
 FBaseBuildStaticMeshTaskChain::FBaseBuildStaticMeshTaskChain(
-	const TSharedRef<FMyUsdSchemaTranslationContext>& InContext,
+	const TSharedRef<FUsdSchemaTranslationContext>& InContext,
 	const UE::FSdfPath& InPrimPath
 )
 	: PrimPath(InPrimPath)
@@ -1571,7 +1571,7 @@ void FBaseBuildStaticMeshTaskChain::SetupTasks()
 			UWorld* World = Context->Level ? Context->Level->GetWorld() : nullptr;
 			if (!World)
 			{
-				World = IMyUsdClassesModule::GetCurrentWorld();
+				World = IUsdClassesModule::GetCurrentWorld();
 			}
 			if (World)
 			{
@@ -1624,7 +1624,7 @@ void FBaseBuildStaticMeshTaskChain::SetupTasks()
 }
 
 FBuildStaticMeshTaskChain::FBuildStaticMeshTaskChain(
-	const TSharedRef<FMyUsdSchemaTranslationContext>& InContext,
+	const TSharedRef<FUsdSchemaTranslationContext>& InContext,
 	const UE::FSdfPath& InPrimPath,
 	const TOptional<UE::FSdfPath>& InAlternativePrimToLinkAssetsTo
 )
@@ -1637,7 +1637,7 @@ FBuildStaticMeshTaskChain::FBuildStaticMeshTaskChain(
 void FBuildStaticMeshTaskChain::SetupTasks()
 {
 	// Ignore meshes from disabled purposes
-	if (!EnumHasAllFlags(Context->PurposesToLoad, IMyUsdPrim::GetPurpose(GetPrim())))
+	if (!EnumHasAllFlags(Context->PurposesToLoad, IUsdPrim::GetPurpose(GetPrim())))
 	{
 		return;
 	}
@@ -1693,7 +1693,7 @@ void FBuildStaticMeshTaskChain::SetupTasks()
 				   Context->PrimLinkCache->LinkAssetToPrim(TargetPath, StaticMesh);
 			   }
 
-			   if (UMyUsdMeshAssetUserData* UserData = UsdUnreal::ObjectUtils::GetOrCreateAssetUserData<UMyUsdMeshAssetUserData>(StaticMesh))
+			   if (UUsdMeshAssetUserData* UserData = UsdUnreal::ObjectUtils::GetOrCreateAssetUserData<UUsdMeshAssetUserData>(StaticMesh))
 			   {
 				   if (LODIndexToMaterialInfo.Num() > 0)
 				   {
@@ -1774,7 +1774,7 @@ void FBuildStaticMeshTaskChain::SetupTasks()
 }
 
 FGeomMeshCreateAssetsTaskChain::FGeomMeshCreateAssetsTaskChain(
-	const TSharedRef<FMyUsdSchemaTranslationContext>& InContext,
+	const TSharedRef<FUsdSchemaTranslationContext>& InContext,
 	const UE::FSdfPath& InPrimPath,
 	const TOptional<UE::FSdfPath>& AlternativePrimToLinkAssetsTo,
 	const FTransform& InAdditionalTransform
@@ -1814,7 +1814,7 @@ void FGeomMeshCreateAssetsTaskChain::SetupTasks()
 			   MaterialPurposeToken = UnrealToUsd::ConvertToken(*Context->MaterialPurpose.ToString()).Get();
 		   }
 
-		   UsdToUnreal::FMyUsdMeshConversionOptions Options;
+		   UsdToUnreal::FUsdMeshConversionOptions Options;
 		   Options.TimeCode = Context->Time;
 		   Options.PurposesToLoad = Context->PurposesToLoad;
 		   Options.RenderContext = RenderContextToken;
@@ -1897,11 +1897,11 @@ void FMyUsdGeomMeshTranslator::CreateAssets()
 		return;
 	}
 
-	UE::FMyUsdPrim Prim = GetPrim();
+	UE::FUsdPrim Prim = GetPrim();
 
 	// Don't bother generating assets if we're going to just draw some bounds for this prim instead
-	EMyUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(Prim);
-	if (DrawMode != EMyUsdDrawMode::Default)
+	EUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(Prim);
+	if (DrawMode != EUsdDrawMode::Default)
 	{
 		CreateAlternativeDrawModeAssets(DrawMode);
 		return;
@@ -1933,8 +1933,8 @@ USceneComponent* FMyUsdGeomMeshTranslator::CreateComponents()
 	// It's not great that we have to check for an alternate draw mode here and Super::CreateComponents will
 	// also do it, however we must check for ShouldSkipSkinnablePrim before we call Super::CreateComponents,
 	// and we need the alt draw mode check to take priority over ShouldSkipSkinnablePrim...
-	EMyUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(GetPrim());
-	if (DrawMode == EMyUsdDrawMode::Default)
+	EUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(GetPrim());
+	if (DrawMode == EUsdDrawMode::Default)
 	{
 		const bool bCheckForComponent = true;
 		if (ShouldSkipSkinnablePrim(bCheckForComponent))
@@ -1950,7 +1950,7 @@ void FMyUsdGeomMeshTranslator::UpdateComponents(USceneComponent* SceneComponent)
 {
 	// If we're a bounds component we don't need to handle any mesh stuff, as drawMode takes priority
 	// over even checking for whether we're skinned or not
-	if (Cast<UMyUsdDrawModeComponent>(SceneComponent))
+	if (Cast<UUsdDrawModeComponent>(SceneComponent))
 	{
 		Super::UpdateComponents(SceneComponent);
 		return;
@@ -1986,8 +1986,8 @@ bool FMyUsdGeomMeshTranslator::CollapsesChildren(ECollapsingType CollapsingType)
 {
 	// If we have a custom draw mode, it means we should draw bounds/cards/etc. instead
 	// of our entire subtree, which is basically the same thing as collapsing
-	EMyUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(GetPrim());
-	if (DrawMode != EMyUsdDrawMode::Default)
+	EUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(GetPrim());
+	if (DrawMode != EUsdDrawMode::Default)
 	{
 		return true;
 	}
@@ -2025,7 +2025,7 @@ bool FMyUsdGeomMeshTranslator::CanBeCollapsed(ECollapsingType CollapsingType) co
 		return false;
 	}
 
-	UE::FMyUsdPrim Prim = GetPrim();
+	UE::FUsdPrim Prim = GetPrim();
 
 	// Don't collapse if our final UStaticMesh would have multiple LODs
 	if (Context->bAllowInterpretingLODs && CollapsingType == ECollapsingType::Assets && UsdUtils::IsGeomMeshALOD(Prim))
@@ -2110,7 +2110,7 @@ TSet<UE::FSdfPath> FMyUsdGeomMeshTranslator::CollectAuxiliaryPrims() const
 
 bool FMyUsdGeomMeshTranslator::IsMeshPrim() const
 {
-	UE::FMyUsdPrim Prim = GetPrim();
+	UE::FUsdPrim Prim = GetPrim();
 	if (Prim && (Prim.IsA(TEXT("Mesh")) || (Context->bAllowInterpretingLODs && UsdUtils::DoesPrimContainMeshLODs(Prim))))
 	{
 		return true;

@@ -47,7 +47,7 @@ namespace UE::AnimSequenceExporterUSD::Private
 			return;
 		}
 
-		const FString ClassName = IMyUsdClassesModule::GetClassNameForAnalytics(Asset);
+		const FString ClassName = IUsdClassesModule::GetClassNameForAnalytics(Asset);
 
 		TArray<FAnalyticsEventAttribute> EventAttributes;
 		EventAttributes.Emplace(TEXT("AssetType"), ClassName);
@@ -57,7 +57,7 @@ namespace UE::AnimSequenceExporterUSD::Private
 			UsdUtils::AddAnalyticsAttributes(*Options, EventAttributes);
 		}
 
-		IMyUsdClassesModule::SendAnalytics(
+		IUsdClassesModule::SendAnalytics(
 			MoveTemp(EventAttributes),
 			FString::Printf(TEXT("Export.%s"), *ClassName),
 			bAutomated,
@@ -248,12 +248,12 @@ bool UAnimSequenceExporterUSD::ExportBinary(
 			// Don't use the stage cache here as we want this stage to close within this scope in case
 			// we have to overwrite its files due to e.g. missing payload or anything like that
 			const bool bUseStageCache = false;
-			const EMyUsdInitialLoadSet InitialLoadSet = EMyUsdInitialLoadSet::LoadNone;
-			if (UE::FMyUsdStage TempStage = UnrealUSDWrapper::OpenStage(*AnimSequenceFile, InitialLoadSet, bUseStageCache))
+			const EUsdInitialLoadSet InitialLoadSet = EUsdInitialLoadSet::LoadNone;
+			if (UE::FUsdStage TempStage = UnrealUSDWrapper::OpenStage(*AnimSequenceFile, InitialLoadSet, bUseStageCache))
 			{
-				if (UE::FMyUsdPrim SkelAnimPrim = TempStage.GetPrimAtPath(SkelAnimPath))
+				if (UE::FUsdPrim SkelAnimPrim = TempStage.GetPrimAtPath(SkelAnimPath))
 				{
-					FMyUsdUnrealAssetInfo Info = UsdUtils::GetPrimAssetInfo(SkelAnimPrim);
+					FUsdUnrealAssetInfo Info = UsdUtils::GetPrimAssetInfo(SkelAnimPrim);
 
 					const bool bVersionMatches = !Info.Version.IsEmpty() && Info.Version == AnimSequenceVersion;
 
@@ -278,14 +278,14 @@ bool UAnimSequenceExporterUSD::ExportBinary(
 
 	double StartTime = FPlatformTime::Cycles64();
 
-	UE::FMyUsdStage AnimationStage = UnrealUSDWrapper::NewStage(*AnimSequenceFile);
+	UE::FUsdStage AnimationStage = UnrealUSDWrapper::NewStage(*AnimSequenceFile);
 	if (!AnimationStage)
 	{
 		return false;
 	}
 
-	UE::FMyUsdPrim SkelRootPrim;
-	UE::FMyUsdPrim SkelAnimPrim;
+	UE::FUsdPrim SkelRootPrim;
+	UE::FUsdPrim SkelAnimPrim;
 
 	// Haven't exported the SkeletalMesh, just make a stage with a SkelAnimation prim
 	if (MeshAssetFile.IsEmpty())
@@ -316,7 +316,7 @@ bool UAnimSequenceExporterUSD::ExportBinary(
 			}
 
 			UE::FSdfPath SkeletonPath = SkelRootPath.AppendChild(UnrealIdentifiers::ExportedSkeletonPrimName);
-			UE::FMyUsdPrim SkeletonPrim = AnimationStage.DefinePrim(SkeletonPath, TEXT("Skeleton"));
+			UE::FUsdPrim SkeletonPrim = AnimationStage.DefinePrim(SkeletonPath, TEXT("Skeleton"));
 			if (!SkeletonPrim)
 			{
 				return false;
@@ -373,7 +373,7 @@ bool UAnimSequenceExporterUSD::ExportBinary(
 
 	if (Options->MetadataOptions.bExportAssetInfo)
 	{
-		FMyUsdUnrealAssetInfo Info;
+		FUsdUnrealAssetInfo Info;
 		Info.Name = AnimSequence->GetName();
 		Info.Identifier = AnimSequenceFile;
 		Info.Version = AnimSequenceVersion;
@@ -387,7 +387,7 @@ bool UAnimSequenceExporterUSD::ExportBinary(
 
 	if (Options->MetadataOptions.bExportAssetMetadata)
 	{
-		if (UMyUsdAssetUserData* UserData = UsdUnreal::ObjectUtils::GetAssetUserData(AnimSequence))
+		if (UUsdAssetUserData* UserData = UsdUnreal::ObjectUtils::GetAssetUserData(AnimSequence))
 		{
 			UnrealToUsd::ConvertMetadata(
 				UserData,

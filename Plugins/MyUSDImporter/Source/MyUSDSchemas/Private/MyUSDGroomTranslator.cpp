@@ -81,10 +81,10 @@ namespace UE::UsdGroomTranslator::Private
 	}
 }	 // namespace UE::UsdGroomTranslator::Private
 
-class FMyUsdGroomCreateAssetsTaskChain : public FMyUsdSchemaTranslatorTaskChain
+class FMyUsdGroomCreateAssetsTaskChain : public FUsdSchemaTranslatorTaskChain
 {
 public:
-	explicit FMyUsdGroomCreateAssetsTaskChain(const TSharedRef<FMyUsdSchemaTranslationContext>& InContext, const UE::FSdfPath& InPrimPath)
+	explicit FMyUsdGroomCreateAssetsTaskChain(const TSharedRef<FUsdSchemaTranslationContext>& InContext, const UE::FSdfPath& InPrimPath)
 		: PrimPath(InPrimPath)
 		, Context(InContext)
 	{
@@ -98,7 +98,7 @@ public:
 protected:
 
 	UE::FSdfPath PrimPath;
-	TSharedRef<FMyUsdSchemaTranslationContext> Context;
+	TSharedRef<FUsdSchemaTranslationContext> Context;
 
 	FHairDescription HairDescription;
 
@@ -109,7 +109,7 @@ protected:
 	FString PrefixedGroomCacheHash;
 
 protected:
-	UE::FMyUsdPrim GetPrim() const
+	UE::FUsdPrim GetPrim() const
 	{
 		return Context->Stage.GetPrimAtPath(PrimPath);
 	}
@@ -179,7 +179,7 @@ protected:
 					&bGroomAssetIsNew
 				);
 
-				if (UMyUsdAssetUserData* UserData = UsdUnreal::ObjectUtils::GetOrCreateAssetUserData(GroomAsset))
+				if (UUsdAssetUserData* UserData = UsdUnreal::ObjectUtils::GetOrCreateAssetUserData(GroomAsset))
 				{
 					UserData->PrimPaths.AddUnique(PrimPathString);
 
@@ -275,7 +275,7 @@ protected:
 				{
 					Context->PrimLinkCache->LinkAssetToPrim(PrimPath, GroomCache);
 
-					if (UMyUsdAssetUserData* UserData = UsdUnreal::ObjectUtils::GetOrCreateAssetUserData(GroomCache))
+					if (UUsdAssetUserData* UserData = UsdUnreal::ObjectUtils::GetOrCreateAssetUserData(GroomCache))
 					{
 						UserData->PrimPaths.AddUnique(PrimPath.GetString());
 
@@ -455,8 +455,8 @@ void FMyUsdGroomTranslator::CreateAssets()
 	}
 
 	// Don't bother generating assets if we're going to just draw some bounds for this prim instead
-	EMyUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(GetPrim());
-	if (DrawMode != EMyUsdDrawMode::Default)
+	EUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(GetPrim());
+	if (DrawMode != EUsdDrawMode::Default)
 	{
 		CreateAlternativeDrawModeAssets(DrawMode);
 		return;
@@ -474,15 +474,15 @@ USceneComponent* FMyUsdGroomTranslator::CreateComponents()
 
 	// Display the groom as a standalone actor only if the stage loads the matching purpose.
 	// The groom asset is processed regardless of the purpose so that it can be bound to mesh prims.
-	if (!EnumHasAllFlags(Context->PurposesToLoad, IMyUsdPrim::GetPurpose(GetPrim())))
+	if (!EnumHasAllFlags(Context->PurposesToLoad, IUsdPrim::GetPurpose(GetPrim())))
 	{
 		return nullptr;
 	}
 
 	USceneComponent* Component = nullptr;
 
-	EMyUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(GetPrim());
-	if (DrawMode == EMyUsdDrawMode::Default)
+	EUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(GetPrim());
+	if (DrawMode == EUsdDrawMode::Default)
 	{
 		const bool bNeedsActor = true;
 		Component = CreateComponentsEx({UGroomComponent::StaticClass()}, bNeedsActor);
@@ -535,7 +535,7 @@ void FMyUsdGroomTranslator::UpdateComponents(USceneComponent* SceneComponent)
 
 			// Use the prim purpose in conjunction with the prim's computed visibility to toggle the visibility of the groom component
 			// since the component itself cannot be removed if the groom shouldn't be displayed
-			const bool bShouldRender = UsdUtils::IsVisible(GetPrim()) && EnumHasAllFlags(Context->PurposesToLoad, IMyUsdPrim::GetPurpose(GetPrim()));
+			const bool bShouldRender = UsdUtils::IsVisible(GetPrim()) && EnumHasAllFlags(Context->PurposesToLoad, IUsdPrim::GetPurpose(GetPrim()));
 			GroomComponent->SetVisibility(bShouldRender);
 
 			if (bShouldRegister && !GroomComponent->IsRegistered())

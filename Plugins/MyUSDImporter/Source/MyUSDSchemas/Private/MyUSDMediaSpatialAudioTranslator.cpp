@@ -183,8 +183,8 @@ void FMyUsdMediaSpatialAudioTranslator::CreateAssets()
 	}
 
 	// Don't bother generating assets if we're going to just draw some bounds for this prim instead
-	EMyUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(GetPrim());
-	if (DrawMode != EMyUsdDrawMode::Default)
+	EUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(GetPrim());
+	if (DrawMode != EUsdDrawMode::Default)
 	{
 		CreateAlternativeDrawModeAssets(DrawMode);
 		return;
@@ -241,7 +241,7 @@ void FMyUsdMediaSpatialAudioTranslator::CreateAssets()
 	{
 		Context->PrimLinkCache->LinkAssetToPrim(PrimPath, SoundWave);
 
-		if (UMyUsdAssetUserData* UserData = UsdUnreal::ObjectUtils::GetOrCreateAssetUserData<UMyUsdAssetUserData>(SoundWave))
+		if (UUsdAssetUserData* UserData = UsdUnreal::ObjectUtils::GetOrCreateAssetUserData<UUsdAssetUserData>(SoundWave))
 		{
 			UserData->PrimPaths.AddUnique(PrimPathString);
 
@@ -269,8 +269,8 @@ USceneComponent* FMyUsdMediaSpatialAudioTranslator::CreateComponents()
 
 	USceneComponent* SceneComponent = nullptr;
 
-	EMyUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(GetPrim());
-	if (DrawMode == EMyUsdDrawMode::Default)
+	EUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(GetPrim());
+	if (DrawMode == EUsdDrawMode::Default)
 	{
 		if (Context->bAllowParsingSounds)
 		{
@@ -316,8 +316,8 @@ bool FMyUsdMediaSpatialAudioTranslator::CollapsesChildren(ECollapsingType Collap
 {
 	// If we have a custom draw mode, it means we should draw bounds/cards/etc. instead
 	// of our entire subtree, which is basically the same thing as collapsing
-	EMyUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(GetPrim());
-	if (DrawMode != EMyUsdDrawMode::Default)
+	EUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(GetPrim());
+	if (DrawMode != EUsdDrawMode::Default)
 	{
 		return true;
 	}

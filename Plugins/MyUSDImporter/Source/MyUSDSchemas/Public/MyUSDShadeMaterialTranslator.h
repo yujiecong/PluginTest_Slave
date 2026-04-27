@@ -8,10 +8,10 @@
 
 #if USE_USD_SDK
 
-class FMyUsdShadeMaterialTranslator : public FMyUsdSchemaTranslator
+class FMyUsdShadeMaterialTranslator : public FUsdSchemaTranslator
 {
 public:
-	using FMyUsdSchemaTranslator::FMyUsdSchemaTranslator;
+	using FUsdSchemaTranslator::FUsdSchemaTranslator;
 
 	UE_API virtual void CreateAssets() override;
 

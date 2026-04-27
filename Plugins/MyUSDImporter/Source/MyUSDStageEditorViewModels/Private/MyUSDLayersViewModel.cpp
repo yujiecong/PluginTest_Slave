@@ -20,8 +20,8 @@
 
 FMyUsdLayerViewModel::FMyUsdLayerViewModel(
 	FMyUsdLayerViewModel* InParentItem,
-	const UE::FMyUsdStageWeak& InUsdStage,
-	const UE::FMyUsdStageWeak& InIsolatedStage,
+	const UE::FUsdStageWeak& InUsdStage,
+	const UE::FUsdStageWeak& InIsolatedStage,
 	const FString& InLayerIdentifier
 )
 	: LayerModel(MakeShared<FMyUsdLayerModel>())
@@ -211,7 +211,7 @@ bool FMyUsdLayerViewModel::CanMuteLayer() const
 		return false;
 	}
 
-	UE::FMyUsdStageWeak AffectedStage = IsolatedStage ? IsolatedStage : UsdStage;
+	UE::FUsdStageWeak AffectedStage = IsolatedStage ? IsolatedStage : UsdStage;
 
 	return !AffectedStage.GetRootLayer().GetIdentifier().Equals(LayerIdentifier, ESearchCase::Type::IgnoreCase) && !LayerModel->bIsEditTarget;
 }
@@ -273,7 +273,7 @@ bool FMyUsdLayerViewModel::EditLayer()
 {
 	UE::FSdfLayer Layer(GetLayer());
 
-	UE::FMyUsdStageWeak AffectedStage = IsolatedStage ? IsolatedStage : UsdStage;
+	UE::FUsdStageWeak AffectedStage = IsolatedStage ? IsolatedStage : UsdStage;
 
 	if (!AffectedStage || !Layer || !CanEditLayer())
 	{

@@ -8,14 +8,14 @@
 
 #if USE_USD_SDK && WITH_EDITOR
 
-class FMyUsdNaniteAssemblyTranslator : public FMyUsdSchemaTranslator
+class FMyUsdNaniteAssemblyTranslator : public FUsdSchemaTranslator
 {
 	friend class FMyUsdNaniteAssemblyCreateAssetsTaskChain;
 
 public:
-	using Super = FMyUsdSchemaTranslator;
+	using Super = FUsdSchemaTranslator;
 
-	using FMyUsdSchemaTranslator::FMyUsdSchemaTranslator;
+	using FUsdSchemaTranslator::FUsdSchemaTranslator;
 
 	FMyUsdNaniteAssemblyTranslator(const FMyUsdNaniteAssemblyTranslator& Other) = delete;
 	FMyUsdNaniteAssemblyTranslator& operator=(const FMyUsdNaniteAssemblyTranslator& Other) = delete;

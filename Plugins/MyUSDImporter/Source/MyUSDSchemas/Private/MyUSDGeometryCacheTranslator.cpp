@@ -33,7 +33,7 @@
 #include "GeometryCacheMeshData.h"
 #include "GeometryCacheTrackStreamable.h"
 #include "GeometryCacheTrackUSD.h"
-#include "MyGeometryCacheUSDComponent.h"
+#include "GeometryCacheUSDComponent.h"
 #include "GroomComponent.h"
 #include "HAL/IConsoleManager.h"
 #include "MaterialDomain.h"
@@ -83,16 +83,16 @@ namespace UsdGeometryCacheTranslatorImpl
 {
 	bool ProcessGeometryCacheMaterials(
 		const pxr::UsdPrim& UsdPrim,
-		const TArray<UsdUtils::FMyUsdPrimMaterialAssignmentInfo>& LODIndexToMaterialInfo,
+		const TArray<UsdUtils::FUsdPrimMaterialAssignmentInfo>& LODIndexToMaterialInfo,
 		UGeometryCache& GeometryCache,
-		UMyUsdAssetCache3& AssetCache,
-		FMyUsdPrimLinkCache& PrimLinkCache,
+		UUsdAssetCache3& AssetCache,
+		FUsdPrimLinkCache& PrimLinkCache,
 		float Time,
 		EObjectFlags Flags,
 		bool bShareAssetsForIdenticalPrims
 	)
 	{
-		TMap<const UsdUtils::FMyUsdPrimMaterialSlot*, UMaterialInterface*> ResolvedMaterials = MeshTranslationImpl::ResolveMaterialAssignmentInfo(
+		TMap<const UsdUtils::FUsdPrimMaterialSlot*, UMaterialInterface*> ResolvedMaterials = MeshTranslationImpl::ResolveMaterialAssignmentInfo(
 			UsdPrim,
 			LODIndexToMaterialInfo,
 			AssetCache,
@@ -105,10 +105,10 @@ namespace UsdGeometryCacheTranslatorImpl
 		bool bMaterialAssignementsHaveChanged = false;
 		for (int32 LODIndex = 0; LODIndex < LODIndexToMaterialInfo.Num(); ++LODIndex)
 		{
-			const TArray<UsdUtils::FMyUsdPrimMaterialSlot>& LODSlots = LODIndexToMaterialInfo[LODIndex].Slots;
+			const TArray<UsdUtils::FUsdPrimMaterialSlot>& LODSlots = LODIndexToMaterialInfo[LODIndex].Slots;
 			for (int32 LODSlotIndex = 0; LODSlotIndex < LODSlots.Num(); ++LODSlotIndex, ++SlotIndex)
 			{
-				const UsdUtils::FMyUsdPrimMaterialSlot& Slot = LODSlots[LODSlotIndex];
+				const UsdUtils::FUsdPrimMaterialSlot& Slot = LODSlots[LODSlotIndex];
 				UMaterialInterface* Material = UMaterial::GetDefaultMaterial(MD_Surface);
 				if (UMaterialInterface** FoundMaterial = ResolvedMaterials.Find(&Slot))
 				{
@@ -144,8 +144,8 @@ namespace UsdGeometryCacheTranslatorImpl
 	void LoadMeshDescription(
 		pxr::UsdTyped UsdMesh,
 		FMeshDescription& OutMeshDescription,
-		UsdUtils::FMyUsdPrimMaterialAssignmentInfo& OutMaterialInfo,
-		const UsdToUnreal::FMyUsdMeshConversionOptions& Options
+		UsdUtils::FUsdPrimMaterialAssignmentInfo& OutMaterialInfo,
+		const UsdToUnreal::FUsdMeshConversionOptions& Options
 	)
 	{
 		if (!UsdMesh)
@@ -158,7 +158,7 @@ namespace UsdGeometryCacheTranslatorImpl
 		FScopedUnrealAllocs Allocs;
 
 		FMeshDescription TempMeshDescription;
-		UsdUtils::FMyUsdPrimMaterialAssignmentInfo TempMaterialInfo;
+		UsdUtils::FUsdPrimMaterialAssignmentInfo TempMaterialInfo;
 
 		FStaticMeshAttributes StaticMeshAttributes(TempMeshDescription);
 		StaticMeshAttributes.Register();
@@ -173,25 +173,25 @@ namespace UsdGeometryCacheTranslatorImpl
 
 	struct FReadMeshDataArgs
 	{
-		FReadMeshDataArgs(const UE::FMyUsdStage& InStage, const UE::FMyUsdPrim& InRootPrim)
+		FReadMeshDataArgs(const UE::FUsdStage& InStage, const UE::FUsdPrim& InRootPrim)
 			: Stage(InStage)
 			, RootPrim(InRootPrim)
 		{
 		}
 
-		UE::FMyUsdStageWeak Stage;
-		UE::FMyUsdPrim RootPrim;
-		UsdToUnreal::FMyUsdMeshConversionOptions Options;
+		UE::FUsdStageWeak Stage;
+		UE::FUsdPrim RootPrim;
+		UsdToUnreal::FUsdMeshConversionOptions Options;
 		int32 StartFrame = 0;
 		int32 EndFrame = 0;
 		float FramesPerSecond = 24.0f;
 		bool bPropagateTransform = false;
 	};
 
-	FReadMeshDataArgs GetReadMeshDataArgs(TSharedRef<FMyUsdSchemaTranslationContext> Context, const FString& RootPrimPath)
+	FReadMeshDataArgs GetReadMeshDataArgs(TSharedRef<FUsdSchemaTranslationContext> Context, const FString& RootPrimPath)
 	{
-		const UE::FMyUsdStage& Stage = Context->Stage;
-		UE::FMyUsdPrim RootPrim = Stage.GetPrimAtPath(UE::FSdfPath(*RootPrimPath));
+		const UE::FUsdStage& Stage = Context->Stage;
+		UE::FUsdPrim RootPrim = Stage.GetPrimAtPath(UE::FSdfPath(*RootPrimPath));
 
 		FReadMeshDataArgs Args(Stage, RootPrim);
 
@@ -238,7 +238,7 @@ namespace UsdGeometryCacheTranslatorImpl
 
 	bool ReadMeshData(
 		const FReadMeshDataArgs& Args,
-		const UE::FMyUsdPrim& MeshPrim,
+		const UE::FUsdPrim& MeshPrim,
 		int32 MaterialOffset,
 		float Time,
 		FGeometryCacheMeshData& OutMeshData
@@ -255,12 +255,12 @@ namespace UsdGeometryCacheTranslatorImpl
 		}
 
 		// Need a local copy of Options to set the TimeCode since this function is called from multiple worker threads
-		UsdToUnreal::FMyUsdMeshConversionOptions LocalOptions(Args.Options);
+		UsdToUnreal::FUsdMeshConversionOptions LocalOptions(Args.Options);
 		LocalOptions.TimeCode = pxr::UsdTimeCode(Time);
 		LocalOptions.AdditionalTransform = PropatagedTransform;
 
 		FMeshDescription MeshDescription;
-		UsdUtils::FMyUsdPrimMaterialAssignmentInfo MaterialInfo;
+		UsdUtils::FUsdPrimMaterialAssignmentInfo MaterialInfo;
 		UsdGeometryCacheTranslatorImpl::LoadMeshDescription(pxr::UsdTyped(MeshPrim), MeshDescription, MaterialInfo, LocalOptions);
 
 		// Convert the MeshDescription to MeshData
@@ -322,7 +322,7 @@ namespace UsdGeometryCacheTranslatorImpl
 					return false;
 				}
 
-				UE::FMyUsdPrim Prim = Track->CurrentStagePinned.GetPrimAtPath(UE::FSdfPath(*Track->PrimPath));
+				UE::FUsdPrim Prim = Track->CurrentStagePinned.GetPrimAtPath(UE::FSdfPath(*Track->PrimPath));
 				if (!Prim)
 				{
 					return false;
@@ -363,18 +363,18 @@ namespace UsdGeometryCacheTranslatorImpl
 		const FString& RootPrimPath,
 		const TArray<UE::FSdfPath>& MeshPrims,
 		const TArray<int32>& MaterialOffsets,
-		TSharedRef<FMyUsdSchemaTranslationContext> Context,
+		TSharedRef<FUsdSchemaTranslationContext> Context,
 		UGeometryCache* GeometryCache
 	);
 
 	void FinalizeGeometryCache(UGeometryCache* GeometryCache);
 
 	UGeometryCache* CreateGeometryCache(
-		const UE::FMyUsdPrim& RootPrim,
+		const UE::FUsdPrim& RootPrim,
 		const FMeshDescription& MeshDescription,
 		const TArray<UE::FSdfPath>& MeshPaths,
 		const TArray<int32>& MaterialOffsets,
-		TSharedRef<FMyUsdSchemaTranslationContext> Context,
+		TSharedRef<FUsdSchemaTranslationContext> Context,
 		bool& bOutIsNew,
 		float& StartOffsetTime
 	)
@@ -502,7 +502,7 @@ namespace UsdGeometryCacheTranslatorImpl
 		const FString& RootPrimPath,
 		const TArray<UE::FSdfPath>& MeshPrims,
 		const TArray<int32>& MaterialOffsets,
-		TSharedRef<FMyUsdSchemaTranslationContext> Context,
+		TSharedRef<FUsdSchemaTranslationContext> Context,
 		UGeometryCache* GeometryCache
 	)
 	{
@@ -528,7 +528,7 @@ namespace UsdGeometryCacheTranslatorImpl
 			for (int32 Index = 0; Index < MeshPrims.Num(); ++Index)
 			{
 				UGeometryCacheTrackStreamable* StreamableTrack = Cast<UGeometryCacheTrackStreamable>(GeometryCache->Tracks[Index]);
-				UE::FMyUsdPrim MeshPrim = Args.Stage.GetPrimAtPath(MeshPrims[Index]);
+				UE::FUsdPrim MeshPrim = Args.Stage.GetPrimAtPath(MeshPrims[Index]);
 				const bool bConstantTopology = UsdUtils::GetMeshTopologyVariance(pxr::UsdGeomMesh(MeshPrim))
 											   != UsdUtils::EMeshTopologyVariance::Heterogenous;
 
@@ -605,7 +605,7 @@ namespace UsdGeometryCacheTranslatorImpl
 
 					while (!bCancelled && (MeshIndex < NumMeshes))
 					{
-						UE::FMyUsdPrim MeshPrim = Args.Stage.GetPrimAtPath(MeshPrims[MeshIndex]);
+						UE::FUsdPrim MeshPrim = Args.Stage.GetPrimAtPath(MeshPrims[MeshIndex]);
 						int32 MaterialOffset = MaterialOffsets[MeshIndex];
 						UGeometryCacheTrackStreamable* StreamableTrack = Cast<UGeometryCacheTrackStreamable>(GeometryCache->Tracks[MeshIndex]);
 						FEvent* FrameWrittenEvent = SyncEvents[MeshThreadIndex];
@@ -723,7 +723,7 @@ namespace UsdGeometryCacheTranslatorImpl
 class FGeometryCacheCreateAssetsTaskChain : public FBuildStaticMeshTaskChain
 {
 public:
-	explicit FGeometryCacheCreateAssetsTaskChain(const TSharedRef<FMyUsdSchemaTranslationContext>& InContext, const UE::FSdfPath& InPrimPath)
+	explicit FGeometryCacheCreateAssetsTaskChain(const TSharedRef<FUsdSchemaTranslationContext>& InContext, const UE::FSdfPath& InPrimPath)
 		: FBuildStaticMeshTaskChain(InContext, InPrimPath)
 	{
 		SetupTasks();
@@ -756,7 +756,7 @@ void FGeometryCacheCreateAssetsTaskChain::SetupTasks()
 			   MaterialPurposeToken = UnrealToUsd::ConvertToken(*Context->MaterialPurpose.ToString()).Get();
 		   }
 
-		   UsdToUnreal::FMyUsdMeshConversionOptions Options;
+		   UsdToUnreal::FUsdMeshConversionOptions Options;
 		   Options.TimeCode = UsdUtils::GetEarliestTimeCode();
 		   Options.PurposesToLoad = Context->PurposesToLoad;
 		   Options.RenderContext = RenderContextToken;
@@ -767,7 +767,7 @@ void FGeometryCacheCreateAssetsTaskChain::SetupTasks()
 
 		   // GeometryCache has only one LOD so add just one MeshDescription and MaterialAssignmentInfo
 		   FMeshDescription& AddedMeshDescription = LODIndexToMeshDescription.Emplace_GetRef();
-		   UsdUtils::FMyUsdPrimMaterialAssignmentInfo& AssignmentInfo = LODIndexToMaterialInfo.Emplace_GetRef();
+		   UsdUtils::FUsdPrimMaterialAssignmentInfo& AssignmentInfo = LODIndexToMaterialInfo.Emplace_GetRef();
 
 		   // The collapsed mesh description here will be used to cache the GeometryCache asset, but not to fill it since its content will be
 		   // unflattened Bake the prim's transform into the mesh data
@@ -801,10 +801,10 @@ void FGeometryCacheCreateAssetsTaskChain::SetupTasks()
 			{
 				// Collect the visible meshes, animated or not, under Prim to be processed into the GeometryCache
 				FScopedUsdAllocs UsdAllocs;
-				TArray<UE::FMyUsdPrim> ChildVisiblePrims = UsdUtils::GetVisibleChildren(GetPrim(), Context->PurposesToLoad);
+				TArray<UE::FUsdPrim> ChildVisiblePrims = UsdUtils::GetVisibleChildren(GetPrim(), Context->PurposesToLoad);
 
 				MeshPrimPaths.Reserve(ChildVisiblePrims.Num());
-				for (const UE::FMyUsdPrim& ChildPrim : ChildVisiblePrims)
+				for (const UE::FUsdPrim& ChildPrim : ChildVisiblePrims)
 				{
 					if (ChildPrim.IsA(TEXT("Mesh")))
 					{
@@ -828,7 +828,7 @@ void FGeometryCacheCreateAssetsTaskChain::SetupTasks()
 					MaterialOffsets[Index] = MaterialOffset;
 
 					// A mesh has at least one material associated with it, but can have multiple material assignments based on its GeomSubsets
-					UE::FMyUsdPrim Prim = Context->Stage.GetPrimAtPath(MeshPrimPaths[Index]);
+					UE::FUsdPrim Prim = Context->Stage.GetPrimAtPath(MeshPrimPaths[Index]);
 
 					std::vector<pxr::UsdGeomSubset> GeomSubsets = pxr::UsdShadeMaterialBindingAPI(Prim).GetMaterialBindSubsets();
 					MaterialOffset += FMath::Max(1, static_cast<int32>(GeomSubsets.size()));
@@ -854,7 +854,7 @@ void FGeometryCacheCreateAssetsTaskChain::SetupTasks()
 
 			if (GeometryCache)
 			{
-				UMyUsdGeometryCacheAssetUserData* UserData = UsdUnreal::ObjectUtils::GetOrCreateAssetUserData<UMyUsdGeometryCacheAssetUserData>(
+				UUsdGeometryCacheAssetUserData* UserData = UsdUnreal::ObjectUtils::GetOrCreateAssetUserData<UUsdGeometryCacheAssetUserData>(
 					GeometryCache.Get()
 				);
 				if (UserData)
@@ -955,8 +955,8 @@ void FMyUsdGeometryCacheTranslator::CreateAssets()
 	}
 
 	// Don't bother generating assets if we're going to just draw some bounds for this prim instead
-	EMyUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(GetPrim());
-	if (DrawMode != EMyUsdDrawMode::Default)
+	EUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(GetPrim());
+	if (DrawMode != EUsdDrawMode::Default)
 	{
 		CreateAlternativeDrawModeAssets(DrawMode);
 		return;
@@ -982,8 +982,8 @@ USceneComponent* FMyUsdGeometryCacheTranslator::CreateComponents()
 
 	USceneComponent* SceneComponent = nullptr;
 
-	EMyUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(GetPrim());
-	if (DrawMode == EMyUsdDrawMode::Default)
+	EUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(GetPrim());
+	if (DrawMode == EUsdDrawMode::Default)
 	{
 		const bool bCheckForComponent = true;
 		if (ShouldSkipSkinnablePrim(bCheckForComponent))
@@ -1046,7 +1046,7 @@ void FMyUsdGeometryCacheTranslator::UpdateComponents(USceneComponent* SceneCompo
 	UGeometryCacheComponent* GeometryCacheComponent = Cast<UGeometryCacheComponent>(SceneComponent);
 
 	const bool bCheckForComponent = true;
-	if (!Cast<UMyUsdDrawModeComponent>(SceneComponent) && ShouldSkipSkinnablePrim(bCheckForComponent))
+	if (!Cast<UUsdDrawModeComponent>(SceneComponent) && ShouldSkipSkinnablePrim(bCheckForComponent))
 	{
 		return;
 	}
@@ -1114,7 +1114,7 @@ void FMyUsdGeometryCacheTranslator::UpdateComponents(USceneComponent* SceneCompo
 			float StageStartOffsetSeconds = 0.0f;
 			if (GeometryCache)
 			{
-				if (UMyUsdGeometryCacheAssetUserData* UserData = GeometryCache->GetAssetUserData<UMyUsdGeometryCacheAssetUserData>())
+				if (UUsdGeometryCacheAssetUserData* UserData = GeometryCache->GetAssetUserData<UUsdGeometryCacheAssetUserData>())
 				{
 					StageStartOffsetSeconds = UserData->StageStartOffsetSeconds;
 				}
@@ -1165,7 +1165,7 @@ bool FMyUsdGeometryCacheTranslator::CollapsesChildren(ECollapsingType Collapsing
 {
 	// If we have a custom draw mode, it means we should draw bounds/cards/etc. instead
 	// of our entire subtree, which is basically the same thing as collapsing
-	if (IsPotentialGeometryCacheRoot() || UsdUtils::GetAppliedDrawMode(GetPrim()) != EMyUsdDrawMode::Default)
+	if (IsPotentialGeometryCacheRoot() || UsdUtils::GetAppliedDrawMode(GetPrim()) != EUsdDrawMode::Default)
 	{
 		return true;
 	}
@@ -1208,9 +1208,9 @@ TSet<UE::FSdfPath> FMyUsdGeometryCacheTranslator::CollectAuxiliaryPrims() const
 	TSet<UE::FSdfPath> AuxPrims;
 
 	// Here, we collect all meshes even non-animated ones since they'll be collapse into the cache
-	TArray<UE::FMyUsdPrim> VisibleChildPrims = UsdUtils::GetVisibleChildren(GetPrim(), Context->PurposesToLoad);
+	TArray<UE::FUsdPrim> VisibleChildPrims = UsdUtils::GetVisibleChildren(GetPrim(), Context->PurposesToLoad);
 	AuxPrims.Reserve(VisibleChildPrims.Num());
-	for (const UE::FMyUsdPrim& VisibleChild : VisibleChildPrims)
+	for (const UE::FUsdPrim& VisibleChild : VisibleChildPrims)
 	{
 		if (VisibleChild.IsA(TEXT("Imageable")))
 		{

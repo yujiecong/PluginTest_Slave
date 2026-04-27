@@ -22,7 +22,7 @@
 
 #define LOCTEXT_NAMESPACE "USDOptionsWindow"
 
-bool SMyUsdOptionsWindow::ShowOptions(UObject& OptionsObject, const FText& WindowTitle, const FText& AcceptText, const UE::FMyUsdStage* Stage)
+bool SMyUsdOptionsWindow::ShowOptions(UObject& OptionsObject, const FText& WindowTitle, const FText& AcceptText, const UE::FUsdStage* Stage)
 {
 	TSharedPtr<SWindow> ParentWindow;
 
@@ -102,7 +102,7 @@ bool SMyUsdOptionsWindow::ShowOptions(UObject& OptionsObject, const FText& Windo
 
 	// Preemptively make sure we have a progress dialog created before showing our modal. This because the progress
 	// dialog itself is also modal. If it doesn't exist yet, and our options dialog causes a progress dialog
-	// to be spawned (e.g. when switching the Level to export via the LevelSequenceMyUSDExporter), the progress dialog
+	// to be spawned (e.g. when switching the Level to export via the LevelSequenceUSDExporter), the progress dialog
 	// will be pushed to the end of FSlateApplication::ActiveModalWindows (SlateApplication.cpp) and cause our options
 	// dialog to pop out of its modal loop (FSlateApplication::AddModalWindow), instantly returning false to our caller
 	FScopedSlowTask Progress(1, LOCTEXT("ShowingDialog", "Picking options..."));
@@ -123,7 +123,7 @@ bool SMyUsdOptionsWindow::ShowOptions(UObject& OptionsObject, const FText& Windo
 	return bAccepted;
 }
 
-bool SMyUsdOptionsWindow::ShowImportOptions(UObject& OptionsObject, const UE::FMyUsdStage* StageToImport)
+bool SMyUsdOptionsWindow::ShowImportOptions(UObject& OptionsObject, const UE::FUsdStage* StageToImport)
 {
 	return SMyUsdOptionsWindow::ShowOptions(
 		OptionsObject,
@@ -147,7 +147,7 @@ void SMyUsdOptionsWindow::Construct(const FArguments& InArgs)
 	OptionsObject = InArgs._OptionsObject;
 	Window = InArgs._WidgetWindow;
 	AcceptText = InArgs._AcceptText;
-	const UE::FMyUsdStage* Stage = InArgs._Stage;
+	const UE::FUsdStage* Stage = InArgs._Stage;
 	bAccepted = false;
 
 	// Prepare box that shows the OptionsObject's properties

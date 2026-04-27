@@ -23,7 +23,7 @@ class ULevelSequenceExporterUsdOptions : public UObject
 public:
 	/** Export options to use for the layer where the animation is emitted */
 	UPROPERTY(EditAnywhere, config, BlueprintReadWrite, Category = USDSettings, meta = (ShowOnlyInnerProperties))
-	FMyUsdStageOptions StageOptions;
+	FUsdStageOptions StageOptions;
 
 	/**
 	 * Value to bake all generated USD layers with

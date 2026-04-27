@@ -11,17 +11,17 @@
 #if USE_USD_SDK
 
 class USceneComponent;
-enum class EMyUsdDrawMode : int32;
+enum class EUsdDrawMode : int32;
 
-class FMyUsdGeomXformableTranslator : public FMyUsdSchemaTranslator
+class FMyUsdGeomXformableTranslator : public FUsdSchemaTranslator
 {
 public:
-	using FMyUsdSchemaTranslator::FMyUsdSchemaTranslator;
+	using FUsdSchemaTranslator::FUsdSchemaTranslator;
 
 	UE_API explicit FMyUsdGeomXformableTranslator(
 		TSubclassOf<USceneComponent> InComponentTypeOverride,
-		TSharedRef<FMyUsdSchemaTranslationContext> InContext,
-		const UE::FMyUsdTyped& InSchema
+		TSharedRef<FUsdSchemaTranslationContext> InContext,
+		const UE::FUsdTyped& InSchema
 	);
 
 	UE_API virtual void CreateAssets() override;
@@ -41,9 +41,9 @@ protected:
 	// In theory *any* prim can have these, but we're placing these on FMyUsdGeomXformableTranslator as we're assuming only Xformables
 	// (something drawable in the first place) can realistically use an alternative draw mode (i.e. we're not going to do much
 	// placing these on a Material prim, that can't even have an Xform)
-	UE_API USceneComponent* CreateAlternativeDrawModeComponents(EMyUsdDrawMode DrawMode);
-	UE_API void UpdateAlternativeDrawModeComponents(USceneComponent* SceneComponent, EMyUsdDrawMode DrawMode);
-	UE_API void CreateAlternativeDrawModeAssets(EMyUsdDrawMode DrawMode);
+	UE_API USceneComponent* CreateAlternativeDrawModeComponents(EUsdDrawMode DrawMode);
+	UE_API void UpdateAlternativeDrawModeComponents(USceneComponent* SceneComponent, EUsdDrawMode DrawMode);
+	UE_API void CreateAlternativeDrawModeAssets(EUsdDrawMode DrawMode);
 
 private:
 	TOptional<TSubclassOf<USceneComponent>> ComponentTypeOverride;

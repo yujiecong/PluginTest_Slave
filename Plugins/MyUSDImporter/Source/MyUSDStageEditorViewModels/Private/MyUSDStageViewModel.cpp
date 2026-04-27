@@ -40,7 +40,7 @@ namespace UsdViewModelImpl
 	 * We use this instead of pxr::UsdStage::SaveSessionLayers because that function
 	 * will emit a warning about the main session layer not being saved every time it is used
 	 */
-	void SaveUEStateLayer(const UE::FMyUsdStage& UsdStage)
+	void SaveUEStateLayer(const UE::FUsdStage& UsdStage)
 	{
 		const bool bCreateIfNeeded = false;
 		if (UE::FSdfLayer UEStateLayer = UsdUtils::GetUEPersistentStateSublayer(UsdStage, bCreateIfNeeded))
@@ -60,7 +60,7 @@ void FMyUsdStageViewModel::NewStage()
 	if (!UsdStageActor.IsValid())
 	{
 		IMyUsdStageModule& UsdStageModule = FModuleManager::GetModuleChecked<IMyUsdStageModule>(TEXT("MyUSDStage"));
-		UsdStageActor = &UsdStageModule.GetUsdStageActor(IMyUsdClassesModule::GetCurrentWorld());
+		UsdStageActor = &UsdStageModule.GetUsdStageActor(IUsdClassesModule::GetCurrentWorld());
 	}
 
 	if (AMyUsdStageActor* StageActor = UsdStageActor.Get())
@@ -77,7 +77,7 @@ void FMyUsdStageViewModel::OpenStage(const TCHAR* FilePath)
 	if (!UsdStageActor.IsValid())
 	{
 		IMyUsdStageModule& UsdStageModule = FModuleManager::GetModuleChecked<IMyUsdStageModule>(TEXT("MyUSDStage"));
-		UsdStageActor = &UsdStageModule.GetUsdStageActor(IMyUsdClassesModule::GetCurrentWorld());
+		UsdStageActor = &UsdStageModule.GetUsdStageActor(IUsdClassesModule::GetCurrentWorld());
 	}
 
 	if (AMyUsdStageActor* StageActor = UsdStageActor.Get())
@@ -100,11 +100,11 @@ void FMyUsdStageViewModel::SetLoadAllRule()
 	}
 
 	// This will set what happens to payloads on any other future stages this stage actor opens
-	UsdStageActor->SetInitialLoadSet(EMyUsdInitialLoadSet::LoadAll);
+	UsdStageActor->SetInitialLoadSet(EUsdInitialLoadSet::LoadAll);
 
 	// This will toggle all current payloads, and set what happens to any future payloads that
 	// are created on the currently opened stage
-	if (UE::FMyUsdStage Stage = UsdStageActor->GetOrOpenUsdStage())
+	if (UE::FUsdStage Stage = UsdStageActor->GetOrOpenUsdStage())
 	{
 		FScopedUsdAllocs Allocs;
 
@@ -124,11 +124,11 @@ void FMyUsdStageViewModel::SetLoadNoneRule()
 		return;
 	}
 
-	UsdStageActor->SetInitialLoadSet(EMyUsdInitialLoadSet::LoadNone);
+	UsdStageActor->SetInitialLoadSet(EUsdInitialLoadSet::LoadNone);
 
 	// This will toggle all current payloads, and set what happens to any future payloads that
 	// are created on the currently opened stage
-	if (UE::FMyUsdStage Stage = UsdStageActor->GetOrOpenUsdStage())
+	if (UE::FUsdStage Stage = UsdStageActor->GetOrOpenUsdStage())
 	{
 		FScopedUsdAllocs Allocs;
 
@@ -150,7 +150,7 @@ bool FMyUsdStageViewModel::HasDefaultLoadRule()
 
 	// This will toggle all current payloads, and set what happens to any future payloads that
 	// are created on the currently opened stage
-	if (UE::FMyUsdStage Stage = UsdStageActor->GetOrOpenUsdStage())
+	if (UE::FUsdStage Stage = UsdStageActor->GetOrOpenUsdStage())
 	{
 		FScopedUsdAllocs Allocs;
 
@@ -174,7 +174,7 @@ void FMyUsdStageViewModel::ReloadStage()
 	}
 
 #if USE_USD_SDK
-	UE::FMyUsdStage Stage = UsdStageActor->GetOrOpenUsdStage();
+	UE::FUsdStage Stage = UsdStageActor->GetOrOpenUsdStage();
 	pxr::UsdStageRefPtr UsdStage = pxr::UsdStageRefPtr(Stage);
 
 	// Can't reload from disk something that doesn't exist on disk yet
@@ -225,7 +225,7 @@ void FMyUsdStageViewModel::ReloadStage()
 			UsdUtils::GetUEPersistentStateSublayer(Stage, bCreateIfNeeded);
 		}
 
-		if (FMyUsdLogManager::HasAccumulatedErrors())
+		if (FUsdLogManager::HasAccumulatedErrors())
 		{
 			return;
 		}
@@ -249,7 +249,7 @@ void FMyUsdStageViewModel::ResetStage()
 		return;
 	}
 
-	UE::FMyUsdStage Stage = UsdStageActor->GetOrOpenUsdStage();
+	UE::FUsdStage Stage = UsdStageActor->GetOrOpenUsdStage();
 	pxr::UsdStageRefPtr UsdStage = pxr::UsdStageRefPtr(Stage);
 
 	if (UsdStage)
@@ -279,7 +279,7 @@ void FMyUsdStageViewModel::SaveStage()
 #if USE_USD_SDK
 	if (UsdStageActor.IsValid())
 	{
-		if (UE::FMyUsdStage UsdStage = UsdStageActor->GetOrOpenUsdStage())
+		if (UE::FUsdStage UsdStage = UsdStageActor->GetOrOpenUsdStage())
 		{
 			FScopedUsdAllocs UsdAllocs;
 
@@ -310,7 +310,7 @@ void FMyUsdStageViewModel::SaveStageAs(const TCHAR* FilePath)
 	AMyUsdStageActor* StageActorPtr = UsdStageActor.Get();
 	if (StageActorPtr)
 	{
-		if (UE::FMyUsdStage UsdStage = UsdStageActor->GetOrOpenUsdStage())
+		if (UE::FUsdStage UsdStage = UsdStageActor->GetOrOpenUsdStage())
 		{
 			FScopedUsdMessageLog ScopedLog;
 
@@ -324,7 +324,7 @@ void FMyUsdStageViewModel::SaveStageAs(const TCHAR* FilePath)
 					// layer and marked dirty by default. Even though we just saved (exported) it to disk, we'd end
 					// up getting the "do you want to save these dirty USD layers?" dialog by default...
 					// Here we'll write out a comment on the layer that we can easily check for in
-					// MyUSDStageEditorModule::SaveStageActorLayersForWorld to know to skip showing that dialog. Note
+					// USDStageEditorModule::SaveStageActorLayersForWorld to know to skip showing that dialog. Note
 					// how this comment iself doesn't actually get saved to disk though.
 					//
 					// We also block listening here because we don't want to record to the transactor that we wrote
@@ -339,7 +339,7 @@ void FMyUsdStageViewModel::SaveStageAs(const TCHAR* FilePath)
 					// Open our stage right here so that we can provide it with a session layer. Note that we'll be using
 					// the same session layer as the original stage, so that the user doesn't lose their session
 					UE::FSdfLayer NewRootLayer = UE::FSdfLayer::FindOrOpen(FilePath);
-					UE::FMyUsdStage NewStage = UnrealUSDWrapper::OpenStage(NewRootLayer, UsdStage.GetSessionLayer(), StageActorPtr->InitialLoadSet);
+					UE::FUsdStage NewStage = UnrealUSDWrapper::OpenStage(NewRootLayer, UsdStage.GetSessionLayer(), StageActorPtr->InitialLoadSet);
 					StageActorPtr->SetUsdStage(NewStage);
 
 					RootLayer.SetComment(*OldComment);
@@ -370,7 +370,7 @@ void FMyUsdStageViewModel::ImportStage(const TCHAR* TargetContentFolder, UMyUsdS
 		return;
 	}
 
-	const UE::FMyUsdStage UsdStage = StageActor->GetOrOpenUsdStage();
+	const UE::FUsdStage UsdStage = StageActor->GetOrOpenUsdStage();
 	if (!UsdStage)
 	{
 		return;
@@ -429,7 +429,7 @@ void FMyUsdStageViewModel::ImportStage(const TCHAR* TargetContentFolder, UMyUsdS
 			// Pick the asset cache that the user potentially changed on the import options dialog. The MyUSDStageImporter will sort itself out
 			// if that happens to be nullptr/invalid
 			ImportContext.UsdAssetCache = ImportContext.ImportOptions->bUseExistingAssetCache
-											  ? Cast<UMyUsdAssetCache3>(ImportContext.ImportOptions->ExistingAssetCache.TryLoad())
+											  ? Cast<UUsdAssetCache3>(ImportContext.ImportOptions->ExistingAssetCache.TryLoad())
 											  : nullptr;
 			ImportContext.BBoxCache = StageActor->GetBBoxCache();
 

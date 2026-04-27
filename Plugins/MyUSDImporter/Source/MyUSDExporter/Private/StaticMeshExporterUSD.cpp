@@ -47,7 +47,7 @@ namespace UE::StaticMeshExporterUSD::Private
 			return;
 		}
 
-		const FString ClassName = IMyUsdClassesModule::GetClassNameForAnalytics(Asset);
+		const FString ClassName = IUsdClassesModule::GetClassNameForAnalytics(Asset);
 
 		TArray<FAnalyticsEventAttribute> EventAttributes;
 		EventAttributes.Emplace(TEXT("AssetType"), ClassName);
@@ -58,7 +58,7 @@ namespace UE::StaticMeshExporterUSD::Private
 			UsdUtils::AddAnalyticsAttributes(*Options, EventAttributes);
 		}
 
-		IMyUsdClassesModule::SendAnalytics(
+		IUsdClassesModule::SendAnalytics(
 			MoveTemp(EventAttributes),
 			FString::Printf(TEXT("Export.%s"), *ClassName),
 			bAutomated,
@@ -211,12 +211,12 @@ bool UStaticMeshExporterUsd::ExportBinary(UObject* Object, const TCHAR* Type, FA
 			// Don't use the stage cache here as we want this stage to close within this scope in case
 			// we have to overwrite its files due to e.g. missing payload or anything like that
 			const bool bUseStageCache = false;
-			const EMyUsdInitialLoadSet InitialLoadSet = EMyUsdInitialLoadSet::LoadNone;
-			if (UE::FMyUsdStage TempStage = UnrealUSDWrapper::OpenStage(*UExporter::CurrentFilename, InitialLoadSet, bUseStageCache))
+			const EUsdInitialLoadSet InitialLoadSet = EUsdInitialLoadSet::LoadNone;
+			if (UE::FUsdStage TempStage = UnrealUSDWrapper::OpenStage(*UExporter::CurrentFilename, InitialLoadSet, bUseStageCache))
 			{
-				if (UE::FMyUsdPrim DefaultPrim = TempStage.GetDefaultPrim())
+				if (UE::FUsdPrim DefaultPrim = TempStage.GetDefaultPrim())
 				{
-					FMyUsdUnrealAssetInfo Info = UsdUtils::GetPrimAssetInfo(DefaultPrim);
+					FUsdUnrealAssetInfo Info = UsdUtils::GetPrimAssetInfo(DefaultPrim);
 
 					const bool bVersionMatches = !Info.Version.IsEmpty() && Info.Version == CurrentHashString;
 
@@ -271,7 +271,7 @@ bool UStaticMeshExporterUsd::ExportBinary(UObject* Object, const TCHAR* Type, FA
 	double StartTime = FPlatformTime::Cycles64();
 
 	// UsdStage is the payload stage when exporting with payloads, or just the single stage otherwise
-	UE::FMyUsdStage UsdStage = UnrealUSDWrapper::NewStage(*PayloadFilename);
+	UE::FUsdStage UsdStage = UnrealUSDWrapper::NewStage(*PayloadFilename);
 	if (!UsdStage)
 	{
 		return false;
@@ -282,7 +282,7 @@ bool UStaticMeshExporterUsd::ExportBinary(UObject* Object, const TCHAR* Type, FA
 
 	FString RootPrimPath = (TEXT("/") + UsdUtils::SanitizeUsdIdentifier(*StaticMesh->GetName()));
 
-	UE::FMyUsdPrim RootPrim = UsdStage.DefinePrim(UE::FSdfPath(*RootPrimPath));
+	UE::FUsdPrim RootPrim = UsdStage.DefinePrim(UE::FSdfPath(*RootPrimPath));
 	if (!RootPrim)
 	{
 		return false;
@@ -291,7 +291,7 @@ bool UStaticMeshExporterUsd::ExportBinary(UObject* Object, const TCHAR* Type, FA
 	UsdStage.SetDefaultPrim(RootPrim);
 
 	// Asset stage always the stage where we write the material assignments
-	UE::FMyUsdStage AssetStage;
+	UE::FUsdStage AssetStage;
 
 	// Using payload: Convert mesh data through the asset stage (that references the payload) so that we can
 	// author mesh data on the payload layer and material data on the asset layer
@@ -303,7 +303,7 @@ bool UStaticMeshExporterUsd::ExportBinary(UObject* Object, const TCHAR* Type, FA
 			UsdUtils::SetUsdStageMetersPerUnit(AssetStage, Options->StageOptions.MetersPerUnit);
 			UsdUtils::SetUsdStageUpAxis(AssetStage, Options->StageOptions.UpAxis);
 
-			if (UE::FMyUsdPrim AssetRootPrim = AssetStage.DefinePrim(UE::FSdfPath(*RootPrimPath)))
+			if (UE::FUsdPrim AssetRootPrim = AssetStage.DefinePrim(UE::FSdfPath(*RootPrimPath)))
 			{
 				AssetStage.SetDefaultPrim(AssetRootPrim);
 
@@ -327,11 +327,11 @@ bool UStaticMeshExporterUsd::ExportBinary(UObject* Object, const TCHAR* Type, FA
 		Options->MeshAssetOptions.bExportStaticMeshSourceData
 	);
 
-	if (UE::FMyUsdPrim AssetDefaultPrim = AssetStage.GetDefaultPrim())
+	if (UE::FUsdPrim AssetDefaultPrim = AssetStage.GetDefaultPrim())
 	{
 		if (Options->MetadataOptions.bExportAssetInfo)
 		{
-			FMyUsdUnrealAssetInfo Info;
+			FUsdUnrealAssetInfo Info;
 			Info.Name = StaticMesh->GetName();
 			Info.Identifier = UExporter::CurrentFilename;
 			Info.Version = CurrentHashString;
@@ -345,7 +345,7 @@ bool UStaticMeshExporterUsd::ExportBinary(UObject* Object, const TCHAR* Type, FA
 
 		if (Options->MetadataOptions.bExportAssetMetadata)
 		{
-			if (UMyUsdAssetUserData* UserData = UsdUnreal::ObjectUtils::GetAssetUserData(StaticMesh))
+			if (UUsdAssetUserData* UserData = UsdUnreal::ObjectUtils::GetAssetUserData(StaticMesh))
 			{
 				UnrealToUsd::ConvertMetadata(
 					UserData,

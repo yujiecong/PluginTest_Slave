@@ -9,7 +9,7 @@
 #include "Modules/ModuleManager.h"
 #include "UObject/UnrealType.h"
 
-#include UE_INLINE_GENERATED_CPP_BY_NAME(MyUSDStageImportOptions)
+#include UE_INLINE_GENERATED_CPP_BY_NAME(USDStageImportOptions)
 
 UMyUsdStageImportOptions::UMyUsdStageImportOptions(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -26,13 +26,13 @@ UMyUsdStageImportOptions::UMyUsdStageImportOptions(const FObjectInitializer& Obj
 
 	bUseExistingAssetCache = false;
 	ExistingAssetCache = nullptr;
-	PurposesToImport = (int32)(EMyUsdPurpose::Default | EMyUsdPurpose::Proxy | EMyUsdPurpose::Render | EMyUsdPurpose::Guide);
+	PurposesToImport = (int32)(EUsdPurpose::Default | EUsdPurpose::Proxy | EUsdPurpose::Render | EUsdPurpose::Guide);
 	NaniteTriangleThreshold = INT32_MAX;
 	IMyUsdSchemasModule& UsdSchemasModule = FModuleManager::Get().LoadModuleChecked<IMyUsdSchemasModule>(TEXT("MyUSDSchemas"));
 	RenderContextToImport = UnrealIdentifiers::UnrealRenderContext;
 	MaterialPurpose = *UnrealIdentifiers::MaterialPreviewPurpose;
 	SubdivisionLevel = 0;
-	MetadataOptions = FMyUsdMetadataImportOptions{
+	MetadataOptions = FUsdMetadataImportOptions{
 		true,  /* bCollectMetadata */
 		true,  /* bCollectFromEntireSubtrees */
 		false, /* bCollectOnComponents */
@@ -41,7 +41,7 @@ UMyUsdStageImportOptions::UMyUsdStageImportOptions(const FObjectInitializer& Obj
 	};
 	bOverrideStageOptions = false;
 	StageOptions.MetersPerUnit = 0.01;
-	StageOptions.UpAxis = EMyUsdUpAxis::ZAxis;
+	StageOptions.UpAxis = EUsdUpAxis::ZAxis;
 	bImportAtSpecificTimeCode = false;
 	ImportTimeCode = 0.0f;
 
@@ -50,7 +50,7 @@ UMyUsdStageImportOptions::UMyUsdStageImportOptions(const FObjectInitializer& Obj
 	bShareAssetsForIdenticalPrims = true;
 
 	bPrimPathFolderStructure = false;
-	KindsToCollapse = (int32)(EMyUsdDefaultKind::Component | EMyUsdDefaultKind::Subcomponent);
+	KindsToCollapse = (int32)(EUsdDefaultKind::Component | EUsdDefaultKind::Subcomponent);
 	bUsePrimKindsForCollapsing = true;
 	bMergeIdenticalMaterialSlots = true;
 	bInterpretLODs = true;

@@ -7,7 +7,7 @@
 #include "UsdWrappers/MyUsdStage.h"
 
 #include "GeometryCacheHelpers.h"
-#include "MyGeometryCacheUSDStream.h"
+#include "GeometryCacheUSDStream.h"
 #include "HAL/IConsoleManager.h"
 #include "IGeometryCacheStreamer.h"
 
@@ -240,7 +240,7 @@ bool UGeometryCacheTrackUsd::LoadUsdStage()
 		// after we're done with it, and the UGeometryCacheTrackUsd shouldn't have authority to blindly just remove it
 		// from the cache as the user may have place it there intentionally
 		const bool bUseStageCache = false;
-		CurrentStagePinned = UnrealUSDWrapper::OpenStage(*StageRootLayerPath, EMyUsdInitialLoadSet::LoadAll, bUseStageCache);
+		CurrentStagePinned = UnrealUSDWrapper::OpenStage(*StageRootLayerPath, EUsdInitialLoadSet::LoadAll, bUseStageCache);
 		CurrentStageWeak = CurrentStagePinned;
 		return true;
 	}
@@ -251,11 +251,11 @@ bool UGeometryCacheTrackUsd::LoadUsdStage()
 
 void UGeometryCacheTrackUsd::UnloadUsdStage()
 {
-	CurrentStagePinned = UE::FMyUsdStage();
+	CurrentStagePinned = UE::FUsdStage();
 }
 
 void UGeometryCacheTrackUsd::Initialize(
-	const UE::FMyUsdStage& InStage,
+	const UE::FUsdStage& InStage,
 	const FString& InPrimPath,
 	int32 InStartFrameIndex,
 	int32 InEndFrameIndex,
@@ -284,7 +284,7 @@ void UGeometryCacheTrackUsd::Initialize(
 }
 
 void UGeometryCacheTrackUsd::Initialize(
-	const UE::FMyUsdStage& InStage,
+	const UE::FUsdStage& InStage,
 	const FString& InPrimPath,
 	const FName& InRenderContext,
 	const TMap<FString, TMap<FString, int32>>& InMaterialToPrimvarToUVIndex,

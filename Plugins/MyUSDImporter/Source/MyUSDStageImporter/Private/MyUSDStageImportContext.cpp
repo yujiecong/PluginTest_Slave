@@ -9,7 +9,7 @@
 #include "Editor.h"
 #include "Misc/Paths.h"
 
-#include UE_INLINE_GENERATED_CPP_BY_NAME(MyUSDStageImportContext)
+#include UE_INLINE_GENERATED_CPP_BY_NAME(USDStageImportContext)
 
 FMyUsdStageImportContext::FMyUsdStageImportContext()
 {
@@ -43,7 +43,7 @@ bool FMyUsdStageImportContext::Init(
 	// Open the stage if we haven't yet, as we'll need it open to show the preview tree
 	if (!Stage)
 	{
-		const EMyUsdInitialLoadSet InitialLoadSet = EMyUsdInitialLoadSet::LoadAll;
+		const EUsdInitialLoadSet InitialLoadSet = EUsdInitialLoadSet::LoadAll;
 		Stage = UnrealUSDWrapper::OpenStage(*FilePath, InitialLoadSet, bReadFromStageCache);
 	}
 
@@ -55,7 +55,7 @@ bool FMyUsdStageImportContext::Init(
 			// clang-format off
 			TSharedRef<SDlgPickPath> PickContentPathDlg =
 				SNew(SDlgPickPath)
-				.Title(NSLOCTEXT("MyUSDStageImportContext", "ChooseImportRootContentPath", "Choose where to place the imported USD assets"))
+				.Title(NSLOCTEXT("USDStageImportContext", "ChooseImportRootContentPath", "Choose where to place the imported USD assets"))
 				.DefaultPath(FText::FromString(InInitialPackagePath));
 			// clang-format on
 
@@ -99,7 +99,7 @@ void FMyUsdStageImportContext::Reset()
 	PRAGMA_ENABLE_DEPRECATION_WARNINGS
 	BBoxCache = nullptr;
 	MaterialToPrimvarToUVIndex.Empty();
-	Stage = UE::FMyUsdStage{};
+	Stage = UE::FUsdStage{};
 	ImportObjectFlags = EObjectFlags::RF_NoFlags;
 	bIsAutomated = false;
 
@@ -113,7 +113,7 @@ void FMyUsdStageImportContext::Reset()
 
 	bStageWasOriginallyOpenInCache = false;
 	OriginalMetersPerUnit = 0.01;
-	OriginalUpAxis = EMyUsdUpAxis::ZAxis;
+	OriginalUpAxis = EUsdUpAxis::ZAxis;
 
 	bNeedsGarbageCollection = false;
 }

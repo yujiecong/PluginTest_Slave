@@ -12,9 +12,9 @@
 #include "Kismet2/BlueprintEditorUtils.h"
 #include "Kismet2/KismetEditorUtilities.h"
 
-#include UE_INLINE_GENERATED_CPP_BY_NAME(MyUSDTestsBlueprintLibrary)
+#include UE_INLINE_GENERATED_CPP_BY_NAME(USDTestsBlueprintLibrary)
 
-bool MyUSDTestsBlueprintLibrary::RecompileBlueprintStageActor(AMyUsdStageActor* BlueprintDerivedStageActor)
+bool USDTestsBlueprintLibrary::RecompileBlueprintStageActor(AMyUsdStageActor* BlueprintDerivedStageActor)
 {
 #if WITH_EDITOR
 	if (!BlueprintDerivedStageActor)
@@ -58,7 +58,7 @@ bool MyUSDTestsBlueprintLibrary::RecompileBlueprintStageActor(AMyUsdStageActor* 
 	return false;
 }
 
-void MyUSDTestsBlueprintLibrary::DirtyStageActorBlueprint(AMyUsdStageActor* BlueprintDerivedStageActor)
+void USDTestsBlueprintLibrary::DirtyStageActorBlueprint(AMyUsdStageActor* BlueprintDerivedStageActor)
 {
 #if WITH_EDITOR
 	if (!BlueprintDerivedStageActor)
@@ -90,7 +90,7 @@ void MyUSDTestsBlueprintLibrary::DirtyStageActorBlueprint(AMyUsdStageActor* Blue
 #endif	  // WITH_EDITOR
 }
 
-int64 MyUSDTestsBlueprintLibrary::GetSubtreeVertexCount(AMyUsdStageActor* StageActor, const FString& PrimPath)
+int64 USDTestsBlueprintLibrary::GetSubtreeVertexCount(AMyUsdStageActor* StageActor, const FString& PrimPath)
 {
 	if (StageActor)
 	{
@@ -112,7 +112,7 @@ int64 MyUSDTestsBlueprintLibrary::GetSubtreeVertexCount(AMyUsdStageActor* StageA
 	return -1;
 }
 
-int64 MyUSDTestsBlueprintLibrary::GetSubtreeMaterialSlotCount(AMyUsdStageActor* StageActor, const FString& PrimPath)
+int64 USDTestsBlueprintLibrary::GetSubtreeMaterialSlotCount(AMyUsdStageActor* StageActor, const FString& PrimPath)
 {
 	if (StageActor)
 	{
@@ -133,24 +133,24 @@ int64 MyUSDTestsBlueprintLibrary::GetSubtreeMaterialSlotCount(AMyUsdStageActor* 
 	return -1;
 }
 
-void MyUSDTestsBlueprintLibrary::SetUsdStageCpp(AMyUsdStageActor* StageActor, const FString& NewStageRootLayer)
+void USDTestsBlueprintLibrary::SetUsdStageCpp(AMyUsdStageActor* StageActor, const FString& NewStageRootLayer)
 {
 	if (!StageActor)
 	{
 		return;
 	}
 
-	UE::FMyUsdStage NewStage = UnrealUSDWrapper::OpenStage(*NewStageRootLayer, EMyUsdInitialLoadSet::LoadAll);
+	UE::FUsdStage NewStage = UnrealUSDWrapper::OpenStage(*NewStageRootLayer, EUsdInitialLoadSet::LoadAll);
 	StageActor->SetUsdStage(NewStage);
 }
 
-void MyUSDTestsBlueprintLibrary::ClearTransactionHistory()
+void USDTestsBlueprintLibrary::ClearTransactionHistory()
 {
 	if (GEditor)
 	{
 		if (UTransactor* Transactor = GEditor->Trans)
 		{
-			Transactor->Reset(NSLOCTEXT("MyUSDTests", "ClearTransactionHistoryReason", "MyUSDTestsBlueprintLibrary::ClearTransactionHistory was called"));
+			Transactor->Reset(NSLOCTEXT("MyUSDTests", "ClearTransactionHistoryReason", "USDTestsBlueprintLibrary::ClearTransactionHistory was called"));
 		}
 	}
 }

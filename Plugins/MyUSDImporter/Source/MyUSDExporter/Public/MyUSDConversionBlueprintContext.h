@@ -31,9 +31,9 @@ class URectLightComponent;
 class USceneComponent;
 class USkyLightComponent;
 class USpotLightComponent;
-class UMyUsdDrawModeComponent;
-struct FMyUsdCombinedPrimMetadata;
-struct FMyUsdPrimMetadata;
+class UUsdDrawModeComponent;
+struct FUsdCombinedPrimMetadata;
+struct FUsdPrimMetadata;
 
 /**
  * Wraps the UnrealToUsd component conversion functions from the USDUtilities module so that they can be used by
@@ -57,7 +57,7 @@ class UMyUsdConversionBlueprintContext : public UObject
 
 private:
 	/** Stage to use when converting components */
-	UE::FMyUsdStage Stage;
+	UE::FUsdStage Stage;
 
 	/**
 	 * Whether we will erase our current stage from the stage cache when we Cleanup().
@@ -125,7 +125,7 @@ public:
 	UE_API bool ConvertSpotLightComponent(const USpotLightComponent* Component, const FString& PrimPath, float TimeCode = 3.402823466e+38F);
 
 	UFUNCTION(BlueprintCallable, Category = "Component conversion")
-	UE_API bool ConvertDrawModeComponent(const UMyUsdDrawModeComponent* Component, const FString& PrimPath, float TimeCode = 3.402823466e+38F);
+	UE_API bool ConvertDrawModeComponent(const UUsdDrawModeComponent* Component, const FString& PrimPath, float TimeCode = 3.402823466e+38F);
 
 	UFUNCTION(BlueprintCallable, Category = "Component conversion")
 	UE_API bool ConvertAudioComponent(const UAudioComponent* Component, const FString& PrimPath, float TimeCode = 3.402823466e+38F, bool bFilePathOnly = false);
@@ -220,17 +220,17 @@ public:
 
 	/** Adds to Prim the assetInfo metadata the values described in Info */
 	UFUNCTION(BlueprintCallable, Category = "Conversion utils|Metadata")
-	UE_API void SetPrimAssetInfo(const FString& PrimPath, const FMyUsdUnrealAssetInfo& Info);
+	UE_API void SetPrimAssetInfo(const FString& PrimPath, const FUsdUnrealAssetInfo& Info);
 
 	/** Retrieves from Prim the assetInfo metadata values that we use as export metadata, when exporting Unreal assets */
 	UFUNCTION(BlueprintCallable, Category = "Conversion utils|Metadata")
-	UE_API FMyUsdUnrealAssetInfo GetPrimAssetInfo(const FString& PrimPath);
+	UE_API FUsdUnrealAssetInfo GetPrimAssetInfo(const FString& PrimPath);
 
 	/** Applies Metadata to the prim specified at PrimPath, using the provided filters */
 	UFUNCTION(BlueprintCallable, Category = "Conversion utils|Metadata")
 	UE_API void SetPrimMetadata(
 		const FString& PrimPath,
-		const FMyUsdCombinedPrimMetadata& Metadata,
+		const FUsdCombinedPrimMetadata& Metadata,
 		const TArray<FString>& BlockedPrefixFilter,
 		bool bInvertFilter
 	);
@@ -239,14 +239,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Conversion utils|Metadata")
 	UE_API void SetPrimMetadataFromUserData(
 		const FString& PrimPath,
-		const UMyUsdAssetUserData* UserData,
+		const UUsdAssetUserData* UserData,
 		const TArray<FString>& BlockedPrefixFilter,
 		bool bInvertFilter
 	);
 
 	/** Extracts metadata from the prim at PrimPath using the provided filters and returns it */
 	UFUNCTION(BlueprintCallable, Category = "Conversion utils|Metadata")
-	UE_API FMyUsdCombinedPrimMetadata GetPrimMetadata(
+	UE_API FUsdCombinedPrimMetadata GetPrimMetadata(
 		const FString& PrimPath,
 		const TArray<FString>& BlockedPrefixFilter,
 		bool bInvertFilter,
