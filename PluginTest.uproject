@@ -19,7 +19,7 @@
 			]
 		},
 		{
-			"Name": "USDImporter",
+			"Name": "MyUSDImporter",
 			"Enabled": true
 		}
 	]
