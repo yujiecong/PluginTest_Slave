@@ -74,8 +74,9 @@ Intermediate/*
 # Cache files for the editor to use
 DerivedDataCache/*
 
-# Ignore Visual Studio Code workspace
+# Ignore Visual Studio Code workspace and settings
 *.code-workspace
+.vscode/
 
 # Ignore Visual Studio config
 .vsconfig
