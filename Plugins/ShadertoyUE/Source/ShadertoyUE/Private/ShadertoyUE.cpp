@@ -19,7 +19,8 @@ void FShadertoyUEModule::StartupModule()
 
 	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(ShadertoyUETabName, FOnSpawnTab::CreateRaw(this, &FShadertoyUEModule::OnSpawnPluginTab))
 		.SetDisplayName(LOCTEXT("FShadertoyUETabTitle", "Shadertoy UE"))
-		.SetMenuType(ETabSpawnerMenuType::Hidden);
+		.SetGroup(WorkspaceMenu::GetMenuStructure().GetToolsCategory())
+		.SetMenuType(ETabSpawnerMenuType::Enabled);
 }
 
 void FShadertoyUEModule::ShutdownModule()
