@@ -6,7 +6,7 @@
 
 #include "USDMaterialUtils.h"
 #include "USDProjectSettings.h"
-#include "Objects/MyUSDSchemaTranslator.h"
+#include "Objects/USDSchemaTranslator.h"
 #include "MyUSDStageActor.h"
 
 #include "DetailCategoryBuilder.h"

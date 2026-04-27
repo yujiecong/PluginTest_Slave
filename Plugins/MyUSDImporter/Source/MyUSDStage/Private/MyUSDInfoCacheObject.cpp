@@ -2,7 +2,7 @@
 
 #include "MyUSDInfoCacheObject.h"
 
-#include "Objects/MyUSDInfoCache.h"
+#include "Objects/USDInfoCache.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(USDInfoCacheObject)
 

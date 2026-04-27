@@ -4,7 +4,7 @@
 
 #include "USDAssetCache3.h"
 
-#include UE_INLINE_GENERATED_CPP_BY_NAME(USDAssetCacheFactory)
+#include UE_INLINE_GENERATED_CPP_BY_NAME(MyUSDAssetCacheFactory)
 
 UMyUsdAssetCacheFactory::UMyUsdAssetCacheFactory(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)

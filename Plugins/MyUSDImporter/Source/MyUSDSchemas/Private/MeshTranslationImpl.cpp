@@ -2,9 +2,9 @@
 
 #include "MeshTranslationImpl.h"
 
-#include "Objects/MyUSDInfoCache.h"
+#include "Objects/USDInfoCache.h"
 #include "Objects/MyUSDPrimLinkCache.h"
-#include "Objects/MyUSDSchemaTranslator.h"
+#include "Objects/USDSchemaTranslator.h"
 #include "UnrealUSDWrapper.h"
 #include "USDAssetCache3.h"
 #include "USDAssetUserData.h"

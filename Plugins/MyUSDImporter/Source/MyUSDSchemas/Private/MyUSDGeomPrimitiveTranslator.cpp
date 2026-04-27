@@ -4,7 +4,7 @@
 
 #if USE_USD_SDK
 
-#include "Objects/MyUSDInfoCache.h"
+#include "Objects/USDInfoCache.h"
 #include "Objects/MyUSDPrimLinkCache.h"
 #include "UnrealUSDWrapper.h"
 #include "USDConversionUtils.h"

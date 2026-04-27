@@ -5,7 +5,7 @@
 #if USE_USD_SDK
 
 #include "MeshTranslationImpl.h"
-#include "Objects/MyUSDInfoCache.h"
+#include "Objects/USDInfoCache.h"
 #include "Objects/MyUSDPrimLinkCache.h"
 #include "UnrealUSDWrapper.h"
 #include "USDAssetCache3.h"

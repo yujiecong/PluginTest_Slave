@@ -2,7 +2,7 @@
 
 #include "MyUSDTestsBlueprintLibrary.h"
 
-#include "Objects/MyUSDInfoCache.h"
+#include "Objects/USDInfoCache.h"
 #include "USDErrorUtils.h"
 #include "MyUSDStageActor.h"
 

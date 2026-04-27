@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Objects/MyUSDInfoCache.h"
+#include "Objects/USDInfoCache.h"
 #include "MyUSDInfoCacheObject.h"
 #include "MyUSDLevelSequenceHelper.h"
 #include "USDListener.h"

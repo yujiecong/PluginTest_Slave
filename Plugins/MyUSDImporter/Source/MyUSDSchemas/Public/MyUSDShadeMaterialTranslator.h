@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Objects/MyUSDSchemaTranslator.h"
+#include "Objects/USDSchemaTranslator.h"
 
 #define UE_API MYUSDSCHEMAS_API
 
