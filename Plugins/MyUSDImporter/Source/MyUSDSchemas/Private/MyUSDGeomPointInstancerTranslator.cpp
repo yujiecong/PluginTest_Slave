@@ -4,17 +4,17 @@
 
 #include "MeshTranslationImpl.h"
 #include "Objects/MyUSDPrimLinkCache.h"
-#include "MyUSDAssetCache3.h"
-#include "MyUSDAssetUserData.h"
-#include "MyUSDConversionUtils.h"
-#include "MyUSDDrawModeComponent.h"
-#include "MyUSDErrorUtils.h"
-#include "MyUSDGeomMeshConversion.h"
+#include "USDAssetCache3.h"
+#include "USDAssetUserData.h"
+#include "USDConversionUtils.h"
+#include "USDDrawModeComponent.h"
+#include "USDErrorUtils.h"
+#include "USDGeomMeshConversion.h"
 #include "MyUSDGeomMeshTranslator.h"
-#include "MyUSDMemory.h"
-#include "MyUSDPrimConversion.h"
-#include "MyUSDTypesConversion.h"
-#include "UsdWrappers/MyUsdTyped.h"
+#include "USDMemory.h"
+#include "USDPrimConversion.h"
+#include "USDTypesConversion.h"
+#include "UsdWrappers/UsdTyped.h"
 
 #if WITH_EDITOR
 #include "Editor.h"
@@ -28,7 +28,7 @@
 #include "Misc/ScopedSlowTask.h"
 #include "Modules/ModuleManager.h"
 
-#include "MyUSDIncludesStart.h"
+#include "USDIncludesStart.h"
 #include "pxr/usd/usd/prim.h"
 #include "pxr/usd/usd/primRange.h"
 #include "pxr/usd/usd/stage.h"
@@ -37,7 +37,7 @@
 #include "pxr/usd/usdGeom/pointInstancer.h"
 #include "pxr/usd/usdGeom/xform.h"
 #include "pxr/usd/usdGeom/xformable.h"
-#include "MyUSDIncludesEnd.h"
+#include "USDIncludesEnd.h"
 
 #define LOCTEXT_NAMESPACE "USDGeomPointInstancer"
 

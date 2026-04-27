@@ -3,7 +3,7 @@
 #include "MyUSDStageImporterModule.h"
 
 #include "UnrealUSDWrapper.h"
-#include "MyUSDMemory.h"
+#include "USDMemory.h"
 #include "MyUSDStageImporter.h"
 #include "MyUSDStageImportOptionsCustomization.h"
 

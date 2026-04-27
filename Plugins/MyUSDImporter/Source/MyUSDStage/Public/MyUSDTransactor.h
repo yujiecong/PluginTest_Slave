@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "UObject/WeakObjectPtr.h"
 
-#include "MyUSDTransactor.generated.h"
+#include "USDTransactor.generated.h"
 
 #define UE_API MYUSDSTAGE_API
 

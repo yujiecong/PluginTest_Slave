@@ -2,12 +2,12 @@
 
 #include "MyUSDIntegrationsViewModel.h"
 
-#include "MyUSDIntegrationUtils.h"
-#include "MyUSDTypesConversion.h"
+#include "USDIntegrationUtils.h"
+#include "USDTypesConversion.h"
 
-#include "MyUsdWrappers/SdfPath.h"
-#include "UsdWrappers/MyUsdPrim.h"
-#include "UsdWrappers/MyUsdStage.h"
+#include "UsdWrappers/SdfPath.h"
+#include "UsdWrappers/UsdPrim.h"
+#include "UsdWrappers/UsdStage.h"
 
 void FMyUsdIntegrationsViewModel::UpdateAttributes(const UE::FUsdStageWeak& InUsdStage, const TCHAR* InPrimPath)
 {

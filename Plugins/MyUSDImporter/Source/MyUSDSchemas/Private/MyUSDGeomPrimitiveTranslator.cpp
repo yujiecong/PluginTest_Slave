@@ -7,15 +7,15 @@
 #include "Objects/MyUSDInfoCache.h"
 #include "Objects/MyUSDPrimLinkCache.h"
 #include "UnrealUSDWrapper.h"
-#include "MyUSDConversionUtils.h"
-#include "MyUSDDrawModeComponent.h"
-#include "MyUSDGeomMeshConversion.h"
+#include "USDConversionUtils.h"
+#include "USDDrawModeComponent.h"
+#include "USDGeomMeshConversion.h"
 #include "MyUSDGeomMeshTranslator.h"
-#include "MyUSDMemory.h"
-#include "MyUSDTypesConversion.h"
+#include "USDMemory.h"
+#include "USDTypesConversion.h"
 
-#include "MyUsdWrappers/SdfPath.h"
-#include "UsdWrappers/MyUsdPrim.h"
+#include "UsdWrappers/SdfPath.h"
+#include "UsdWrappers/UsdPrim.h"
 
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
@@ -23,9 +23,9 @@
 #include "MeshTranslationImpl.h"
 #include "StaticMeshAttributes.h"
 
-#include "MyUSDIncludesStart.h"
+#include "USDIncludesStart.h"
 #include "pxr/usd/usd/prim.h"
-#include "MyUSDIncludesEnd.h"
+#include "USDIncludesEnd.h"
 
 namespace UsdGeomPrimitiveTranslatorImpl
 {

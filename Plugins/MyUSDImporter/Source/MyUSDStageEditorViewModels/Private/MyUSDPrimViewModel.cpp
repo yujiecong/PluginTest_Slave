@@ -3,24 +3,24 @@
 #include "MyUSDPrimViewModel.h"
 
 #include "UnrealUSDWrapper.h"
-#include "MyUSDConversionUtils.h"
-#include "MyUSDIntegrationUtils.h"
-#include "MyUSDMemory.h"
-#include "MyUSDTypesConversion.h"
+#include "USDConversionUtils.h"
+#include "USDIntegrationUtils.h"
+#include "USDMemory.h"
+#include "USDTypesConversion.h"
 
-#include "MyUsdWrappers/SdfPath.h"
-#include "UsdWrappers/MyUsdPrim.h"
-#include "UsdWrappers/MyUsdStage.h"
+#include "UsdWrappers/SdfPath.h"
+#include "UsdWrappers/UsdPrim.h"
+#include "UsdWrappers/UsdStage.h"
 
 #if USE_USD_SDK
-#include "MyUSDIncludesStart.h"
+#include "USDIncludesStart.h"
 #include "pxr/usd/sdf/path.h"
 #include "pxr/usd/usd/payloads.h"
 #include "pxr/usd/usd/prim.h"
 #include "pxr/usd/usdGeom/xform.h"
 #include "pxr/usd/usdSkel/root.h"
 #include "pxr/usd/usdSkel/skeleton.h"
-#include "MyUSDIncludesEnd.h"
+#include "USDIncludesEnd.h"
 #endif	  // #if USE_USD_SDK
 
 #define LOCTEXT_NAMESPACE "USDPrimViewModel"

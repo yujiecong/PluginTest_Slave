@@ -2,7 +2,7 @@
 
 #include "MyUSDAssetCacheFactory.h"
 
-#include "MyUSDAssetCache3.h"
+#include "USDAssetCache3.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(USDAssetCacheFactory)
 

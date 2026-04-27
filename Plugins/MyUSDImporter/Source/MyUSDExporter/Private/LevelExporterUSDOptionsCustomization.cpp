@@ -4,8 +4,8 @@
 
 #include "LevelExporterUSDOptions.h"
 #include "LevelSequenceExporterUSDOptions.h"
-#include "MyUSDClassesModule.h"
-#include "MyUSDConversionUtils.h"
+#include "USDClassesModule.h"
+#include "USDConversionUtils.h"
 
 #include "Brushes/SlateColorBrush.h"
 #include "CoreMinimal.h"

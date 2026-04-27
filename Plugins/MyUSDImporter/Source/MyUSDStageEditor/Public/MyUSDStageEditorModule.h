@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "MyUsdWrappers/ForwardDeclarations.h"
+#include "UsdWrappers/ForwardDeclarations.h"
 
 #include "Containers/Array.h"
 #include "Modules/ModuleInterface.h"

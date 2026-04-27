@@ -3,21 +3,21 @@
 #include "MyUSDVolVolumeTranslator.h"
 
 #include "Objects/MyUSDPrimLinkCache.h"
-#include "MyUSDAssetImportData.h"
-#include "MyUSDAssetUserData.h"
-#include "MyUSDConversionUtils.h"
-#include "MyUSDDrawModeComponent.h"
-#include "MyUSDErrorUtils.h"
-#include "MyUSDIntegrationUtils.h"
-#include "MyUSDLayerUtils.h"
-#include "MyUSDMemory.h"
-#include "MyUSDObjectUtils.h"
-#include "MyUSDPrimConversion.h"
-#include "MyUSDProjectSettings.h"
-#include "MyUSDShadeConversion.h"
-#include "MyUSDTypesConversion.h"
-#include "MyUsdWrappers/SdfPath.h"
-#include "UsdWrappers/MyUsdPrim.h"
+#include "USDAssetImportData.h"
+#include "USDAssetUserData.h"
+#include "USDConversionUtils.h"
+#include "USDDrawModeComponent.h"
+#include "USDErrorUtils.h"
+#include "USDIntegrationUtils.h"
+#include "USDLayerUtils.h"
+#include "USDMemory.h"
+#include "USDObjectUtils.h"
+#include "USDPrimConversion.h"
+#include "USDProjectSettings.h"
+#include "USDShadeConversion.h"
+#include "USDTypesConversion.h"
+#include "UsdWrappers/SdfPath.h"
+#include "UsdWrappers/UsdPrim.h"
 
 #include "Components/HeterogeneousVolumeComponent.h"
 #include "Engine/Level.h"
@@ -37,14 +37,14 @@
 
 #if USE_USD_SDK
 
-#include "MyUSDIncludesStart.h"
+#include "USDIncludesStart.h"
 #include <pxr/usd/usd/prim.h>
 #include <pxr/usd/usd/stage.h>
 #include <pxr/usd/usdShade/material.h>
 #include <pxr/usd/usdShade/materialBindingAPI.h>
 #include <pxr/usd/usdVol/openVDBAsset.h>
 #include <pxr/usd/usdVol/volume.h>
-#include "MyUSDIncludesEnd.h"
+#include "USDIncludesEnd.h"
 
 #define LOCTEXT_NAMESPACE "USDVolVolumeTranslator"
 

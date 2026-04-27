@@ -4,13 +4,13 @@
 
 #include "Objects/MyUSDInfoCache.h"
 #include "MyUSDLevelSequenceHelper.h"
-#include "MyUSDStageOptions.h"
+#include "USDStageOptions.h"
 
-#include "UsdWrappers/MyUsdStage.h"
+#include "UsdWrappers/UsdStage.h"
 
 #include "CoreMinimal.h"
 
-#include "MyUSDStageImportContext.generated.h"
+#include "USDStageImportContext.generated.h"
 
 #define UE_API MYUSDSTAGEIMPORTER_API
 

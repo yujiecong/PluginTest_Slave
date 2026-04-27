@@ -2,7 +2,7 @@
 
 #include "MyUSDTranslatorUtils.h"
 
-#include "MyUSDAssetCache3.h"
+#include "USDAssetCache3.h"
 #include "Objects/MyUSDPrimLinkCache.h"
 
 #include "AssetRegistry/AssetRegistryModule.h"

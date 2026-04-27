@@ -4,9 +4,9 @@
 
 #include "Widgets/IMyUSDTreeViewItem.h"
 
-#include "MyUsdWrappers/ForwardDeclarations.h"
-#include "UsdWrappers/MyUsdPrim.h"
-#include "UsdWrappers/MyUsdStage.h"
+#include "UsdWrappers/ForwardDeclarations.h"
+#include "UsdWrappers/UsdPrim.h"
+#include "UsdWrappers/UsdStage.h"
 
 #include "Internationalization/Text.h"
 #include "Templates/SharedPointer.h"

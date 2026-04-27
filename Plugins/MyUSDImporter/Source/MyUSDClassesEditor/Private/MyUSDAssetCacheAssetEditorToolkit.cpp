@@ -2,7 +2,7 @@
 
 #include "MyUSDAssetCacheAssetEditorToolkit.h"
 
-#include "MyUSDAssetCache3.h"
+#include "USDAssetCache3.h"
 
 #include "Modules/ModuleManager.h"
 #include "PropertyEditorModule.h"

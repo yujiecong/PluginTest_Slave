@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include "MyUsdWrappers/ForwardDeclarations.h"
-#include "UsdWrappers/MyUsdStage.h"
+#include "UsdWrappers/ForwardDeclarations.h"
+#include "UsdWrappers/UsdStage.h"
 #include "Widgets/SMyUSDTreeView.h"
 
 #include "Widgets/Views/SHeaderRow.h"

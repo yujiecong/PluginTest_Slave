@@ -4,8 +4,8 @@
 
 #include "MyUSDStageActor.h"
 #include "MyUSDStageEditorModule.h"
-#include "MyUsdWrappers/SdfLayer.h"
-#include "UsdWrappers/MyUsdPrim.h"
+#include "UsdWrappers/SdfLayer.h"
+#include "UsdWrappers/UsdPrim.h"
 
 #include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"

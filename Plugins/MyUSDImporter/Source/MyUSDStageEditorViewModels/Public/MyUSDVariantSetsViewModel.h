@@ -4,7 +4,7 @@
 
 #include "Templates/SharedPointer.h"
 
-#include "UsdWrappers/MyUsdStage.h"
+#include "UsdWrappers/UsdStage.h"
 
 #define UE_API MYUSDSTAGEEDITORVIEWMODELS_API
 

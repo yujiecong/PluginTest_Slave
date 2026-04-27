@@ -3,16 +3,16 @@
 #pragma once
 
 #include "UnrealUSDWrapper.h"
-#include "MyUSDAssetUserData.h"
-#include "MyUSDStageOptions.h"
-#include "MyUSDUnrealAssetInfo.h"
-#include "MyUsdWrappers/SdfLayer.h"
-#include "UsdWrappers/MyUsdStage.h"
+#include "USDAssetUserData.h"
+#include "USDStageOptions.h"
+#include "USDUnrealAssetInfo.h"
+#include "UsdWrappers/SdfLayer.h"
+#include "UsdWrappers/UsdStage.h"
 
 #include "Engine/EngineTypes.h"
 #include "MaterialOptions.h"
 
-#include "MyUSDConversionBlueprintContext.generated.h"
+#include "USDConversionBlueprintContext.generated.h"
 
 #define UE_API MYUSDEXPORTER_API
 

@@ -4,17 +4,17 @@
 
 #include "MeshTranslationImpl.h"
 #include "Objects/MyUSDPrimLinkCache.h"
-#include "MyUSDAssetUserData.h"
-#include "MyUSDClassesModule.h"
-#include "MyUSDErrorUtils.h"
-#include "MyUSDMemory.h"
-#include "MyUSDObjectUtils.h"
-#include "MyUSDPrimConversion.h"
-#include "MyUSDProjectSettings.h"
-#include "MyUSDShadeConversion.h"
+#include "USDAssetUserData.h"
+#include "USDClassesModule.h"
+#include "USDErrorUtils.h"
+#include "USDMemory.h"
+#include "USDObjectUtils.h"
+#include "USDPrimConversion.h"
+#include "USDProjectSettings.h"
+#include "USDShadeConversion.h"
 #include "MyUSDTranslatorUtils.h"
-#include "MyUSDTypesConversion.h"
-#include "MyUsdWrappers/SdfPath.h"
+#include "USDTypesConversion.h"
+#include "UsdWrappers/SdfPath.h"
 
 #include "EditorFramework/AssetImportData.h"
 #include "Engine/Level.h"
@@ -26,11 +26,11 @@
 
 #if USE_USD_SDK
 
-#include "MyUSDIncludesStart.h"
+#include "USDIncludesStart.h"
 #include "pxr/base/tf/token.h"
 #include "pxr/usd/usdShade/material.h"
 #include "pxr/usd/usdShade/tokens.h"
-#include "MyUSDIncludesEnd.h"
+#include "USDIncludesEnd.h"
 
 #define LOCTEXT_NAMESPACE "USDShadeMaterialTranslator"
 

@@ -3,7 +3,7 @@
 #if WITH_DEV_AUTOMATION_TESTS
 
 #include "UnrealUSDWrapper.h"
-#include "MyUsdWrappers/VtValue.h"
+#include "UsdWrappers/VtValue.h"
 
 #include "Misc/AutomationTest.h"
 

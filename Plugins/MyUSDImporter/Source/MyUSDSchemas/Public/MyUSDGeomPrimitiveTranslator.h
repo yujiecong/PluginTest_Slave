@@ -4,7 +4,7 @@
 
 #include "MyUSDGeomXformableTranslator.h"
 
-#include "MyUsdWrappers/SdfPath.h"
+#include "UsdWrappers/SdfPath.h"
 
 #define UE_API MYUSDSCHEMAS_API
 

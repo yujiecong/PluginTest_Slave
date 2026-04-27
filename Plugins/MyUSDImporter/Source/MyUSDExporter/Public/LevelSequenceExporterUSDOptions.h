@@ -4,7 +4,7 @@
 
 #include "LevelExporterUSDOptions.h"
 #include "UnrealUSDWrapper.h"
-#include "MyUSDStageOptions.h"
+#include "USDStageOptions.h"
 
 #include "Engine/EngineTypes.h"
 

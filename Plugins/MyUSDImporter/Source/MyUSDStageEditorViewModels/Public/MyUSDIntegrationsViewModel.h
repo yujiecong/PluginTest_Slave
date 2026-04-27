@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include "UsdWrappers/MyUsdAttribute.h"
-#include "UsdWrappers/MyUsdStage.h"
+#include "UsdWrappers/UsdAttribute.h"
+#include "UsdWrappers/UsdStage.h"
 
 #include "CoreMinimal.h"
 #include "Templates/SharedPointer.h"

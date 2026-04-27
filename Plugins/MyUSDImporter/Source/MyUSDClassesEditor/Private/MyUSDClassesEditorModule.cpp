@@ -2,7 +2,7 @@
 
 #include "MyUSDClassesEditorModule.h"
 
-#include "MyUSDAssetCache2.h"
+#include "USDAssetCache2.h"
 
 #include "Modules/ModuleManager.h"
 

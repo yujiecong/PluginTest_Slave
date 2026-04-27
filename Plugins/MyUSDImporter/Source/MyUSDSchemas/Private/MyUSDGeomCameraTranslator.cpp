@@ -2,21 +2,21 @@
 
 #include "MyUSDGeomCameraTranslator.h"
 
-#include "MyUSDDrawModeComponent.h"
-#include "MyUSDMemory.h"
-#include "MyUSDPrimConversion.h"
-#include "MyUSDTypesConversion.h"
+#include "USDDrawModeComponent.h"
+#include "USDMemory.h"
+#include "USDPrimConversion.h"
+#include "USDTypesConversion.h"
 
-#include "UsdWrappers/MyUsdPrim.h"
+#include "UsdWrappers/UsdPrim.h"
 
 #include "CineCameraActor.h"
 #include "CineCameraComponent.h"
 
 #if USE_USD_SDK
-#include "MyUSDIncludesStart.h"
+#include "USDIncludesStart.h"
 #include "pxr/usd/usd/attribute.h"
 #include "pxr/usd/usd/prim.h"
-#include "MyUSDIncludesEnd.h"
+#include "USDIncludesEnd.h"
 
 USceneComponent* FMyUsdGeomCameraTranslator::CreateComponents()
 {

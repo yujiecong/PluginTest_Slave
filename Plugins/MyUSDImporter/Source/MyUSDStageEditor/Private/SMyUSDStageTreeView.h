@@ -3,7 +3,7 @@
 #pragma once
 
 #include "MyUSDPrimViewModel.h"
-#include "UsdWrappers/MyUsdStage.h"
+#include "UsdWrappers/UsdStage.h"
 #include "Widgets/SMyUSDTreeView.h"
 
 class AMyUsdStageActor;

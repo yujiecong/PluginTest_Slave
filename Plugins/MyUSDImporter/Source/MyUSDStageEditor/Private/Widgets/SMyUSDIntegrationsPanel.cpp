@@ -7,16 +7,16 @@
 #if USE_USD_SDK
 
 #include "SMyUSDStageEditorStyle.h"
-#include "MyUSDAttributeUtils.h"
-#include "MyUSDIntegrationUtils.h"
-#include "MyUSDMemory.h"
-#include "MyUSDTypesConversion.h"
-#include "MyUSDValueConversion.h"
+#include "USDAttributeUtils.h"
+#include "USDIntegrationUtils.h"
+#include "USDMemory.h"
+#include "USDTypesConversion.h"
+#include "USDValueConversion.h"
 
-#include "MyUsdWrappers/SdfChangeBlock.h"
-#include "UsdWrappers/MyUsdAttribute.h"
-#include "UsdWrappers/MyUsdPrim.h"
-#include "MyUsdWrappers/VtValue.h"
+#include "UsdWrappers/SdfChangeBlock.h"
+#include "UsdWrappers/UsdAttribute.h"
+#include "UsdWrappers/UsdPrim.h"
+#include "UsdWrappers/VtValue.h"
 
 #include "ISinglePropertyView.h"
 #include "Modules/ModuleManager.h"

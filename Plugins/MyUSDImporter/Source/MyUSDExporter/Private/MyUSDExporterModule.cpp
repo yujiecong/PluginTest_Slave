@@ -4,10 +4,10 @@
 
 #include "LevelExporterUSDOptionsCustomization.h"
 #include "MyUSDAssetOptions.h"
-#include "MyUSDErrorUtils.h"
-#include "MyUSDMemory.h"
+#include "USDErrorUtils.h"
+#include "USDMemory.h"
 
-#include "MyUsdWrappers/SdfLayer.h"
+#include "UsdWrappers/SdfLayer.h"
 
 #include "DetailLayoutBuilder.h"
 #include "Editor.h"

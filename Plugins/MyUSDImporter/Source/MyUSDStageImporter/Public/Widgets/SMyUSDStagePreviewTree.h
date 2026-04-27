@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "MyUsdWrappers/ForwardDeclarations.h"
+#include "UsdWrappers/ForwardDeclarations.h"
 #include "Widgets/IMyUSDTreeViewItem.h"
 #include "Widgets/SMyUSDTreeView.h"
 

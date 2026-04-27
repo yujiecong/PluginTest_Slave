@@ -5,7 +5,7 @@
 #include "Engine/EngineTypes.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 
-#include "MyUSDStageEditorBlueprintLibrary.generated.h"
+#include "USDStageEditorBlueprintLibrary.generated.h"
 
 #define UE_API MYUSDSTAGEEDITOR_API
 

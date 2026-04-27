@@ -3,7 +3,7 @@
 #include "MyUSDStageModule.h"
 
 #include "MyUSDLocatorFragments.h"
-#include "MyUSDMemory.h"
+#include "USDMemory.h"
 #include "MyUSDStageActor.h"
 #include "MyUSDStageActorCustomization.h"
 

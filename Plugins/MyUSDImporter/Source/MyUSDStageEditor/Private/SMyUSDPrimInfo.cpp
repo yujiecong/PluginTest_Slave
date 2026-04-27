@@ -7,7 +7,7 @@
 #include "Widgets/SMyUSDReferencesList.h"
 #include "Widgets/SMyUSDVariantSetsList.h"
 
-#include "UsdWrappers/MyUsdStage.h"
+#include "UsdWrappers/UsdStage.h"
 
 #include "Widgets/SBoxPanel.h"
 

@@ -2,14 +2,14 @@
 
 #pragma once
 
-#include "MyUSDMetadata.h"
-#include "MyUSDProjectSettings.h"
+#include "USDMetadata.h"
+#include "USDProjectSettings.h"
 
 #include "AnalyticsBlueprintLibrary.h"
 #include "Engine/EngineTypes.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 
-#include "MyUSDConversionBlueprintLibrary.generated.h"
+#include "USDConversionBlueprintLibrary.generated.h"
 
 #define UE_API MYUSDEXPORTER_API
 

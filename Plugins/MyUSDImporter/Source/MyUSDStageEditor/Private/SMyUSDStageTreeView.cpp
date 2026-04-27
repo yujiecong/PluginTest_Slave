@@ -4,20 +4,20 @@
 
 #include "SMyUSDStageEditorStyle.h"
 #include "UnrealUSDWrapper.h"
-#include "MyUSDAttributeUtils.h"
-#include "MyUSDConversionUtils.h"
-#include "MyUSDDuplicateType.h"
-#include "MyUSDLayerUtils.h"
-#include "MyUSDMemory.h"
+#include "USDAttributeUtils.h"
+#include "USDConversionUtils.h"
+#include "USDDuplicateType.h"
+#include "USDLayerUtils.h"
+#include "USDMemory.h"
 #include "MyUSDOptionsWindow.h"
 #include "MyUSDPrimViewModel.h"
-#include "MyUSDProjectSettings.h"
-#include "MyUSDReferenceOptions.h"
-#include "MyUSDTypesConversion.h"
-#include "MyUsdWrappers/SdfChangeBlock.h"
-#include "MyUsdWrappers/SdfPath.h"
-#include "UsdWrappers/MyUsdPrim.h"
-#include "UsdWrappers/MyUsdStage.h"
+#include "USDProjectSettings.h"
+#include "USDReferenceOptions.h"
+#include "USDTypesConversion.h"
+#include "UsdWrappers/SdfChangeBlock.h"
+#include "UsdWrappers/SdfPath.h"
+#include "UsdWrappers/UsdPrim.h"
+#include "UsdWrappers/UsdStage.h"
 
 #include "Editor.h"
 #include "Framework/Commands/GenericCommands.h"
@@ -38,10 +38,10 @@
 
 #if USE_USD_SDK
 
-#include "MyUSDIncludesStart.h"
+#include "USDIncludesStart.h"
 #include "pxr/usd/usdPhysics/tokens.h"
 #include "pxr/usd/usdSkel/tokens.h"
-#include "MyUSDIncludesEnd.h"
+#include "USDIncludesEnd.h"
 
 namespace UE::USDStageTreeView::Private
 {

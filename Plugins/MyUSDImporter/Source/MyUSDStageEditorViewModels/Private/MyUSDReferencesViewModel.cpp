@@ -2,16 +2,16 @@
 
 #include "MyUSDReferencesViewModel.h"
 
-#include "MyUSDErrorUtils.h"
-#include "MyUSDMemory.h"
-#include "MyUSDTypesConversion.h"
+#include "USDErrorUtils.h"
+#include "USDMemory.h"
+#include "USDTypesConversion.h"
 
-#include "MyUsdWrappers/SdfPath.h"
-#include "UsdWrappers/MyUsdPrim.h"
-#include "UsdWrappers/MyUsdStage.h"
+#include "UsdWrappers/SdfPath.h"
+#include "UsdWrappers/UsdPrim.h"
+#include "UsdWrappers/UsdStage.h"
 
 #if USE_USD_SDK
-#include "MyUSDIncludesStart.h"
+#include "USDIncludesStart.h"
 #include "pxr/usd/pcp/layerStack.h"
 #include "pxr/usd/sdf/payload.h"
 #include "pxr/usd/sdf/reference.h"
@@ -19,7 +19,7 @@
 #include "pxr/usd/usd/prim.h"
 #include "pxr/usd/usd/primCompositionQuery.h"
 #include "pxr/usd/usd/references.h"
-#include "MyUSDIncludesEnd.h"
+#include "USDIncludesEnd.h"
 #endif	  // #if USE_USD_SDK
 
 void FMyUsdReferencesViewModel::UpdateReferences(const UE::FUsdStageWeak& InUsdStage, const TCHAR* InPrimPath)

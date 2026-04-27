@@ -3,7 +3,7 @@
 #include "MyUSDTestsBlueprintLibrary.h"
 
 #include "Objects/MyUSDInfoCache.h"
-#include "MyUSDErrorUtils.h"
+#include "USDErrorUtils.h"
 #include "MyUSDStageActor.h"
 
 #include "CoreMinimal.h"

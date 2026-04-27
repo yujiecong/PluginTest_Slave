@@ -6,7 +6,7 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "UObject/ObjectMacros.h"
 
-#include "MyUSDDynamicBindingResolverLibrary.generated.h"
+#include "USDDynamicBindingResolverLibrary.generated.h"
 
 #define UE_API MYUSDSTAGE_API
 

@@ -6,17 +6,17 @@
 #include "Objects/MyUSDPrimLinkCache.h"
 #include "Objects/MyUSDSchemaTranslator.h"
 #include "UnrealUSDWrapper.h"
-#include "MyUSDAssetCache3.h"
-#include "MyUSDAssetUserData.h"
-#include "MyUSDClassesModule.h"
-#include "MyUSDConversionUtils.h"
-#include "MyUSDErrorUtils.h"
-#include "MyUSDGeomMeshConversion.h"
-#include "MyUSDMemory.h"
-#include "MyUSDObjectUtils.h"
-#include "MyUSDProjectSettings.h"
-#include "MyUSDShadeConversion.h"
-#include "MyUSDTypesConversion.h"
+#include "USDAssetCache3.h"
+#include "USDAssetUserData.h"
+#include "USDClassesModule.h"
+#include "USDConversionUtils.h"
+#include "USDErrorUtils.h"
+#include "USDGeomMeshConversion.h"
+#include "USDMemory.h"
+#include "USDObjectUtils.h"
+#include "USDProjectSettings.h"
+#include "USDShadeConversion.h"
+#include "USDTypesConversion.h"
 
 #include "Components/MeshComponent.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -34,11 +34,11 @@
 
 #if USE_USD_SDK
 
-#include "MyUSDIncludesStart.h"
+#include "USDIncludesStart.h"
 #include "pxr/usd/usd/prim.h"
 #include "pxr/usd/usd/stage.h"
 #include "pxr/usd/usdGeom/mesh.h"
-#include "MyUSDIncludesEnd.h"
+#include "USDIncludesEnd.h"
 
 #define LOCTEXT_NAMESPACE "MeshTranslationImpl"
 

@@ -4,9 +4,9 @@
 
 #include "Templates/SharedPointer.h"
 
-#include "MyUsdWrappers/ForwardDeclarations.h"
-#include "MyUsdWrappers/SdfPath.h"
-#include "UsdWrappers/MyUsdStage.h"
+#include "UsdWrappers/ForwardDeclarations.h"
+#include "UsdWrappers/SdfPath.h"
+#include "UsdWrappers/UsdStage.h"
 
 #define UE_API MYUSDSTAGEEDITORVIEWMODELS_API
 

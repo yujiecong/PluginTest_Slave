@@ -2,20 +2,20 @@
 
 #include "MyUSDLayersViewModel.h"
 
-#include "MyUSDLayerUtils.h"
-#include "MyUSDMemory.h"
-#include "MyUSDTypesConversion.h"
+#include "USDLayerUtils.h"
+#include "USDMemory.h"
+#include "USDTypesConversion.h"
 
-#include "MyUsdWrappers/SdfLayer.h"
+#include "UsdWrappers/SdfLayer.h"
 
 #if USE_USD_SDK
-#include "MyUSDIncludesStart.h"
+#include "USDIncludesStart.h"
 #include "pxr/usd/pcp/layerStack.h"
 #include "pxr/usd/sdf/layer.h"
 #include "pxr/usd/sdf/layerTree.h"
 #include "pxr/usd/sdf/layerUtils.h"
 #include "pxr/usd/usd/stage.h"
-#include "MyUSDIncludesEnd.h"
+#include "USDIncludesEnd.h"
 #endif	  // #if USE_USD_SDK
 
 FMyUsdLayerViewModel::FMyUsdLayerViewModel(

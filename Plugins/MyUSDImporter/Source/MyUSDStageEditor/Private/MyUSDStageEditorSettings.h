@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 
-#include "MyUSDStageEditorSettings.generated.h"
+#include "USDStageEditorSettings.generated.h"
 
 UCLASS(config = EditorPerProjectUserSettings)
 class UMyUsdStageEditorSettings : public UObject

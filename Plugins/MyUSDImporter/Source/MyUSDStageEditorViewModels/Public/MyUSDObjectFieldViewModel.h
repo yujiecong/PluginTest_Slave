@@ -2,9 +2,9 @@
 
 #pragma once
 
-#include "MyUSDValueConversion.h"
+#include "USDValueConversion.h"
 
-#include "UsdWrappers/MyUsdStage.h"
+#include "UsdWrappers/UsdStage.h"
 
 #include "Templates/SharedPointer.h"
 #include "Widgets/Views/SHeaderRow.h"

@@ -3,7 +3,7 @@
 #pragma once
 
 #include "MyUSDStageViewModel.h"
-#include "MyUsdWrappers/ForwardDeclarations.h"
+#include "UsdWrappers/ForwardDeclarations.h"
 
 #include "Animation/CurveSequence.h"
 #include "Templates/SharedPointer.h"

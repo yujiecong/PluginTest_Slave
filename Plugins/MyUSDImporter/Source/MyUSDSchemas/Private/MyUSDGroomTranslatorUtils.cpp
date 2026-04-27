@@ -7,12 +7,12 @@
 #include "Objects/MyUSDInfoCache.h"
 #include "Objects/MyUSDPrimLinkCache.h"
 #include "UnrealUSDWrapper.h"
-#include "MyUSDAssetCache3.h"
-#include "MyUSDClassesModule.h"
-#include "MyUSDIntegrationUtils.h"
-#include "MyUSDMemory.h"
-#include "MyUSDTypesConversion.h"
-#include "MyUsdWrappers/SdfPath.h"
+#include "USDAssetCache3.h"
+#include "USDClassesModule.h"
+#include "USDIntegrationUtils.h"
+#include "USDMemory.h"
+#include "USDTypesConversion.h"
+#include "UsdWrappers/SdfPath.h"
 
 #include "Engine/SkeletalMesh.h"
 #include "GeometryCache.h"
@@ -22,15 +22,15 @@
 #include "Misc/SecureHash.h"
 #include "UObject/Package.h"
 #include "UObject/UObjectGlobals.h"
-#include "MyUSDConversionUtils.h"
+#include "USDConversionUtils.h"
 
-#include "MyUSDIncludesStart.h"
+#include "USDIncludesStart.h"
 #include "pxr/usd/usd/prim.h"
 #include "pxr/usd/usd/relationship.h"
 #include "pxr/usd/usdGeom/mesh.h"
 #include "pxr/usd/usdSkel/root.h"
 #include "pxr/usd/usdSkel/skeleton.h"
-#include "MyUSDIncludesEnd.h"
+#include "USDIncludesEnd.h"
 
 namespace UE::UsdGroomTranslatorUtils::Private
 {

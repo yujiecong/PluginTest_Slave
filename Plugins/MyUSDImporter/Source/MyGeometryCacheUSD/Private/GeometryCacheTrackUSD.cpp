@@ -2,9 +2,9 @@
 
 #include "GeometryCacheTrackUSD.h"
 
-#include "MyUSDErrorUtils.h"
-#include "MyUsdWrappers/SdfLayer.h"
-#include "UsdWrappers/MyUsdStage.h"
+#include "USDErrorUtils.h"
+#include "UsdWrappers/SdfLayer.h"
+#include "UsdWrappers/UsdStage.h"
 
 #include "GeometryCacheHelpers.h"
 #include "GeometryCacheUSDStream.h"

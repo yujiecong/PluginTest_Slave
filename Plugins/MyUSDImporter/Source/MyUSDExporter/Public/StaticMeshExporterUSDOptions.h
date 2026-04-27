@@ -4,7 +4,7 @@
 
 #include "MyUSDAssetOptions.h"
 #include "MyUSDMetadataExportOptions.h"
-#include "MyUSDStageOptions.h"
+#include "USDStageOptions.h"
 
 #include "StaticMeshExporterUSDOptions.generated.h"
 

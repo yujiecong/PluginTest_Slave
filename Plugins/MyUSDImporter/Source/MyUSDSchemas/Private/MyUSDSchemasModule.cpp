@@ -3,8 +3,8 @@
 #include "MyUSDSchemasModule.h"
 
 #include "Objects/MyUSDSchemaTranslator.h"
-#include "MyUSDMemory.h"
-#include "MyUSDTypesConversion.h"
+#include "USDMemory.h"
+#include "USDTypesConversion.h"
 
 #include "AnalyticsEventAttribute.h"
 #include "Modules/ModuleManager.h"
@@ -20,15 +20,15 @@
 #include "MyUSDGroomTranslator.h"
 #include "MyUSDLuxLightTranslator.h"
 #include "MyUSDMediaSpatialAudioTranslator.h"
-#include "MyUSDShadeConversion.h"
+#include "USDShadeConversion.h"
 #include "MyUSDShadeMaterialTranslator.h"
 #include "MyUSDSkelSkeletonTranslator.h"
 #include "MyUSDVolVolumeTranslator.h"
 
-#include "MyUSDIncludesStart.h"
+#include "USDIncludesStart.h"
 #include "pxr/usd/kind/registry.h"
 #include "pxr/usd/usd/primRange.h"
-#include "MyUSDIncludesEnd.h"
+#include "USDIncludesEnd.h"
 #endif	  // #if USE_USD_SDK
 
 class FMyUsdSchemasModule : public IMyUsdSchemasModule

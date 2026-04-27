@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Templates/SharedPointer.h"
 
-#include "MyUsdWrappers/ForwardDeclarations.h"
+#include "UsdWrappers/ForwardDeclarations.h"
 
 #define UE_API MYUSDSTAGE_API
 

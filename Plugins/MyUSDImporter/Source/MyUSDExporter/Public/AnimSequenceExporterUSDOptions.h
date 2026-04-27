@@ -4,7 +4,7 @@
 
 #include "MyUSDAssetOptions.h"
 #include "MyUSDMetadataExportOptions.h"
-#include "MyUSDStageOptions.h"
+#include "USDStageOptions.h"
 
 #include "AnimSequenceExporterUSDOptions.generated.h"
 

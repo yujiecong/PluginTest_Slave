@@ -3,17 +3,17 @@
 #include "MyUSDMediaSpatialAudioTranslator.h"
 
 #include "Objects/MyUSDPrimLinkCache.h"
-#include "MyUSDAssetUserData.h"
-#include "MyUSDConversionUtils.h"
-#include "MyUSDDrawModeComponent.h"
-#include "MyUSDErrorUtils.h"
-#include "MyUSDMemory.h"
-#include "MyUSDObjectUtils.h"
-#include "MyUSDPrimConversion.h"
-#include "MyUSDShadeConversion.h"
-#include "MyUSDTypesConversion.h"
-#include "MyUsdWrappers/SdfPath.h"
-#include "UsdWrappers/MyUsdPrim.h"
+#include "USDAssetUserData.h"
+#include "USDConversionUtils.h"
+#include "USDDrawModeComponent.h"
+#include "USDErrorUtils.h"
+#include "USDMemory.h"
+#include "USDObjectUtils.h"
+#include "USDPrimConversion.h"
+#include "USDShadeConversion.h"
+#include "USDTypesConversion.h"
+#include "UsdWrappers/SdfPath.h"
+#include "UsdWrappers/UsdPrim.h"
 
 #include "Components/AudioComponent.h"
 #include "Misc/FileHelper.h"
@@ -29,11 +29,11 @@
 
 #if USE_USD_SDK
 
-#include "MyUSDIncludesStart.h"
+#include "USDIncludesStart.h"
 #include <pxr/usd/usd/prim.h>
 #include <pxr/usd/usd/stage.h>
 #include <pxr/usd/usdMedia/spatialAudio.h>
-#include "MyUSDIncludesEnd.h"
+#include "USDIncludesEnd.h"
 
 #define LOCTEXT_NAMESPACE "USDMediaSpatialAudioTranslator"
 

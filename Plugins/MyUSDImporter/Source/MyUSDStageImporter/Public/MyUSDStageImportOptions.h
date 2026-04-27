@@ -3,13 +3,13 @@
 #pragma once
 
 #include "UnrealUSDWrapper.h"
-#include "MyUSDMetadataImportOptions.h"
-#include "MyUSDStageOptions.h"
+#include "USDMetadataImportOptions.h"
+#include "USDStageOptions.h"
 
 #include "CoreMinimal.h"
 #include "GroomAssetInterpolation.h"
 
-#include "MyUSDStageImportOptions.generated.h"
+#include "USDStageImportOptions.generated.h"
 
 #define UE_API MYUSDSTAGEIMPORTER_API
 

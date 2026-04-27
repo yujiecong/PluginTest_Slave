@@ -5,17 +5,17 @@
 #include "Objects/MyUSDInfoCache.h"
 #include "MyUSDInfoCacheObject.h"
 #include "MyUSDLevelSequenceHelper.h"
-#include "MyUSDListener.h"
-#include "MyUSDMetadataImportOptions.h"
+#include "USDListener.h"
+#include "USDMetadataImportOptions.h"
 #include "MyUSDPrimLinkCacheObject.h"
-#include "MyUSDSkeletalDataConversion.h"
-#include "MyUsdWrappers/SdfPath.h"
-#include "UsdWrappers/MyUsdStage.h"
+#include "USDSkeletalDataConversion.h"
+#include "UsdWrappers/SdfPath.h"
+#include "UsdWrappers/UsdStage.h"
 
 #include "GameFramework/Actor.h"
 #include "Misc/ITransaction.h"
 
-#include "MyUSDStageActor.generated.h"
+#include "USDStageActor.generated.h"
 
 #define UE_API MYUSDSTAGE_API
 

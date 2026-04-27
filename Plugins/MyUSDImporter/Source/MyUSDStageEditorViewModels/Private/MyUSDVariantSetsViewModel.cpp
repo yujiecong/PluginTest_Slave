@@ -2,19 +2,19 @@
 
 #include "MyUSDVariantSetsViewModel.h"
 
-#include "MyUSDMemory.h"
-#include "MyUSDTypesConversion.h"
+#include "USDMemory.h"
+#include "USDTypesConversion.h"
 
-#include "MyUsdWrappers/SdfPath.h"
-#include "UsdWrappers/MyUsdPrim.h"
+#include "UsdWrappers/SdfPath.h"
+#include "UsdWrappers/UsdPrim.h"
 
 #include "ScopedTransaction.h"
 
 #if USE_USD_SDK
-#include "MyUSDIncludesStart.h"
+#include "USDIncludesStart.h"
 #include "pxr/usd/usd/prim.h"
 #include "pxr/usd/usd/variantSets.h"
-#include "MyUSDIncludesEnd.h"
+#include "USDIncludesEnd.h"
 #endif	  // #if USE_USD_SDK
 
 FMyUsdVariantSetViewModel::FMyUsdVariantSetViewModel(FMyUsdVariantSetsViewModel* InOwner)

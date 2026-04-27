@@ -2,9 +2,9 @@
 
 #pragma once
 
-#include "MyUSDGeomMeshConversion.h"
+#include "USDGeomMeshConversion.h"
 
-#include "UsdWrappers/MyUsdStage.h"
+#include "UsdWrappers/UsdStage.h"
 
 #include "CoreMinimal.h"
 #include "GeometryCacheMeshData.h"

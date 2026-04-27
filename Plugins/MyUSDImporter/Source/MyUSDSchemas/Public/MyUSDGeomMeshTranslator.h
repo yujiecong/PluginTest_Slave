@@ -3,10 +3,10 @@
 #pragma once
 
 #include "MyUSDGeomXformableTranslator.h"
-#include "MyUSDMetadata.h"
+#include "USDMetadata.h"
 
-#include "MyUsdWrappers/SdfPath.h"
-#include "UsdWrappers/MyUsdPrim.h"
+#include "UsdWrappers/SdfPath.h"
+#include "UsdWrappers/UsdPrim.h"
 
 #include "MeshDescription.h"
 

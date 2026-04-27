@@ -2,9 +2,9 @@
 
 #pragma once
 
-#include "MyUsdWrappers/ForwardDeclarations.h"
-#include "MyUsdWrappers/SdfLayer.h"
-#include "UsdWrappers/MyUsdStage.h"
+#include "UsdWrappers/ForwardDeclarations.h"
+#include "UsdWrappers/SdfLayer.h"
+#include "UsdWrappers/UsdStage.h"
 
 #include "CoreMinimal.h"
 #include "Widgets/SCompoundWidget.h"

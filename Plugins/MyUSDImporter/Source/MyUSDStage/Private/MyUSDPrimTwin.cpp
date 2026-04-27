@@ -2,7 +2,7 @@
 
 #include "MyUSDPrimTwin.h"
 
-#include "MyUSDMemory.h"
+#include "USDMemory.h"
 #include "MyUSDStageActor.h"
 
 #include "Components/InstancedStaticMeshComponent.h"

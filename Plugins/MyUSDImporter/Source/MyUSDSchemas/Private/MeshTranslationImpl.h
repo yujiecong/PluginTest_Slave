@@ -7,9 +7,9 @@
 #include "CoreMinimal.h"
 #include "UObject/ObjectMacros.h"
 
-#include "MyUSDIncludesStart.h"
+#include "USDIncludesStart.h"
 #include "pxr/pxr.h"
-#include "MyUSDIncludesEnd.h"
+#include "USDIncludesEnd.h"
 
 PXR_NAMESPACE_OPEN_SCOPE
 	class UsdPrim;

@@ -2,11 +2,11 @@
 
 #include "MyUSDStageAssetImportFactory.h"
 
-#include "MyUSDAssetImportData.h"
-#include "MyUSDAssetUserData.h"
-#include "MyUSDConversionUtils.h"
-#include "MyUSDErrorUtils.h"
-#include "MyUSDObjectUtils.h"
+#include "USDAssetImportData.h"
+#include "USDAssetUserData.h"
+#include "USDConversionUtils.h"
+#include "USDErrorUtils.h"
+#include "USDObjectUtils.h"
 #include "MyUSDStageImporter.h"
 #include "MyUSDStageImporterModule.h"
 #include "MyUSDStageImportOptions.h"

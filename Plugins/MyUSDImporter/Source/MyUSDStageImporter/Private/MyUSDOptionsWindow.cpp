@@ -3,7 +3,7 @@
 #include "MyUSDOptionsWindow.h"
 
 #include "MyUSDStageImportOptions.h"
-#include "UsdWrappers/MyUsdStage.h"
+#include "UsdWrappers/UsdStage.h"
 #include "Widgets/SMyUSDStagePreviewTree.h"
 
 #include "CoreGlobals.h"

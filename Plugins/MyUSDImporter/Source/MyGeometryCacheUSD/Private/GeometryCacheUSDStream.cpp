@@ -2,7 +2,7 @@
 
 #include "GeometryCacheUSDStream.h"
 
-#include "MyUSDGeomMeshConversion.h"
+#include "USDGeomMeshConversion.h"
 
 #include "DerivedDataCacheInterface.h"
 #include "GeometryCacheMeshData.h"

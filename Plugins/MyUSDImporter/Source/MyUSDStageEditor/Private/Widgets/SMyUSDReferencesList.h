@@ -7,7 +7,7 @@
 #if USE_USD_SDK
 
 #include "MyUSDReferencesViewModel.h"
-#include "MyUsdWrappers/ForwardDeclarations.h"
+#include "UsdWrappers/ForwardDeclarations.h"
 
 class SMyUsdReferenceRow : public SMultiColumnTableRow<TSharedPtr<FMyUsdReference>>
 {

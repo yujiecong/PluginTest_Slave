@@ -6,9 +6,9 @@
 
 #if USE_USD_SDK
 
-#include "MyUSDIncludesStart.h"
+#include "USDIncludesStart.h"
 #include "pxr/pxr.h"
-#include "MyUSDIncludesEnd.h"
+#include "USDIncludesEnd.h"
 
 class FMaterialXUsdShadeMaterialTranslator : public FMyUsdShadeMaterialTranslator
 {

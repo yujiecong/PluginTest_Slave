@@ -2,7 +2,7 @@
 
 #include "MyUSDStageEditorViewModelsModule.h"
 
-#include "MyUSDMemory.h"
+#include "USDMemory.h"
 
 class FMyUsdStageEditorViewModelsModule : public IMyUsdStageEditorViewModelsModule
 {

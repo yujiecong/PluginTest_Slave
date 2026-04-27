@@ -2,7 +2,7 @@
 
 #include "MyUSDStageImportFactory.h"
 
-#include "MyUSDErrorUtils.h"
+#include "USDErrorUtils.h"
 #include "MyUSDStageImporter.h"
 #include "MyUSDStageImporterModule.h"
 #include "MyUSDStageImportOptions.h"

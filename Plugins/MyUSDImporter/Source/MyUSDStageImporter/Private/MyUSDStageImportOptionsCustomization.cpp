@@ -3,8 +3,8 @@
 #include "MyUSDStageImportOptionsCustomization.h"
 
 #include "Objects/MyUSDSchemaTranslator.h"
-#include "MyUSDMaterialUtils.h"
-#include "MyUSDProjectSettings.h"
+#include "USDMaterialUtils.h"
+#include "USDProjectSettings.h"
 #include "MyUSDStageImportOptions.h"
 
 #include "DetailCategoryBuilder.h"

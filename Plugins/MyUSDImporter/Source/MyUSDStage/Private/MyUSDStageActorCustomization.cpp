@@ -4,8 +4,8 @@
 
 #include "MyUSDStageActorCustomization.h"
 
-#include "MyUSDMaterialUtils.h"
-#include "MyUSDProjectSettings.h"
+#include "USDMaterialUtils.h"
+#include "USDProjectSettings.h"
 #include "Objects/MyUSDSchemaTranslator.h"
 #include "MyUSDStageActor.h"
 

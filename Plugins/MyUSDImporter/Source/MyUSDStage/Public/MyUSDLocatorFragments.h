@@ -5,7 +5,7 @@
 #include "CoreTypes.h"
 #include "UniversalObjectLocatorFwd.h"
 
-#include "MyUSDLocatorFragments.generated.h"
+#include "USDLocatorFragments.generated.h"
 
 class AMyUsdStageActor;
 

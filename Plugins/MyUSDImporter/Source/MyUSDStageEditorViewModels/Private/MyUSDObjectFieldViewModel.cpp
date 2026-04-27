@@ -3,25 +3,25 @@
 #include "MyUSDObjectFieldViewModel.h"
 
 #include "UnrealUSDWrapper.h"
-#include "MyUSDAttributeUtils.h"
-#include "MyUSDConversionUtils.h"
-#include "MyUSDErrorUtils.h"
-#include "MyUSDMemory.h"
-#include "MyUSDTypesConversion.h"
-#include "MyUSDValueConversion.h"
+#include "USDAttributeUtils.h"
+#include "USDConversionUtils.h"
+#include "USDErrorUtils.h"
+#include "USDMemory.h"
+#include "USDTypesConversion.h"
+#include "USDValueConversion.h"
 
-#include "MyUsdWrappers/SdfLayer.h"
-#include "MyUsdWrappers/SdfPath.h"
-#include "UsdWrappers/MyUsdAttribute.h"
-#include "UsdWrappers/MyUsdPrim.h"
-#include "MyUsdWrappers/VtValue.h"
+#include "UsdWrappers/SdfLayer.h"
+#include "UsdWrappers/SdfPath.h"
+#include "UsdWrappers/UsdAttribute.h"
+#include "UsdWrappers/UsdPrim.h"
+#include "UsdWrappers/VtValue.h"
 
 #include "Framework/Notifications/NotificationManager.h"
 #include "ScopedTransaction.h"
 #include "Widgets/Notifications/SNotificationList.h"
 
 #if USE_USD_SDK
-#include "MyUSDIncludesStart.h"
+#include "USDIncludesStart.h"
 #include "pxr/base/tf/stringUtils.h"
 #include "pxr/base/vt/value.h"
 #include "pxr/usd/kind/registry.h"
@@ -33,7 +33,7 @@
 #include "pxr/usd/usd/relationship.h"
 #include "pxr/usd/usdGeom/tokens.h"
 #include "pxr/usd/usdPhysics/tokens.h"
-#include "MyUSDIncludesEnd.h"
+#include "USDIncludesEnd.h"
 #endif	  // #if USE_USD_SDK
 
 #define LOCTEXT_NAMESPACE "USDObjectFieldViewModel"

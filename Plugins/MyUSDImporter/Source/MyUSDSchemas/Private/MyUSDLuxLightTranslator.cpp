@@ -3,16 +3,16 @@
 #include "MyUSDLuxLightTranslator.h"
 
 #include "Objects/MyUSDPrimLinkCache.h"
-#include "MyUSDAssetUserData.h"
-#include "MyUSDConversionUtils.h"
-#include "MyUSDDrawModeComponent.h"
-#include "MyUSDErrorUtils.h"
-#include "MyUSDLightConversion.h"
-#include "MyUSDMemory.h"
-#include "MyUSDObjectUtils.h"
-#include "MyUSDShadeConversion.h"
-#include "MyUSDTypesConversion.h"
-#include "UsdWrappers/MyUsdPrim.h"
+#include "USDAssetUserData.h"
+#include "USDConversionUtils.h"
+#include "USDDrawModeComponent.h"
+#include "USDErrorUtils.h"
+#include "USDLightConversion.h"
+#include "USDMemory.h"
+#include "USDObjectUtils.h"
+#include "USDShadeConversion.h"
+#include "USDTypesConversion.h"
+#include "UsdWrappers/UsdPrim.h"
 
 #include "Components/DirectionalLightComponent.h"
 #include "Components/PointLightComponent.h"
@@ -23,12 +23,12 @@
 
 #if USE_USD_SDK
 
-#include "MyUSDIncludesStart.h"
+#include "USDIncludesStart.h"
 #include "pxr/usd/usdLux/diskLight.h"
 #include "pxr/usd/usdLux/domeLight.h"
 #include "pxr/usd/usdLux/lightAPI.h"
 #include "pxr/usd/usdLux/rectLight.h"
-#include "MyUSDIncludesEnd.h"
+#include "USDIncludesEnd.h"
 
 #define LOCTEXT_NAMESPACE "USDLuxLightTranslator"
 

@@ -2,7 +2,7 @@
 
 #include "MyUSDTestsModule.h"
 
-#include "MyUSDMemory.h"
+#include "USDMemory.h"
 
 class FMyUsdTestsModule : public IMyUsdTestsModule
 {

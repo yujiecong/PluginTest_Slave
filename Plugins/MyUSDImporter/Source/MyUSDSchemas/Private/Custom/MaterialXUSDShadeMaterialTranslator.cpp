@@ -2,19 +2,19 @@
 
 #include "Custom/MaterialXUSDShadeMaterialTranslator.h"
 #if USE_USD_SDK
-#include "MyUSDAssetCache3.h"
-#include "MyUSDAssetUserData.h"
-#include "MyUSDClassesModule.h"
-#include "MyUSDConversionUtils.h"
-#include "MyUSDErrorUtils.h"
-#include "MyUSDMemory.h"
-#include "MyUSDObjectUtils.h"
-#include "MyUSDShadeConversion.h"
-#include "MyUSDTypesConversion.h"
+#include "USDAssetCache3.h"
+#include "USDAssetUserData.h"
+#include "USDClassesModule.h"
+#include "USDConversionUtils.h"
+#include "USDErrorUtils.h"
+#include "USDMemory.h"
+#include "USDObjectUtils.h"
+#include "USDShadeConversion.h"
+#include "USDTypesConversion.h"
 
-#include "MyUsdWrappers/SdfLayer.h"
-#include "MyUsdWrappers/SdfPath.h"
-#include "UsdWrappers/MyUsdPrim.h"
+#include "UsdWrappers/SdfLayer.h"
+#include "UsdWrappers/SdfPath.h"
+#include "UsdWrappers/UsdPrim.h"
 
 #include "Engine/Level.h"
 #include "Engine/Texture.h"
@@ -30,11 +30,11 @@
 #include "Misc/PackageName.h"
 #include "UObject/StrongObjectPtr.h"
 
-#include "MyUSDIncludesStart.h"
+#include "USDIncludesStart.h"
 #include "pxr/usd/sdf/assetPath.h"
 #include "pxr/usd/usd/primCompositionQuery.h"
 #include "pxr/usd/usdShade/material.h"
-#include "MyUSDIncludesEnd.h"
+#include "USDIncludesEnd.h"
 
 #if ENABLE_USD_MATERIALX
 #include "MaterialXFormat/Util.h"

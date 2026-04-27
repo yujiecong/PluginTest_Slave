@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 
-#include "MyUSDTestsBlueprintLibrary.generated.h"
+#include "USDTestsBlueprintLibrary.generated.h"
 
 #define UE_API MYUSDTESTS_API
 

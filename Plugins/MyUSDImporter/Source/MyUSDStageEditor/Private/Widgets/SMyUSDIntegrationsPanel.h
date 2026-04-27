@@ -3,7 +3,7 @@
 #pragma once
 
 #include "MyUSDIntegrationsViewModel.h"
-#include "MyUsdWrappers/ForwardDeclarations.h"
+#include "UsdWrappers/ForwardDeclarations.h"
 
 #include "Templates/SharedPointer.h"
 #include "Widgets/Views/SListView.h"
