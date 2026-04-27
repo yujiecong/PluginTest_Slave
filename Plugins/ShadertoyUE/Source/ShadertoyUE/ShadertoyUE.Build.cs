@@ -39,7 +39,8 @@ public class ShadertoyUE : ModuleRules
 				"RenderCore",
 				"Projects",
 				"UnrealEd",
-				"WorkspaceMenuStructure"
+				"WorkspaceMenuStructure",
+				"AssetTools"
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

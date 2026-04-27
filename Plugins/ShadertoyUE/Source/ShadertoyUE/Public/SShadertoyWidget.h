@@ -15,6 +15,7 @@ public:
 
 private:
 	FReply OnCompileClicked();
+	UMaterial* EnsureTargetMaterialExists();
 
 	TSharedPtr<SMultiLineEditableText> CodeEditor;
 	UMaterial* TargetMaterial;
