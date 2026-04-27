@@ -1,0 +1,83 @@
+// Copyright Epic Games, Inc. All Rights Reserved.
+
+#pragma once
+
+#include "MyUSDValueConversion.h"
+
+#include "UsdWrappers/MyUsdStage.h"
+
+#include "Templates/SharedPointer.h"
+#include "Widgets/Views/SHeaderRow.h"
+
+#define UE_API MYUSDSTAGEEDITORVIEWMODELS_API
+
+class FMyUsdObjectFieldsViewModel;
+
+enum class EObjectFieldType : int32
+{
+	Metadata = 0,
+	Attribute = 1,
+	Relationship = 2,
+	MAX = 3
+};
+
+namespace ObjectFieldColumnIds
+{
+	inline const FName TypeColumn = TEXT("FieldType");
+	inline const FName NameColumn = TEXT("FieldName");
+	inline const FName ValueColumn = TEXT("FieldValue");
+};
+
+class FMyUsdObjectFieldViewModel : public TSharedFromThis<FMyUsdObjectFieldViewModel>
+{
+public:
+	UE_API explicit FMyUsdObjectFieldViewModel(FMyUsdObjectFieldsViewModel* InOwner);
+
+	// This member function is necessary because the no-RTTI slate module can't query USD for the available token options
+	UE_API TArray<TSharedPtr<FString>> GetDropdownOptions() const;
+	UE_API void SetAttributeValue(const UsdUtils::FConvertedVtValue& InValue);
+
+public:
+	EObjectFieldType Type;
+	FString Label;
+	UsdUtils::FConvertedVtValue Value;
+	FString ValueRole;
+	bool bReadOnly = false;
+
+private:
+	FMyUsdObjectFieldsViewModel* Owner;
+};
+
+class FMyUsdObjectFieldsViewModel
+{
+public:
+	template<typename T>
+	void CreateField(
+		EObjectFieldType Type,
+		const FString& FieldName,
+		const T& Value,
+		UsdUtils::EMyUsdBasicDataTypes UsdType,
+		const FString& ValueRole = FString(),
+		bool bReadOnly = false
+	);
+	UE_API void CreateField(EObjectFieldType Type, const FString& FieldName, const UsdUtils::FConvertedVtValue& Value, bool bReadOnly = false);
+
+	UE_API void SetFieldValue(const FString& FieldName, const UsdUtils::FConvertedVtValue& Value);
+
+	UE_API void Refresh(const UE::FMyUsdStageWeak& UsdStage, const TCHAR* ObjectPath, float TimeCode);
+	UE_API void Sort();
+
+	UE_API UE::FMyUsdStageWeak GetUsdStage() const;
+	UE_API FString GetObjectPath() const;
+
+public:
+	EColumnSortMode::Type CurrentSortMode = EColumnSortMode::Ascending;
+	FName CurrentSortColumn = ObjectFieldColumnIds::TypeColumn;
+	TArray<TSharedPtr<FMyUsdObjectFieldViewModel>> Fields;
+
+private:
+	UE::FMyUsdStageWeak UsdStage;
+	FString ObjectPath;
+};
+
+#undef UE_API

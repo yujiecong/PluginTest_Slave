@@ -2,8 +2,8 @@
 	"FileVersion": 3,
 	"Version": 1,
 	"VersionName": "1.0",
-	"FriendlyName": "USD Importer",
-	"Description": "Adds support for importing the USD file format into Unreal Engine",
+	"FriendlyName": "My Custom USD Importer",
+	"Description": "A customized version of the USD Importer for our pipeline.",
 	"Category": "Importers",
 	"CreatedBy": "Epic Games, Inc.",
 	"CreatedByURL": "https://epicgames.com",
@@ -16,7 +16,7 @@
 	"Installed": false,
 	"Modules": [
 		{
-			"Name": "USDSchemas",
+			"Name": "MyUSDSchemas",
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
 			"PlatformAllowList": [
@@ -24,7 +24,7 @@
 			]
 		},
 		{
-			"Name": "USDStage",
+			"Name": "MyUSDStage",
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
 			"PlatformAllowList": [
@@ -32,7 +32,7 @@
 			]
 		},
 		{
-			"Name": "USDStageEditor",
+			"Name": "MyUSDStageEditor",
 			"Type": "Editor",
 			"LoadingPhase": "Default",
 			"PlatformAllowList": [
@@ -40,7 +40,7 @@
 			]
 		},
 		{
-			"Name": "USDStageImporter",
+			"Name": "MyUSDStageImporter",
 			"Type": "Editor",
 			"LoadingPhase": "Default",
 			"PlatformAllowList": [
@@ -48,7 +48,7 @@
 			]
 		},
 		{
-			"Name": "USDStageEditorViewModels",
+			"Name": "MyUSDStageEditorViewModels",
 			"Type": "Editor",
 			"LoadingPhase": "Default",
 			"PlatformAllowList": [
@@ -56,7 +56,7 @@
 			]
 		},
 		{
-			"Name": "USDExporter",
+			"Name": "MyUSDExporter",
 			"Type": "Editor",
 			"LoadingPhase": "Default",
 			"PlatformAllowList": [
@@ -64,7 +64,7 @@
 			]
 		},
         {
-			"Name": "USDClassesEditor",
+			"Name": "MyUSDClassesEditor",
 			"Type": "Editor",
 			"LoadingPhase": "Default",
 			"PlatformAllowList": [
@@ -72,7 +72,7 @@
 			]
 		},
 		{
-			"Name": "GeometryCacheUSD",
+			"Name": "MyGeometryCacheUSD",
 			"Type": "Editor",
 			"LoadingPhase": "Default",
 			"PlatformAllowList": [
@@ -80,7 +80,7 @@
 			]
 		},
 		{
-			"Name": "USDTests",
+			"Name": "MyUSDTests",
 			"Type": "Editor",
 			"LoadingPhase": "Default",
 			"PlatformAllowList": [
