@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Widgets/SCompoundWidget.h"
-#include "Widgets/Input/SMultiLineEditableText.h"
+#include "Widgets/Text/SMultiLineEditableText.h"
 #include "Materials/Material.h"
 
 class SShadertoyWidget : public SCompoundWidget
