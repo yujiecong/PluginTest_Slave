@@ -2,7 +2,7 @@
 
 #include "SMyUSDIntegrationsPanel.h"
 
-#include UE_INLINE_GENERATED_CPP_BY_NAME(SUSDIntegrationsPanel)
+#include UE_INLINE_GENERATED_CPP_BY_NAME(SMyUSDIntegrationsPanel)
 
 #if USE_USD_SDK
 

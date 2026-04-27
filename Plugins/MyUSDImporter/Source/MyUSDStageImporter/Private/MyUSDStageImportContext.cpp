@@ -9,7 +9,7 @@
 #include "Editor.h"
 #include "Misc/Paths.h"
 
-#include UE_INLINE_GENERATED_CPP_BY_NAME(USDStageImportContext)
+#include UE_INLINE_GENERATED_CPP_BY_NAME(MyUSDStageImportContext)
 
 FMyUsdStageImportContext::FMyUsdStageImportContext()
 {

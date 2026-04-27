@@ -2,7 +2,7 @@
 
 #include "MyUSDLuxLightTranslator.h"
 
-#include "Objects/MyUSDPrimLinkCache.h"
+#include "Objects/USDPrimLinkCache.h"
 #include "USDAssetUserData.h"
 #include "USDConversionUtils.h"
 #include "USDDrawModeComponent.h"

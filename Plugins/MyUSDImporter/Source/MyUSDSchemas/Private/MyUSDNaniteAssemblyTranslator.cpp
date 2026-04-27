@@ -20,7 +20,7 @@
 #include "USDTypesConversion.h"
 #include "USDIntegrationUtils.h"
 
-#include "Objects/MyUSDPrimLinkCache.h"
+#include "Objects/USDPrimLinkCache.h"
 
 #include "UsdWrappers/SdfPath.h"
 #include "UsdWrappers/UsdGeomXformable.h"

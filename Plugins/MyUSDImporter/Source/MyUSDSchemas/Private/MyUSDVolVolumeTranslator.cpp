@@ -2,7 +2,7 @@
 
 #include "MyUSDVolVolumeTranslator.h"
 
-#include "Objects/MyUSDPrimLinkCache.h"
+#include "Objects/USDPrimLinkCache.h"
 #include "USDAssetImportData.h"
 #include "USDAssetUserData.h"
 #include "USDConversionUtils.h"

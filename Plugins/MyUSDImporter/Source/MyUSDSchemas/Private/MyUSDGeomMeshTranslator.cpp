@@ -6,7 +6,7 @@
 
 #include "MeshTranslationImpl.h"
 #include "Objects/USDInfoCache.h"
-#include "Objects/MyUSDPrimLinkCache.h"
+#include "Objects/USDPrimLinkCache.h"
 #include "UnrealUSDWrapper.h"
 #include "USDAssetCache3.h"
 #include "USDAssetUserData.h"

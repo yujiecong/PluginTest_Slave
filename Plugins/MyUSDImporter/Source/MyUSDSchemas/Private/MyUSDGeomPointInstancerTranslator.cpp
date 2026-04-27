@@ -3,7 +3,7 @@
 #include "MyUSDGeomPointInstancerTranslator.h"
 
 #include "MeshTranslationImpl.h"
-#include "Objects/MyUSDPrimLinkCache.h"
+#include "Objects/USDPrimLinkCache.h"
 #include "USDAssetCache3.h"
 #include "USDAssetUserData.h"
 #include "USDConversionUtils.h"

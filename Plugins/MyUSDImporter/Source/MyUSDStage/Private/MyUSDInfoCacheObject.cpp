@@ -4,7 +4,7 @@
 
 #include "Objects/USDInfoCache.h"
 
-#include UE_INLINE_GENERATED_CPP_BY_NAME(USDInfoCacheObject)
+#include UE_INLINE_GENERATED_CPP_BY_NAME(MyUSDInfoCacheObject)
 
 UMyUsdInfoCache::UMyUsdInfoCache()
 {

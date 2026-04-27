@@ -3,7 +3,7 @@
 #include "MyUSDStageActor.h"
 
 #include "Objects/USDInfoCache.h"
-#include "Objects/MyUSDPrimLinkCache.h"
+#include "Objects/USDPrimLinkCache.h"
 #include "Objects/USDSchemaTranslator.h"
 #include "UnrealUSDWrapper.h"
 #include "UObject/Package.h"
@@ -107,7 +107,7 @@
 #include "USDIncludesEnd.h"
 #endif	  // USE_USD_SDK
 
-#include UE_INLINE_GENERATED_CPP_BY_NAME(USDStageActor)
+#include UE_INLINE_GENERATED_CPP_BY_NAME(MyUSDStageActor)
 
 #define LOCTEXT_NAMESPACE "USDStageActor"
 

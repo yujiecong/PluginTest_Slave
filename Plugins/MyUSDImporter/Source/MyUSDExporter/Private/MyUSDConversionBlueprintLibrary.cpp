@@ -34,7 +34,7 @@
 #include "LevelEditorSequencerIntegration.h"
 #include "UObject/ObjectMacros.h"
 
-#include UE_INLINE_GENERATED_CPP_BY_NAME(USDConversionBlueprintLibrary)
+#include UE_INLINE_GENERATED_CPP_BY_NAME(MyUSDConversionBlueprintLibrary)
 
 #define LOCTEXT_NAMESPACE "USDConversionBlueprintLibrary"
 

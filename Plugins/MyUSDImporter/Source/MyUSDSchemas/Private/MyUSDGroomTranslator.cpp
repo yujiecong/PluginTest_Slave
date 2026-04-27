@@ -17,7 +17,7 @@
 #include "UObject/Package.h"
 #include "UObject/StrongObjectPtr.h"
 
-#include "Objects/MyUSDPrimLinkCache.h"
+#include "Objects/USDPrimLinkCache.h"
 #include "UnrealUSDWrapper.h"
 #include "USDAssetUserData.h"
 #include "USDClassesModule.h"

@@ -3,7 +3,7 @@
 #include "MyUSDTranslatorUtils.h"
 
 #include "USDAssetCache3.h"
-#include "Objects/MyUSDPrimLinkCache.h"
+#include "Objects/USDPrimLinkCache.h"
 
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "Containers/Ticker.h"

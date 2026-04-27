@@ -26,7 +26,7 @@
 #include "Misc/ITransaction.h"
 #endif	  // WITH_EDITOR
 
-#include UE_INLINE_GENERATED_CPP_BY_NAME(USDTransactor)
+#include UE_INLINE_GENERATED_CPP_BY_NAME(MyUSDTransactor)
 
 #define LOCTEXT_NAMESPACE "USDTransactor"
 

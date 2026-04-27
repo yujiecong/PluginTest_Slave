@@ -2,9 +2,9 @@
 
 #include "MyUSDPrimLinkCacheObject.h"
 
-#include "Objects/MyUSDPrimLinkCache.h"
+#include "Objects/USDPrimLinkCache.h"
 
-#include UE_INLINE_GENERATED_CPP_BY_NAME(USDPrimLinkCacheObject)
+#include UE_INLINE_GENERATED_CPP_BY_NAME(MyUSDPrimLinkCacheObject)
 
 UMyUsdPrimLinkCache::UMyUsdPrimLinkCache()
 {

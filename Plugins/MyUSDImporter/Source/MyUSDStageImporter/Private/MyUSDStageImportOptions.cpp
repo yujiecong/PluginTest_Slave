@@ -9,7 +9,7 @@
 #include "Modules/ModuleManager.h"
 #include "UObject/UnrealType.h"
 
-#include UE_INLINE_GENERATED_CPP_BY_NAME(USDStageImportOptions)
+#include UE_INLINE_GENERATED_CPP_BY_NAME(MyUSDStageImportOptions)
 
 UMyUsdStageImportOptions::UMyUsdStageImportOptions(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)

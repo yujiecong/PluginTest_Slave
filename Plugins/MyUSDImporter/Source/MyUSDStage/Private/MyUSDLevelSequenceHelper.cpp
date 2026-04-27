@@ -2,7 +2,7 @@
 
 #include "MyUSDLevelSequenceHelper.h"
 
-#include "Objects/MyUSDPrimLinkCache.h"
+#include "Objects/USDPrimLinkCache.h"
 #include "USDAssetUserData.h"
 #include "USDAttributeUtils.h"
 #include "USDConversionUtils.h"

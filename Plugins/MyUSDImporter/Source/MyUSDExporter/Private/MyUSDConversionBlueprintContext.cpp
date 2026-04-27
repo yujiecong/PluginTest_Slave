@@ -25,7 +25,7 @@
 #include "RHI.h"
 #include "StaticMeshAttributes.h"
 
-#include UE_INLINE_GENERATED_CPP_BY_NAME(USDConversionBlueprintContext)
+#include UE_INLINE_GENERATED_CPP_BY_NAME(MyUSDConversionBlueprintContext)
 
 #define LOCTEXT_NAMESPACE "USDConversionBlueprintContext"
 

@@ -10,7 +10,7 @@
 #include "UniversalObjectLocatorResolveParams.h"
 #include "UniversalObjectLocatorStringParams.h"
 
-#include UE_INLINE_GENERATED_CPP_BY_NAME(USDLocatorFragments)
+#include UE_INLINE_GENERATED_CPP_BY_NAME(MyUSDLocatorFragments)
 
 UE::UniversalObjectLocator::TFragmentTypeHandle<FMyUsdPrimLocatorFragment> FMyUsdPrimLocatorFragment::FragmentType;
 

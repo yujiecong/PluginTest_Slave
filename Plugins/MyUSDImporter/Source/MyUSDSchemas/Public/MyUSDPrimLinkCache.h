@@ -5,4 +5,4 @@
 #include "Misc/CoreMiscDefines.h"
 UE_DEPRECATED_HEADER(5.6, "Use Objects/USDPrimLinkCache.h from the USDUtilities module instead")
 
-#include "Objects/MyUSDPrimLinkCache.h"
+#include "Objects/USDPrimLinkCache.h"

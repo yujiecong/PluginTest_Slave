@@ -12,7 +12,7 @@
 #include "Kismet2/BlueprintEditorUtils.h"
 #include "Kismet2/KismetEditorUtilities.h"
 
-#include UE_INLINE_GENERATED_CPP_BY_NAME(USDTestsBlueprintLibrary)
+#include UE_INLINE_GENERATED_CPP_BY_NAME(MyUSDTestsBlueprintLibrary)
 
 bool USDTestsBlueprintLibrary::RecompileBlueprintStageActor(AMyUsdStageActor* BlueprintDerivedStageActor)
 {

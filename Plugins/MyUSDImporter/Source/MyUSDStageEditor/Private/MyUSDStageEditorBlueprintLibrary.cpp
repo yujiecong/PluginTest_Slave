@@ -10,7 +10,7 @@
 #include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
 
-#include UE_INLINE_GENERATED_CPP_BY_NAME(USDStageEditorBlueprintLibrary)
+#include UE_INLINE_GENERATED_CPP_BY_NAME(MyUSDStageEditorBlueprintLibrary)
 
 bool UMyUsdStageEditorBlueprintLibrary::OpenStageEditor()
 {

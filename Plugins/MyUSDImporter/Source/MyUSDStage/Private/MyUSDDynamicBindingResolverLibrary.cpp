@@ -9,7 +9,7 @@
 #include "MovieScene.h"
 #include "MovieSceneDynamicBinding.h"
 
-#include UE_INLINE_GENERATED_CPP_BY_NAME(USDDynamicBindingResolverLibrary)
+#include UE_INLINE_GENERATED_CPP_BY_NAME(MyUSDDynamicBindingResolverLibrary)
 
 FMovieSceneDynamicBindingResolveResult UMyUsdDynamicBindingResolverLibrary::ResolveWithStageActor(
 	UObject* WorldContextObject,

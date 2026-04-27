@@ -3,7 +3,7 @@
 #include "MyUSDShadeMaterialTranslator.h"
 
 #include "MeshTranslationImpl.h"
-#include "Objects/MyUSDPrimLinkCache.h"
+#include "Objects/USDPrimLinkCache.h"
 #include "USDAssetUserData.h"
 #include "USDClassesModule.h"
 #include "USDErrorUtils.h"

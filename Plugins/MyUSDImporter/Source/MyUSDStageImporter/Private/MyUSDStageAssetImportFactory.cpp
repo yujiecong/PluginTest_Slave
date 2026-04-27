@@ -18,7 +18,7 @@
 #include "Misc/Paths.h"
 #include "Modules/ModuleManager.h"
 
-#include UE_INLINE_GENERATED_CPP_BY_NAME(USDStageAssetImportFactory)
+#include UE_INLINE_GENERATED_CPP_BY_NAME(MyUSDStageAssetImportFactory)
 
 #define LOCTEXT_NAMESPACE "USDStageAssetImportFactory"
 

@@ -4,7 +4,7 @@
 
 #include "AnalyticsEventAttribute.h"
 
-#include UE_INLINE_GENERATED_CPP_BY_NAME(USDAssetOptions)
+#include UE_INLINE_GENERATED_CPP_BY_NAME(MyUSDAssetOptions)
 
 void UsdUtils::AddAnalyticsAttributes(const FMyUsdMaterialBakingOptions& Options, TArray<FAnalyticsEventAttribute>& InOutAttributes)
 {

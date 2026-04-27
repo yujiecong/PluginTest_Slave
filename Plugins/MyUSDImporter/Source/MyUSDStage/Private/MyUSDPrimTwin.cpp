@@ -8,7 +8,7 @@
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Engine/World.h"
 
-#include UE_INLINE_GENERATED_CPP_BY_NAME(USDPrimTwin)
+#include UE_INLINE_GENERATED_CPP_BY_NAME(MyUSDPrimTwin)
 
 UMyUsdPrimTwin& UMyUsdPrimTwin::AddChild(const FString& InPrimPath)
 {

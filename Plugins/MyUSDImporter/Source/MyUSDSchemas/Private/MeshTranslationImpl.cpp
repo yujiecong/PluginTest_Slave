@@ -3,7 +3,7 @@
 #include "MeshTranslationImpl.h"
 
 #include "Objects/USDInfoCache.h"
-#include "Objects/MyUSDPrimLinkCache.h"
+#include "Objects/USDPrimLinkCache.h"
 #include "Objects/USDSchemaTranslator.h"
 #include "UnrealUSDWrapper.h"
 #include "USDAssetCache3.h"

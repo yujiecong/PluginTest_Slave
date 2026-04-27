@@ -11,7 +11,7 @@
 #include "Editor.h"
 #include "Modules/ModuleManager.h"
 
-#include UE_INLINE_GENERATED_CPP_BY_NAME(USDStageImportFactory)
+#include UE_INLINE_GENERATED_CPP_BY_NAME(MyUSDStageImportFactory)
 
 #define LOCTEXT_NAMESPACE "USDImportFactory"
 

@@ -4,7 +4,7 @@
 
 #include "AnalyticsEventAttribute.h"
 
-#include UE_INLINE_GENERATED_CPP_BY_NAME(USDMetadataExportOptions)
+#include UE_INLINE_GENERATED_CPP_BY_NAME(MyUSDMetadataExportOptions)
 
 void UsdUtils::AddAnalyticsAttributes(const FMyUsdMetadataExportOptions& Options, TArray<FAnalyticsEventAttribute>& InOutAttributes)
 {
