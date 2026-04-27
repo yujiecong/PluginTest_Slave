@@ -43,7 +43,7 @@ namespace UE::UsdStageEditorModule::Private
 			return;
 		}
 
-		UMyUsdProjectSettings* Settings = GetMutableDefault<UMyUsdProjectSettings>();
+		UUsdProjectSettings* Settings = GetMutableDefault<UUsdProjectSettings>();
 		if (!Settings)
 		{
 			return;
@@ -61,17 +61,17 @@ namespace UE::UsdStageEditorModule::Private
 		bool bPrompt = false;
 		switch (bForClosing ? Settings->ShowSaveLayersDialogWhenClosing : Settings->ShowSaveLayersDialogWhenSaving)
 		{
-			case EMyUsdSaveDialogBehavior::NeverSave:
+			case EUsdSaveDialogBehavior::NeverSave:
 			{
 				// Don't even do anything if we're not going to save anyway
 				return;
 			}
-			case EMyUsdSaveDialogBehavior::AlwaysSave:
+			case EUsdSaveDialogBehavior::AlwaysSave:
 			{
 				break;
 			}
 			default:
-			case EMyUsdSaveDialogBehavior::ShowPrompt:
+			case EUsdSaveDialogBehavior::ShowPrompt:
 			{
 				bPrompt = true;
 				break;
@@ -104,7 +104,7 @@ namespace UE::UsdStageEditorModule::Private
 				continue;
 			}
 
-			UE::FMyUsdStage UsdStage = static_cast<const AMyUsdStageActor*>(StageActor)->GetUsdStage();
+			UE::FUsdStage UsdStage = static_cast<const AMyUsdStageActor*>(StageActor)->GetUsdStage();
 			if (!UsdStage)
 			{
 				continue;
@@ -158,11 +158,11 @@ namespace UE::UsdStageEditorModule::Private
 			bool bShouldPromptAgain = true;
 			Rows = SMyUsdSaveDialog::ShowDialog(Rows, WindowTitle, DescriptionText, &bShouldSave, &bShouldPromptAgain);
 
-			EMyUsdSaveDialogBehavior* bSetting = bForClosing ? &Settings->ShowSaveLayersDialogWhenClosing : &Settings->ShowSaveLayersDialogWhenSaving;
+			EUsdSaveDialogBehavior* bSetting = bForClosing ? &Settings->ShowSaveLayersDialogWhenClosing : &Settings->ShowSaveLayersDialogWhenSaving;
 
-			*bSetting = bShouldPromptAgain ? EMyUsdSaveDialogBehavior::ShowPrompt
-						: bShouldSave	   ? EMyUsdSaveDialogBehavior::AlwaysSave
-										   : EMyUsdSaveDialogBehavior::NeverSave;
+			*bSetting = bShouldPromptAgain ? EUsdSaveDialogBehavior::ShowPrompt
+						: bShouldSave	   ? EUsdSaveDialogBehavior::AlwaysSave
+										   : EUsdSaveDialogBehavior::NeverSave;
 
 			Settings->SaveConfig();
 		}
@@ -220,7 +220,7 @@ namespace UE::UsdStageEditorModule::Private
 
 	bool ShowReferenceHandlingDialog(const FText& DialogText, EReferencerTypeHandling& OutChosenHandling)
 	{
-		UMyUsdProjectSettings* Settings = GetMutableDefault<UMyUsdProjectSettings>();
+		UUsdProjectSettings* Settings = GetMutableDefault<UUsdProjectSettings>();
 		if (!Settings)
 		{
 			return false;
@@ -397,7 +397,7 @@ public:
 		// clang-format off
 		return SNew(SDockTab)
 			.TabRole(ETabRole::NomadTab)
-			.Label(LOCTEXT("MyUSDStageEditorTab", "USD Stage Editor"))
+			.Label(LOCTEXT("USDStageEditorTab", "USD Stage Editor"))
 			[
 				SNew(SBorder)
 				.Padding(0)
@@ -415,7 +415,7 @@ public:
 
 		FMyUsdStageEditorStyle::Initialize();
 
-		IMyUsdUtilitiesModule& UtilitiesModule = FModuleManager::Get().LoadModuleChecked<IMyUsdUtilitiesModule>(TEXT("UsdUtilities"));
+		IUsdUtilitiesModule& UtilitiesModule = FModuleManager::Get().LoadModuleChecked<IUsdUtilitiesModule>(TEXT("UsdUtilities"));
 		UtilitiesModule.OnReferenceHandlingDialog.BindStatic(UE::UsdStageEditorModule::Private::ShowReferenceHandlingDialog);
 
 		FLevelEditorModule& LevelEditorModule = FModuleManager::GetModuleChecked<FLevelEditorModule>("LevelEditor");
@@ -432,8 +432,8 @@ public:
 					UE::UsdStageEditorModule::Private::UsdStageEditorTabID.TabType,
 					FOnSpawnTab::CreateStatic(&FMyUsdStageEditorModule::SpawnUsdStageTab)
 				)
-				.SetDisplayName(LOCTEXT("MyUSDStageEditorMenuItem", "USD Stage Editor"))
-				.SetTooltipText(LOCTEXT("MyUSDStageEditorTooltip", "Open the USD Stage Editor tab. Use this to open and manage USD Stages without importing."))
+				.SetDisplayName(LOCTEXT("USDStageEditorMenuItem", "USD Stage Editor"))
+				.SetTooltipText(LOCTEXT("USDStageEditorTooltip", "Open the USD Stage Editor tab. Use this to open and manage USD Stages without importing."))
 				.SetGroup(WorkspaceMenu::GetMenuStructure().GetLevelEditorCategory())
 				.SetIcon(LayersIcon);
 				// clang-format on
@@ -563,7 +563,7 @@ public:
 			LevelEditorModule.OnTabManagerChanged().Remove(LevelEditorTabManagerChangedHandle);
 		}
 
-		IMyUsdUtilitiesModule& UtilitiesModule = FModuleManager::Get().LoadModuleChecked<IMyUsdUtilitiesModule>(TEXT("UsdUtilities"));
+		IUsdUtilitiesModule& UtilitiesModule = FModuleManager::Get().LoadModuleChecked<IUsdUtilitiesModule>(TEXT("UsdUtilities"));
 		UtilitiesModule.OnReferenceHandlingDialog.Unbind();
 
 		FMyUsdStageEditorStyle::Shutdown();
@@ -661,7 +661,7 @@ void IMyUsdStageEditorModule::SetSelectedLayers(const TArray<UE::FSdfLayer>& New
 #endif	  // USE_USD_SDK
 }
 
-TArray<UE::FMyUsdPrim> IMyUsdStageEditorModule::GetSelectedPrims() const
+TArray<UE::FUsdPrim> IMyUsdStageEditorModule::GetSelectedPrims() const
 {
 #if USE_USD_SDK
 	if (TSharedPtr<SMyUsdStage> UsdStageEditor = UE::UsdStageEditorModule::Private::GetUsdStageEditor())
@@ -673,7 +673,7 @@ TArray<UE::FMyUsdPrim> IMyUsdStageEditorModule::GetSelectedPrims() const
 	return {};
 }
 
-void IMyUsdStageEditorModule::SetSelectedPrims(const TArray<UE::FMyUsdPrim>& NewSelection) const
+void IMyUsdStageEditorModule::SetSelectedPrims(const TArray<UE::FUsdPrim>& NewSelection) const
 {
 #if USE_USD_SDK
 	if (TSharedPtr<SMyUsdStage> UsdStageEditor = UE::UsdStageEditorModule::Private::GetUsdStageEditor())

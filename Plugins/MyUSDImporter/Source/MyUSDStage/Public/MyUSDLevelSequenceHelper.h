@@ -11,16 +11,16 @@
 
 class AMyUsdStageActor;
 class FScopedBlockMonitoringChangesForTransaction;
-class FMyUsdInfoCache;
+class FUsdInfoCache;
 class UMyUsdPrimLinkCache;
 class FMyUsdLevelSequenceHelperImpl;
 class ULevelSequence;
 class UMyUsdPrimTwin;
-enum class EMyUsdRootMotionHandling : uint8;
+enum class EUsdRootMotionHandling : uint8;
 
 namespace UE
 {
-	class FMyUsdGeomBBoxCache;
+	class FUsdGeomBBoxCache;
 }
 
 /**
@@ -41,7 +41,7 @@ public:
 
 public:
 	/** Creates the main level sequence and subsequences from the usd stage layers */
-	UE_API ULevelSequence* Init(const UE::FMyUsdStage& UsdStage);
+	UE_API ULevelSequence* Init(const UE::FUsdStage& UsdStage);
 
 	/** Allows serialization for transaction support */
 	UE_API bool Serialize(FArchive& Ar);
@@ -49,14 +49,14 @@ public:
 	PRAGMA_DISABLE_DEPRECATION_WARNINGS
 	/** Sets the asset cache to use when fetching assets and asset info required for the level sequence animation, like UAnimSequences */
 	UE_DEPRECATED(5.5, "Use SetPrimLinkCache instead")
-	UE_API void SetInfoCache(TSharedPtr<FMyUsdInfoCache> InInfoCache);
+	UE_API void SetInfoCache(TSharedPtr<FUsdInfoCache> InInfoCache);
 	UE_API PRAGMA_ENABLE_DEPRECATION_WARNINGS
 
 	void SetPrimLinkCache(UMyUsdPrimLinkCache* PrimLinkCache);
 
 	/** Sets the BBoxCache to use when importing bound animations for prims. Needed for importing, where we don't have a stage actor to take the
 	 * BBoxCache from */
-	UE_API void SetBBoxCache(TSharedPtr<UE::FMyUsdGeomBBoxCache> InBBoxCache);
+	UE_API void SetBBoxCache(TSharedPtr<UE::FUsdGeomBBoxCache> InBBoxCache);
 
 	/* Returns true if we have at least one possessable or a reference to a subsequence */
 	UE_API bool HasData() const;
@@ -76,12 +76,12 @@ public:
 	 * We use this to prevent animation that has already been baked into AnimSequences as root joint motion from also
 	 * being parsed as LevelSequence tracks.
 	 */
-	UE_API EMyUsdRootMotionHandling GetRootMotionHandling() const;
+	UE_API EUsdRootMotionHandling GetRootMotionHandling() const;
 
 	/**
 	 * Sets the current root motion handling mode.
 	 */
-	UE_API void SetRootMotionHandling(EMyUsdRootMotionHandling NewValue);
+	UE_API void SetRootMotionHandling(EUsdRootMotionHandling NewValue);
 
 	/**
 	 * Adds the necessary tracks for a given prim to the level sequence.

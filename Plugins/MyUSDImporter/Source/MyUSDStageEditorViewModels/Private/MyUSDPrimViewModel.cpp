@@ -25,7 +25,7 @@
 
 #define LOCTEXT_NAMESPACE "USDPrimViewModel"
 
-FMyUsdPrimViewModel::FMyUsdPrimViewModel(FMyUsdPrimViewModel* InParentItem, const UE::FMyUsdStageWeak& InUsdStage, const UE::FMyUsdPrim& InPrim)
+FMyUsdPrimViewModel::FMyUsdPrimViewModel(FMyUsdPrimViewModel* InParentItem, const UE::FUsdStageWeak& InUsdStage, const UE::FUsdPrim& InPrim)
 	: UsdStage(InUsdStage)
 	, UsdPrim(InPrim)
 	, ParentItem(InParentItem)
@@ -40,7 +40,7 @@ FMyUsdPrimViewModel::FMyUsdPrimViewModel(FMyUsdPrimViewModel* InParentItem, cons
 	}
 }
 
-TArray<FMyUsdPrimViewModelRef>& FMyUsdPrimViewModel::UpdateChildren()
+TArray<FUsdPrimViewModelRef>& FMyUsdPrimViewModel::UpdateChildren()
 {
 	if (!UsdPrim)
 	{
@@ -54,11 +54,11 @@ TArray<FMyUsdPrimViewModelRef>& FMyUsdPrimViewModel::UpdateChildren()
 
 	pxr::UsdPrimSiblingRange PrimChildren = pxr::UsdPrim(UsdPrim).GetFilteredChildren(pxr::UsdTraverseInstanceProxies(pxr::UsdPrimAllPrimsPredicate));
 
-	const int32 NumUsdChildren = (TArray<FMyUsdPrimViewModelRef>::SizeType)std::distance(PrimChildren.begin(), PrimChildren.end());
+	const int32 NumUsdChildren = (TArray<FUsdPrimViewModelRef>::SizeType)std::distance(PrimChildren.begin(), PrimChildren.end());
 	const int32 NumUnrealChildren = [&]()
 	{
 		int32 ValidPrims = 0;
-		for (const FMyUsdPrimViewModelRef& Child : Children)
+		for (const FUsdPrimViewModelRef& Child : Children)
 		{
 			if (!Child->RowData->Name.IsEmpty())
 			{
@@ -117,14 +117,14 @@ void FMyUsdPrimViewModel::SetIsExpanded(bool bNewIsExpanded)
 	// If we're collapsed though, we don't have to have grandchildren
 	if (bIsExpanded)
 	{
-		for (FMyUsdPrimViewModelRef Child : Children)
+		for (FUsdPrimViewModelRef Child : Children)
 		{
 			Child->FillChildren();
 		}
 	}
 	else
 	{
-		for (FMyUsdPrimViewModelRef Child : Children)
+		for (FUsdPrimViewModelRef Child : Children)
 		{
 			Child->Children.Reset();
 		}
@@ -152,7 +152,7 @@ void FMyUsdPrimViewModel::FillChildren()
 	FScopedUnrealAllocs UnrealAllocs;
 	for (pxr::UsdPrim Child : PrimChildren)
 	{
-		Children.Add(MakeShared<FMyUsdPrimViewModel>(this, UsdStage, UE::FMyUsdPrim(Child)));
+		Children.Add(MakeShared<FMyUsdPrimViewModel>(this, UsdStage, UE::FUsdPrim(Child)));
 	}
 #endif	  // #if USE_USD_SDK
 }
@@ -204,7 +204,7 @@ void FMyUsdPrimViewModel::RefreshData(bool bRefreshChildren)
 
 	if (bRefreshChildren)
 	{
-		for (FMyUsdPrimViewModelRef& Child : UpdateChildren())
+		for (FUsdPrimViewModelRef& Child : UpdateChildren())
 		{
 			Child->RefreshData(bRefreshChildren);
 		}

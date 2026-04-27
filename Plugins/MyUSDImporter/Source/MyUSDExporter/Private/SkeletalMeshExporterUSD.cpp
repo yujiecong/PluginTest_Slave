@@ -49,7 +49,7 @@ namespace UE::SkeletalMeshExporterUSD::Private
 			return;
 		}
 
-		const FString ClassName = IMyUsdClassesModule::GetClassNameForAnalytics(Asset);
+		const FString ClassName = IUsdClassesModule::GetClassNameForAnalytics(Asset);
 
 		TArray<FAnalyticsEventAttribute> EventAttributes;
 		EventAttributes.Emplace(TEXT("AssetType"), ClassName);
@@ -59,7 +59,7 @@ namespace UE::SkeletalMeshExporterUSD::Private
 			UsdUtils::AddAnalyticsAttributes(*Options, EventAttributes);
 		}
 
-		IMyUsdClassesModule::SendAnalytics(
+		IUsdClassesModule::SendAnalytics(
 			MoveTemp(EventAttributes),
 			FString::Printf(TEXT("Export.%s"), *ClassName),
 			bAutomated,
@@ -205,12 +205,12 @@ bool USkeletalMeshExporterUsd::ExportBinary(
 			// Don't use the stage cache here as we want this stage to close within this scope in case
 			// we have to overwrite its files due to e.g. missing payload or anything like that
 			const bool bUseStageCache = false;
-			const EMyUsdInitialLoadSet InitialLoadSet = EMyUsdInitialLoadSet::LoadNone;
-			if (UE::FMyUsdStage TempStage = UnrealUSDWrapper::OpenStage(*UExporter::CurrentFilename, InitialLoadSet, bUseStageCache))
+			const EUsdInitialLoadSet InitialLoadSet = EUsdInitialLoadSet::LoadNone;
+			if (UE::FUsdStage TempStage = UnrealUSDWrapper::OpenStage(*UExporter::CurrentFilename, InitialLoadSet, bUseStageCache))
 			{
-				if (UE::FMyUsdPrim DefaultPrim = TempStage.GetDefaultPrim())
+				if (UE::FUsdPrim DefaultPrim = TempStage.GetDefaultPrim())
 				{
-					FMyUsdUnrealAssetInfo Info = UsdUtils::GetPrimAssetInfo(DefaultPrim);
+					FUsdUnrealAssetInfo Info = UsdUtils::GetPrimAssetInfo(DefaultPrim);
 
 					const bool bVersionMatches = !Info.Version.IsEmpty() && Info.Version == CurrentHashString;
 
@@ -265,7 +265,7 @@ bool USkeletalMeshExporterUsd::ExportBinary(
 	double StartTime = FPlatformTime::Cycles64();
 
 	// UsdStage is the payload stage when exporting with payloads, or just the single stage otherwise
-	UE::FMyUsdStage UsdStage = UnrealUSDWrapper::NewStage(*PayloadFilename);
+	UE::FUsdStage UsdStage = UnrealUSDWrapper::NewStage(*PayloadFilename);
 	if (!UsdStage)
 	{
 		return false;
@@ -280,7 +280,7 @@ bool USkeletalMeshExporterUsd::ExportBinary(
 	FString RootPrimPath = (TEXT("/") + UsdUtils::SanitizeUsdIdentifier(*SkeletalMesh->GetName()));
 
 	const bool bExportAsSkeletal = !Options->MeshAssetOptions.bConvertSkeletalToNonSkeletal;
-	UE::FMyUsdPrim RootPrim = UsdStage.DefinePrim(UE::FSdfPath(*RootPrimPath), bExportAsSkeletal ? TEXT("SkelRoot") : TEXT("Mesh"));
+	UE::FUsdPrim RootPrim = UsdStage.DefinePrim(UE::FSdfPath(*RootPrimPath), bExportAsSkeletal ? TEXT("SkelRoot") : TEXT("Mesh"));
 	if (!RootPrim)
 	{
 		return false;
@@ -289,7 +289,7 @@ bool USkeletalMeshExporterUsd::ExportBinary(
 	UsdStage.SetDefaultPrim(RootPrim);
 
 	// Asset stage always the stage where we write the material assignments
-	UE::FMyUsdStage AssetStage;
+	UE::FUsdStage AssetStage;
 
 	// Using payload: Convert mesh data through the asset stage (that references the payload) so that we can
 	// author mesh data on the payload layer and material data on the asset layer
@@ -301,7 +301,7 @@ bool USkeletalMeshExporterUsd::ExportBinary(
 			UsdUtils::SetUsdStageMetersPerUnit(AssetStage, Options->StageOptions.MetersPerUnit);
 			UsdUtils::SetUsdStageUpAxis(AssetStage, Options->StageOptions.UpAxis);
 
-			if (UE::FMyUsdPrim AssetRootPrim = AssetStage.DefinePrim(UE::FSdfPath(*RootPrimPath)))
+			if (UE::FUsdPrim AssetRootPrim = AssetStage.DefinePrim(UE::FSdfPath(*RootPrimPath)))
 			{
 				AssetStage.SetDefaultPrim(AssetRootPrim);
 				UsdUtils::AddPayload(AssetRootPrim, *PayloadFilename);
@@ -330,11 +330,11 @@ bool USkeletalMeshExporterUsd::ExportBinary(
 		UnrealToUsd::ConvertSkeletalMeshToStaticMesh(SkeletalMesh, RootPrim, UsdUtils::GetDefaultTimeCode(), &AssetStage);
 	}
 
-	if (UE::FMyUsdPrim AssetDefaultPrim = AssetStage.GetDefaultPrim())
+	if (UE::FUsdPrim AssetDefaultPrim = AssetStage.GetDefaultPrim())
 	{
 		if (Options->MetadataOptions.bExportAssetInfo)
 		{
-			FMyUsdUnrealAssetInfo Info;
+			FUsdUnrealAssetInfo Info;
 			Info.Name = SkeletalMesh->GetName();
 			Info.Identifier = UExporter::CurrentFilename;
 			Info.Version = CurrentHashString;
@@ -348,7 +348,7 @@ bool USkeletalMeshExporterUsd::ExportBinary(
 
 		if (Options->MetadataOptions.bExportAssetMetadata)
 		{
-			if (UMyUsdAssetUserData* UserData = UsdUnreal::ObjectUtils::GetAssetUserData(SkeletalMesh))
+			if (UUsdAssetUserData* UserData = UsdUnreal::ObjectUtils::GetAssetUserData(SkeletalMesh))
 			{
 				UnrealToUsd::ConvertMetadata(
 					UserData,
@@ -360,11 +360,11 @@ bool USkeletalMeshExporterUsd::ExportBinary(
 
 			if (USkeleton* Skeleton = SkeletalMesh->GetSkeleton())
 			{
-				if (UMyUsdAssetUserData* UserData = UsdUnreal::ObjectUtils::GetAssetUserData(Skeleton))
+				if (UUsdAssetUserData* UserData = UsdUnreal::ObjectUtils::GetAssetUserData(Skeleton))
 				{
 					if (UserData->StageIdentifierToMetadata.Num() > 0)
 					{
-						UE::FMyUsdPrim SkelPrim = AssetStage.OverridePrim(
+						UE::FUsdPrim SkelPrim = AssetStage.OverridePrim(
 							UE::FSdfPath(*RootPrimPath).AppendChild(UnrealIdentifiers::ExportedSkeletonPrimName)
 						);
 						UnrealToUsd::ConvertMetadata(

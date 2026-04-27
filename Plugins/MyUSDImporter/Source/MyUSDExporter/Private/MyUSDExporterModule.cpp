@@ -17,7 +17,7 @@
 #include "Selection.h"
 #include "Widgets/Notifications/SNotificationList.h"
 
-#define LOCTEXT_NAMESPACE "MyUSDExporterModule"
+#define LOCTEXT_NAMESPACE "USDExporterModule"
 
 // Small customization to hide the "bExportComponentMetadata" property of shown FMyUsdMetadataExportOptions
 // for the asset exporters, since the inverse of having it hidden by default and only shown for level/sequence exporters

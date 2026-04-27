@@ -56,7 +56,7 @@ public:
 		EObjectFieldType Type,
 		const FString& FieldName,
 		const T& Value,
-		UsdUtils::EMyUsdBasicDataTypes UsdType,
+		UsdUtils::EUsdBasicDataTypes UsdType,
 		const FString& ValueRole = FString(),
 		bool bReadOnly = false
 	);
@@ -64,10 +64,10 @@ public:
 
 	UE_API void SetFieldValue(const FString& FieldName, const UsdUtils::FConvertedVtValue& Value);
 
-	UE_API void Refresh(const UE::FMyUsdStageWeak& UsdStage, const TCHAR* ObjectPath, float TimeCode);
+	UE_API void Refresh(const UE::FUsdStageWeak& UsdStage, const TCHAR* ObjectPath, float TimeCode);
 	UE_API void Sort();
 
-	UE_API UE::FMyUsdStageWeak GetUsdStage() const;
+	UE_API UE::FUsdStageWeak GetUsdStage() const;
 	UE_API FString GetObjectPath() const;
 
 public:
@@ -76,7 +76,7 @@ public:
 	TArray<TSharedPtr<FMyUsdObjectFieldViewModel>> Fields;
 
 private:
-	UE::FMyUsdStageWeak UsdStage;
+	UE::FUsdStageWeak UsdStage;
 	FString ObjectPath;
 };
 

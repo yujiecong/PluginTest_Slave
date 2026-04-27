@@ -393,7 +393,7 @@ namespace UE::UsdNaniteAssemblyTranslator::Private
 		return {};
 	}
 
-	TArray<UE::FSdfPath> GetPointInstancerPrototypePaths(const UE::FMyUsdPrim& Prim)
+	TArray<UE::FSdfPath> GetPointInstancerPrototypePaths(const UE::FUsdPrim& Prim)
 	{		
 		FScopedUsdAllocs UsdAllocs;
 
@@ -416,7 +416,7 @@ namespace UE::UsdNaniteAssemblyTranslator::Private
 		}
 	}
 
-	TArray<int32> GetPointInstancerProtoIndices(const UE::FMyUsdPrim& Prim, float Time)
+	TArray<int32> GetPointInstancerProtoIndices(const UE::FUsdPrim& Prim, float Time)
 	{
 		FScopedUsdAllocs UsdAllocs;
 
@@ -451,7 +451,7 @@ namespace UE::UsdNaniteAssemblyTranslator::Private
 		return {};
 	}
 
-	TArray<FTransform> GetPointInstancerTransforms(const UE::FMyUsdPrim& Prim, const FTransform& Transform, float Time)
+	TArray<FTransform> GetPointInstancerTransforms(const UE::FUsdPrim& Prim, const FTransform& Transform, float Time)
 	{
 		FScopedUsdAllocs UsdAllocs;
 
@@ -472,7 +472,7 @@ namespace UE::UsdNaniteAssemblyTranslator::Private
 		{
 			FScopedUnrealAllocs UnrealAllocs;
 
-			FMyUsdStageInfo StageInfo{ Prim.GetStage() };
+			FUsdStageInfo StageInfo{ Prim.GetStage() };
 			TArray<FTransform> InstanceTransforms;
 			InstanceTransforms.Reserve(static_cast<int32>(UsdInstanceTransforms.size()));
 			for (const pxr::GfMatrix4d& UsdMatrix : UsdInstanceTransforms)
@@ -489,7 +489,7 @@ class FMyUsdNaniteAssemblyCreateAssetsTaskChain : public FBaseBuildStaticMeshTas
 {
 public:
 	explicit FMyUsdNaniteAssemblyCreateAssetsTaskChain(
-		const TSharedRef<FMyUsdSchemaTranslationContext>& InContext,
+		const TSharedRef<FUsdSchemaTranslationContext>& InContext,
 		const UE::FSdfPath& InPrimPath)
 		: FBaseBuildStaticMeshTaskChain(InContext, InPrimPath)
 	{
@@ -498,7 +498,7 @@ public:
 	}
 
 	explicit FMyUsdNaniteAssemblyCreateAssetsTaskChain(
-		const TSharedRef<FMyUsdSchemaTranslationContext>& InContext,
+		const TSharedRef<FUsdSchemaTranslationContext>& InContext,
 		const UE::FSdfPath& InPrimPath,
 		const pxr::UsdSkelSkeleton& InSkeleton,
 		const pxr::UsdSkelRoot& InSkelRoot)
@@ -506,7 +506,7 @@ public:
 		, Skeleton(InSkeleton)
 		, SkelRoot(InSkelRoot)
 	{
-		const UE::FSdfPath SkeletonPath = UE::FMyUsdPrim(Skeleton.Get().GetPrim()).GetPrimPath();
+		const UE::FSdfPath SkeletonPath = UE::FUsdPrim(Skeleton.Get().GetPrim()).GetPrimPath();
 
 		BaseSkeletalMesh = Context->PrimLinkCache->GetSingleAssetForPrim<USkeletalMesh>(SkeletonPath);
 		if (BaseSkeletalMesh == nullptr)
@@ -553,7 +553,7 @@ protected:
 	using PrototypeAssetsTable = std::unordered_map<int, TArray<TWeakObjectPtr<UObject>>>;
 	using FBindingView = UE::UsdNaniteAssemblyTranslator::Private::FBindingView;
 
-	UE::FMyUsdPrim GetPrim() const
+	UE::FUsdPrim GetPrim() const
 	{
 		return Context->Stage.GetPrimAtPath(PrimPath);
 	}
@@ -648,7 +648,7 @@ protected:
 		}
 	}
 
-	PrototypeAssetsTable CollectPointInstancerAssets(const UE::FMyUsdPrim& PointInstancerPrim, const TArray<UE::FSdfPath>& PrototypePaths)
+	PrototypeAssetsTable CollectPointInstancerAssets(const UE::FUsdPrim& PointInstancerPrim, const TArray<UE::FSdfPath>& PrototypePaths)
 	{
 		PrototypeAssetsTable AssetsByPrototypeIndex;
 		AssetsByPrototypeIndex.reserve(PrototypePaths.Num());
@@ -656,9 +656,9 @@ protected:
 		{
 			for (int Index = 0; Index < PrototypePaths.Num(); ++Index)
 			{
-				const UE::FMyUsdPrim PrototypePrim = Context->Stage.GetPrimAtPath(PrototypePaths[Index]);
-				const TArray<UE::FMyUsdPrim> SkeletonPrims = UsdUtils::GetAllPrimsOfType(PrototypePrim, TEXT("UsdSkelSkeleton"));
-				for (const UE::FMyUsdPrim& SkeletonPrim : SkeletonPrims)
+				const UE::FUsdPrim PrototypePrim = Context->Stage.GetPrimAtPath(PrototypePaths[Index]);
+				const TArray<UE::FUsdPrim> SkeletonPrims = UsdUtils::GetAllPrimsOfType(PrototypePrim, TEXT("UsdSkelSkeleton"));
+				for (const UE::FUsdPrim& SkeletonPrim : SkeletonPrims)
 				{
 					for (USkeletalMesh* SkelMesh : Context->PrimLinkCache->GetAssetsForPrim<USkeletalMesh>(SkeletonPrim.GetPrimPath()))
 					{
@@ -675,7 +675,7 @@ protected:
 			TArray<UStaticMesh*> AllPrototypeMeshes = Context->PrimLinkCache->GetAssetsForPrim<UStaticMesh>(PointInstancerPrim.GetPrimPath());
 			for (UStaticMesh* PrototypeMesh : AllPrototypeMeshes)
 			{
-				if (UMyUsdAssetUserData* UserData = PrototypeMesh->GetAssetUserData<UMyUsdAssetUserData>())
+				if (UUsdAssetUserData* UserData = PrototypeMesh->GetAssetUserData<UUsdAssetUserData>())
 				{
 					for (const FString& SourcePrimPath : UserData->PrimPaths)
 					{
@@ -707,7 +707,7 @@ protected:
 	}
 
 	void BuildAssemblyForPointInstancer(
-		const UE::FMyUsdPrim& PointInstancerPrim, 
+		const UE::FUsdPrim& PointInstancerPrim, 
 		const FTransform& Transform, 
 		FBindingView Bindings)
 	{
@@ -768,7 +768,7 @@ protected:
 	}
 
 	void RecursivelyBuildAssembly(
-		const UE::FMyUsdPrim& Prim,
+		const UE::FUsdPrim& Prim,
 		const FTransform& ParentTransform,
 		FBindingView Bindings)
 	{
@@ -872,7 +872,7 @@ protected:
 		if (IsSkelMesh() && pxr::UsdPrim(Prim).IsA<pxr::UsdSkelRoot>())
 		{
 			// Special case: gather up skeletons because that's what the skeletal mesh is tied to in the prim link cache
-			for (const UE::FMyUsdPrim& SkeletonPrim : UsdUtils::GetAllPrimsOfType(Prim, TEXT("UsdSkelSkeleton")))
+			for (const UE::FUsdPrim& SkeletonPrim : UsdUtils::GetAllPrimsOfType(Prim, TEXT("UsdSkelSkeleton")))
 			{
 				for (USkeletalMesh* SkelMesh : Context->PrimLinkCache->GetAssetsForPrim<USkeletalMesh>(SkeletonPrim.GetPrimPath()))
 				{
@@ -903,7 +903,7 @@ protected:
 		
 		if (bRecurseChildren)
 		{
-			for (const UE::FMyUsdPrim& ChildPrim : Prim.GetFilteredChildren(true))
+			for (const UE::FUsdPrim& ChildPrim : Prim.GetFilteredChildren(true))
 			{
 				RecursivelyBuildAssembly(ChildPrim, LocalTransform, Bindings);
 			}
@@ -918,7 +918,7 @@ protected:
 		Do(ESchemaTranslationLaunchPolicy::Sync,
 			[this]()->bool
 			{
-				for (const UE::FMyUsdPrim& ChildPrim : GetPrim().GetFilteredChildren(true))
+				for (const UE::FUsdPrim& ChildPrim : GetPrim().GetFilteredChildren(true))
 				{
 					RecursivelyBuildAssembly(ChildPrim, FTransform::Identity, {});
 				}
@@ -942,7 +942,7 @@ protected:
 				FModuleManager::LoadModuleChecked<IMeshBuilderModule>(TEXT("MeshBuilder"));
 #endif	// WITH_EDITOR
 
-				UE::FMyUsdPrim Prim = GetPrim();
+				UE::FUsdPrim Prim = GetPrim();
 
 				// The Nanite Assembly structure is defined by the xforms of its child components in the USD stage, so
 				// we can just use the prototype path as a hash to de-duplicate copied references
@@ -975,7 +975,7 @@ protected:
 						Context->PrimLinkCache->LinkAssetToPrim(PrimPath, StaticMesh);
 					}
 
-					if (UMyUsdMeshAssetUserData* UserData = UsdUnreal::ObjectUtils::GetOrCreateAssetUserData<UMyUsdMeshAssetUserData>(StaticMesh))
+					if (UUsdMeshAssetUserData* UserData = UsdUnreal::ObjectUtils::GetOrCreateAssetUserData<UUsdMeshAssetUserData>(StaticMesh))
 					{
 						UserData->PrimPaths.AddUnique(PrimPath.GetString());
 
@@ -1006,7 +1006,7 @@ protected:
 		Then(ESchemaTranslationLaunchPolicy::Sync,
 			[this]()->bool
 			{
-				UE::FMyUsdPrim Prim = GetPrim();
+				UE::FUsdPrim Prim = GetPrim();
 
 				// The Nanite Assembly structure is defined by the xforms of its child components in the USD stage, so
 				// we can just use the prototype path as a hash to de-duplicate copied references
@@ -1049,7 +1049,7 @@ protected:
 						Context->PrimLinkCache->LinkAssetToPrim(PrimPath, SkeletalMesh);
 					}
 
-					if (UMyUsdMeshAssetUserData* UserData = UsdUnreal::ObjectUtils::GetOrCreateAssetUserData<UMyUsdMeshAssetUserData>(SkeletalMesh))
+					if (UUsdMeshAssetUserData* UserData = UsdUnreal::ObjectUtils::GetOrCreateAssetUserData<UUsdMeshAssetUserData>(SkeletalMesh))
 					{
 						UserData->PrimPaths.AddUnique(PrimPath.GetString());
 
@@ -1075,7 +1075,7 @@ void FMyUsdNaniteAssemblyTranslator::CreateAssets()
 		return;
 	}
 	
-	UE::FMyUsdPrim Prim = GetPrim();
+	UE::FUsdPrim Prim = GetPrim();
 	ERootType RootType = GetNaniteAssemblyRootType(Prim);
 	if (RootType == ERootType::None)
 	{
@@ -1084,20 +1084,20 @@ void FMyUsdNaniteAssemblyTranslator::CreateAssets()
 	
 	// Manually translate skeletal meshes located in pointinstancer prototypes for now since they are not currently
 	// recognized by the pointinstancer translator.
-	const TArray<UE::FMyUsdPrim> PointInstancers = UsdUtils::GetAllPrimsOfType(Prim, TEXT("UsdGeomPointInstancer"));
+	const TArray<UE::FUsdPrim> PointInstancers = UsdUtils::GetAllPrimsOfType(Prim, TEXT("UsdGeomPointInstancer"));
 
-	for (const UE::FMyUsdPrim& PointInstancer : PointInstancers)
+	for (const UE::FUsdPrim& PointInstancer : PointInstancers)
 	{
 		const TArray<UE::FSdfPath> PrototypePaths = GetPointInstancerPrototypePaths(PointInstancer);
 
 		for (const UE::FSdfPath& PrototypePath : PrototypePaths)
 		{
-			const UE::FMyUsdPrim PrototypePrim = Context->Stage.GetPrimAtPath(PrototypePath);
-			const TArray<UE::FMyUsdPrim> SkeletonPrims = UsdUtils::GetAllPrimsOfType(PrototypePrim, TEXT("UsdSkelSkeleton"));
+			const UE::FUsdPrim PrototypePrim = Context->Stage.GetPrimAtPath(PrototypePath);
+			const TArray<UE::FUsdPrim> SkeletonPrims = UsdUtils::GetAllPrimsOfType(PrototypePrim, TEXT("UsdSkelSkeleton"));
 
-			for (const UE::FMyUsdPrim& SkeletonPrim : SkeletonPrims)
+			for (const UE::FUsdPrim& SkeletonPrim : SkeletonPrims)
 			{
-				if (TSharedPtr<FMyUsdSchemaTranslator> SchemaTranslator = FMyUsdSchemaTranslatorRegistry::Get().CreateTranslatorForSchema(Context, UE::FMyUsdTyped(SkeletonPrim)))
+				if (TSharedPtr<FUsdSchemaTranslator> SchemaTranslator = FUsdSchemaTranslatorRegistry::Get().CreateTranslatorForSchema(Context, UE::FUsdTyped(SkeletonPrim)))
 				{
 					SchemaTranslator->CreateAssets();
 				}

@@ -47,7 +47,7 @@ class SVariantsList : public SListView<TSharedPtr<FMyUsdVariantSetViewModel>>
 
 public:
 	void Construct(const FArguments& InArgs);
-	void SetPrimPath(const UE::FMyUsdStageWeak& UsdStage, const TCHAR* InPrimPath);
+	void SetPrimPath(const UE::FUsdStageWeak& UsdStage, const TCHAR* InPrimPath);
 
 protected:
 	TSharedRef<ITableRow> OnGenerateRow(TSharedPtr<FMyUsdVariantSetViewModel> InDisplayNode, const TSharedRef<STableViewBase>& OwnerTable);

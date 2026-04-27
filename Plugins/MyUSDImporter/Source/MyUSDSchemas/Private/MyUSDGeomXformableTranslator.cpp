@@ -74,7 +74,7 @@ static FAutoConsoleVariableRef CVarEnableCollision(
 
 namespace UE::UsdXformableTranslatorImpl::Private
 {
-	void SetUpSceneComponentForLiveLink(const FMyUsdSchemaTranslationContext& Context, USceneComponent* Component, const pxr::UsdPrim& Prim)
+	void SetUpSceneComponentForLiveLink(const FUsdSchemaTranslationContext& Context, USceneComponent* Component, const pxr::UsdPrim& Prim)
 	{
 		if (!Component || !Prim)
 		{
@@ -213,7 +213,7 @@ class FMyUsdGeomXformableCreateAssetsTaskChain : public FBuildStaticMeshTaskChai
 {
 public:
 	explicit FMyUsdGeomXformableCreateAssetsTaskChain(
-		const TSharedRef<FMyUsdSchemaTranslationContext>& InContext,
+		const TSharedRef<FUsdSchemaTranslationContext>& InContext,
 		const UE::FSdfPath& InPrimPath,
 		const TOptional<UE::FSdfPath>& AlternativePrimToLinkAssetsTo = {}
 	)
@@ -240,7 +240,7 @@ void FMyUsdGeomXformableCreateAssetsTaskChain::SetupTasks()
 		   LODIndexToMaterialInfo.Reset(1);
 
 		   FMeshDescription& AddedMeshDescription = LODIndexToMeshDescription.Emplace_GetRef();
-		   UsdUtils::FMyUsdPrimMaterialAssignmentInfo& AssignmentInfo = LODIndexToMaterialInfo.Emplace_GetRef();
+		   UsdUtils::FUsdPrimMaterialAssignmentInfo& AssignmentInfo = LODIndexToMaterialInfo.Emplace_GetRef();
 
 		   pxr::TfToken RenderContextToken = pxr::UsdShadeTokens->universalRenderContext;
 		   if (!Context->RenderContext.IsNone())
@@ -258,7 +258,7 @@ void FMyUsdGeomXformableCreateAssetsTaskChain::SetupTasks()
 		   const bool bSkipRootPrimTransform = true;
 		   const bool bSkipRootPrimVisibility = true;
 
-		   UsdToUnreal::FMyUsdMeshConversionOptions Options;
+		   UsdToUnreal::FUsdMeshConversionOptions Options;
 		   Options.TimeCode = Context->Time;
 		   Options.PurposesToLoad = Context->PurposesToLoad;
 		   Options.RenderContext = RenderContextToken;
@@ -296,11 +296,11 @@ void FMyUsdGeomXformableTranslator::CreateAssets()
 		return;
 	}
 
-	UE::FMyUsdPrim Prim = GetPrim();
+	UE::FUsdPrim Prim = GetPrim();
 
 	// Don't bother generating assets if we're going to just draw some bounds for this prim instead
-	EMyUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(Prim);
-	if (DrawMode != EMyUsdDrawMode::Default)
+	EUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(Prim);
+	if (DrawMode != EUsdDrawMode::Default)
 	{
 		CreateAlternativeDrawModeAssets(DrawMode);
 		return;
@@ -312,10 +312,10 @@ void FMyUsdGeomXformableTranslator::CreateAssets()
 
 FMyUsdGeomXformableTranslator::FMyUsdGeomXformableTranslator(
 	TSubclassOf<USceneComponent> InComponentTypeOverride,
-	TSharedRef<FMyUsdSchemaTranslationContext> InContext,
-	const UE::FMyUsdTyped& InSchema
+	TSharedRef<FUsdSchemaTranslationContext> InContext,
+	const UE::FUsdTyped& InSchema
 )
-	: FMyUsdSchemaTranslator(InContext, InSchema)
+	: FUsdSchemaTranslator(InContext, InSchema)
 	, ComponentTypeOverride(InComponentTypeOverride)
 {
 }
@@ -324,8 +324,8 @@ USceneComponent* FMyUsdGeomXformableTranslator::CreateComponents()
 {
 	USceneComponent* SceneComponent = nullptr;
 
-	EMyUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(GetPrim());
-	if (DrawMode == EMyUsdDrawMode::Default)
+	EUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(GetPrim());
+	if (DrawMode == EUsdDrawMode::Default)
 	{
 		SceneComponent = CreateComponentsEx({}, {});
 	}
@@ -350,7 +350,7 @@ USceneComponent* FMyUsdGeomXformableTranslator::CreateComponentsEx(TOptional<TSu
 		return nullptr;
 	}
 
-	UE::FMyUsdPrim Prim = GetPrim();
+	UE::FUsdPrim Prim = GetPrim();
 	if (!Prim)
 	{
 		return nullptr;
@@ -360,8 +360,8 @@ USceneComponent* FMyUsdGeomXformableTranslator::CreateComponentsEx(TOptional<TSu
 
 	if (!bNeedsActor.IsSet())
 	{
-		// Don't add components to the AMyUsdStageActor or the MyUSDStageImport 'scene actor'
-		UE::FMyUsdPrim ParentPrim = Prim.GetParent();
+		// Don't add components to the AMyUsdStageActor or the USDStageImport 'scene actor'
+		UE::FUsdPrim ParentPrim = Prim.GetParent();
 		bool bIsTopLevelPrim = ParentPrim.IsValid() && ParentPrim.IsPseudoRoot();
 
 		// If we don't have any parent prim with a type that generates a component, we are still technically a top-level prim
@@ -370,7 +370,7 @@ USceneComponent* FMyUsdGeomXformableTranslator::CreateComponentsEx(TOptional<TSu
 			bool bHasParentComponent = false;
 			while (ParentPrim.IsValid())
 			{
-				if (UE::FMyUsdGeomXformable(ParentPrim))
+				if (UE::FUsdGeomXformable(ParentPrim))
 				{
 					bHasParentComponent = true;
 					break;
@@ -384,7 +384,7 @@ USceneComponent* FMyUsdGeomXformableTranslator::CreateComponentsEx(TOptional<TSu
 			}
 		}
 
-		auto PrimNeedsActor = [](const UE::FMyUsdPrim& UsdPrim) -> bool
+		auto PrimNeedsActor = [](const UE::FUsdPrim& UsdPrim) -> bool
 		{
 			// clang-format off
 			return  UsdPrim.IsPseudoRoot() ||
@@ -406,17 +406,17 @@ USceneComponent* FMyUsdGeomXformableTranslator::CreateComponentsEx(TOptional<TSu
 		// We don't want to start a component hierarchy if one of our child will break it by being an actor
 		if (!bNeedsActor.GetValue())
 		{
-			TFunction<bool(const UE::FMyUsdPrim&)> RecursiveChildPrimsNeedsActor;
-			RecursiveChildPrimsNeedsActor = [PrimNeedsActor, &RecursiveChildPrimsNeedsActor](const UE::FMyUsdPrim& UsdPrim) -> bool
+			TFunction<bool(const UE::FUsdPrim&)> RecursiveChildPrimsNeedsActor;
+			RecursiveChildPrimsNeedsActor = [PrimNeedsActor, &RecursiveChildPrimsNeedsActor](const UE::FUsdPrim& UsdPrim) -> bool
 			{
 				const bool bTraverseInstanceProxies = true;
 				for (const pxr::UsdPrim& Child : UsdPrim.GetFilteredChildren(bTraverseInstanceProxies))
 				{
-					if (PrimNeedsActor(UE::FMyUsdPrim(Child)))
+					if (PrimNeedsActor(UE::FUsdPrim(Child)))
 					{
 						return true;
 					}
-					else if (RecursiveChildPrimsNeedsActor(UE::FMyUsdPrim(Child)))
+					else if (RecursiveChildPrimsNeedsActor(UE::FUsdPrim(Child)))
 					{
 						return true;
 					}
@@ -425,7 +425,7 @@ USceneComponent* FMyUsdGeomXformableTranslator::CreateComponentsEx(TOptional<TSu
 				return false;
 			};
 
-			bNeedsActor = RecursiveChildPrimsNeedsActor(UE::FMyUsdPrim(Prim));
+			bNeedsActor = RecursiveChildPrimsNeedsActor(UE::FUsdPrim(Prim));
 		}
 	}
 
@@ -454,7 +454,7 @@ USceneComponent* FMyUsdGeomXformableTranslator::CreateComponentsEx(TOptional<TSu
 		SpawnParameters.NameMode = FActorSpawnParameters::ESpawnActorNameMode::Requested;	 // Will generate a unique name in case of a conflict
 
 		UClass* ActorClass = nullptr;
-		if (ComponentType.Get({}) == UMyUsdDrawModeComponent::StaticClass())
+		if (ComponentType.Get({}) == UUsdDrawModeComponent::StaticClass())
 		{
 			// If we've been told to spawn a bounds component, we never want to create a light or camera actor or etc., as those
 			// come with their own specific root components
@@ -522,7 +522,7 @@ USceneComponent* FMyUsdGeomXformableTranslator::CreateComponentsEx(TOptional<TSu
 					// together right now. We can't just check if there's a static mesh for this prim on the cache, because the prims with meshes
 					// could be potentially invisible (and so we don't have parsed their meshes yet), so here we traverse our child hierarchy and if
 					// we have any chance of ever generating a Mesh, we go for a static mesh component
-					TArray<UE::FMyUsdPrim> ChildGprims = UsdUtils::GetAllPrimsOfType(Prim, TEXT("UsdGeomGprim"));
+					TArray<UE::FUsdPrim> ChildGprims = UsdUtils::GetAllPrimsOfType(Prim, TEXT("UsdGeomGprim"));
 					if (ChildGprims.Num() > 0)
 					{
 						ComponentType = UStaticMeshComponent::StaticClass();
@@ -560,7 +560,7 @@ USceneComponent* FMyUsdGeomXformableTranslator::CreateComponentsEx(TOptional<TSu
 
 	if (Context->MetadataOptions.bCollectMetadata && Context->MetadataOptions.bCollectOnComponents)
 	{
-		UMyUsdAssetUserData* UserData = UsdUnreal::ObjectUtils::GetOrCreateAssetUserData(SceneComponent);
+		UUsdAssetUserData* UserData = UsdUnreal::ObjectUtils::GetOrCreateAssetUserData(SceneComponent);
 
 		// It makes sense for asset metadata to "include all prims in the subtree", as when we generate an
 		// asset we don't generate additional separate assets for child prims. This is not the same behavior
@@ -576,7 +576,7 @@ USceneComponent* FMyUsdGeomXformableTranslator::CreateComponentsEx(TOptional<TSu
 			bCollectMetadataFromSubtree
 		);
 	}
-	else if (UMyUsdAssetUserData* UserData = UsdUnreal::ObjectUtils::GetAssetUserData(SceneComponent))
+	else if (UUsdAssetUserData* UserData = UsdUnreal::ObjectUtils::GetAssetUserData(SceneComponent))
 	{
 		// Strip the metadata from this prim, so that if we uncheck "Collect Metadata" it actually disappears on the AssetUserData
 		UserData->StageIdentifierToMetadata.Remove(Prim.GetStage().GetRootLayer().GetIdentifier());
@@ -653,7 +653,7 @@ void FMyUsdGeomXformableTranslator::UpdateComponents(USceneComponent* SceneCompo
 			SceneComponent->UnregisterComponent();
 		}
 
-		UE::FMyUsdPrim Prim = GetPrim();
+		UE::FUsdPrim Prim = GetPrim();
 
 		// If the user modified a mesh parameter (e.g. vertex color), the hash will be different and it will become a separate asset
 		// so we must check for this and assign the new StaticMesh
@@ -696,11 +696,11 @@ void FMyUsdGeomXformableTranslator::UpdateComponents(USceneComponent* SceneCompo
 				StaticMeshComponent->BodyInstance.SetCollisionProfileName(PrimStaticMesh->GetBodySetup()->DefaultInstance.GetCollisionProfileName());
 			}
 		}
-		else if (UMyUsdDrawModeComponent* DrawModeComponent = Cast<UMyUsdDrawModeComponent>(SceneComponent))
+		else if (UUsdDrawModeComponent* DrawModeComponent = Cast<UUsdDrawModeComponent>(SceneComponent))
 		{
 			TOptional<FWriteScopeLock> BBoxLock;
 			pxr::UsdGeomBBoxCache* PxrBBoxCache = nullptr;
-			if (UE::FMyUsdGeomBBoxCache* UEBBoxCache = Context->BBoxCache.Get())
+			if (UE::FUsdGeomBBoxCache* UEBBoxCache = Context->BBoxCache.Get())
 			{
 				BBoxLock.Emplace(UEBBoxCache->Lock);
 				PxrBBoxCache = &static_cast<pxr::UsdGeomBBoxCache&>(*UEBBoxCache);
@@ -731,11 +731,11 @@ void FMyUsdGeomXformableTranslator::UpdateComponents(USceneComponent* SceneCompo
 			switch (Context->RootMotionHandling)
 			{
 				default:
-				case EMyUsdRootMotionHandling::NoAdditionalRootMotion:
+				case EUsdRootMotionHandling::NoAdditionalRootMotion:
 				{
 					break;
 				}
-				case EMyUsdRootMotionHandling::UseMotionFromSkelRoot:
+				case EUsdRootMotionHandling::UseMotionFromSkelRoot:
 				{
 					if (Prim.IsA(TEXT("SkelRoot")))
 					{
@@ -743,7 +743,7 @@ void FMyUsdGeomXformableTranslator::UpdateComponents(USceneComponent* SceneCompo
 					}
 					break;
 				}
-				case EMyUsdRootMotionHandling::UseMotionFromSkeleton:
+				case EUsdRootMotionHandling::UseMotionFromSkeleton:
 				{
 					if (Prim.IsA(TEXT("Skeleton")))
 					{
@@ -792,10 +792,10 @@ void FMyUsdGeomXformableTranslator::UpdateComponents(USceneComponent* SceneCompo
 namespace UE::UsdXformableTranslatorImpl::Private
 {
 	void AssignDrawModeComponentTextures(
-		UE::FMyUsdPrim Prim,
-		UMyUsdDrawModeComponent* DrawModeComponent,
-		UMyUsdAssetCache3& AssetCache,
-		FMyUsdPrimLinkCache& PrimLinkCache
+		UE::FUsdPrim Prim,
+		UUsdDrawModeComponent* DrawModeComponent,
+		UUsdAssetCache3& AssetCache,
+		FUsdPrimLinkCache& PrimLinkCache
 	)
 	{
 		if (!Prim)
@@ -807,7 +807,7 @@ namespace UE::UsdXformableTranslatorImpl::Private
 
 		pxr::UsdPrim UsdPrim{Prim};
 		pxr::UsdStageRefPtr Stage = UsdPrim.GetStage();
-		FMyUsdStageInfo StageInfo{Stage};
+		FUsdStageInfo StageInfo{Stage};
 
 		pxr::UsdGeomModelAPI GeomModelAPI{UsdPrim};
 		if (!GeomModelAPI)
@@ -822,7 +822,7 @@ namespace UE::UsdXformableTranslatorImpl::Private
 		std::unordered_map<pxr::SdfPath, TArray<UTexture2D*>, pxr::SdfPath::Hash> AttrPathToTextures;
 		for (UTexture2D* Texture : Textures)
 		{
-			if (UMyUsdAssetUserData* AssetUserData = Texture->GetAssetUserData<UMyUsdAssetUserData>())
+			if (UUsdAssetUserData* AssetUserData = Texture->GetAssetUserData<UUsdAssetUserData>())
 			{
 				for (const FString& TexturePath : AssetUserData->PrimPaths)
 				{
@@ -842,7 +842,7 @@ namespace UE::UsdXformableTranslatorImpl::Private
 		}
 
 		// Switch up the faces depending on stage up axis. The effect of metersPerUnit is already baked in the size of the bounds,
-		// but here we "convert the faces" to swap the axes so that the UMyUsdDrawModeComponent component properties can reference faces in
+		// but here we "convert the faces" to swap the axes so that the UUsdDrawModeComponent component properties can reference faces in
 		// the UE coordinate system (e.g. PosY in the USD stage will become PosZ in UE coordinate system if the stage is Y up, but then
 		// you will actually see the +Z face in UE, and the PosZ property on the component will be set to match it).
 		pxr::UsdAttribute XPosAttr = GeomModelAPI.GetModelCardTextureXPosAttr();
@@ -851,7 +851,7 @@ namespace UE::UsdXformableTranslatorImpl::Private
 		pxr::UsdAttribute XNegAttr = GeomModelAPI.GetModelCardTextureXNegAttr();
 		pxr::UsdAttribute YNegAttr = GeomModelAPI.GetModelCardTextureYNegAttr();
 		pxr::UsdAttribute ZNegAttr = GeomModelAPI.GetModelCardTextureZNegAttr();
-		if (StageInfo.UpAxis == EMyUsdUpAxis::ZAxis)
+		if (StageInfo.UpAxis == EUsdUpAxis::ZAxis)
 		{
 			Swap(YPosAttr, YNegAttr);
 		}
@@ -861,14 +861,14 @@ namespace UE::UsdXformableTranslatorImpl::Private
 			Swap(YNegAttr, ZNegAttr);
 		}
 
-		EMyUsdModelCardFace AuthoredFaces = EMyUsdModelCardFace::None;
+		EUsdModelCardFace AuthoredFaces = EUsdModelCardFace::None;
 
-		using TextureSetterFunc = void (UMyUsdDrawModeComponent::*)(UTexture2D*);
+		using TextureSetterFunc = void (UUsdDrawModeComponent::*)(UTexture2D*);
 
-		TFunction<void(const pxr::UsdAttribute&, TextureSetterFunc, EMyUsdModelCardFace)> HandleCardFace =
+		TFunction<void(const pxr::UsdAttribute&, TextureSetterFunc, EUsdModelCardFace)> HandleCardFace =
 			[&AuthoredFaces,
 			 DrawModeComponent,
-			 &AttrPathToTextures](const pxr::UsdAttribute& Attr, TextureSetterFunc TextureSetter, EMyUsdModelCardFace Face)
+			 &AttrPathToTextures](const pxr::UsdAttribute& Attr, TextureSetterFunc TextureSetter, EUsdModelCardFace Face)
 		{
 			if (Attr && Attr.HasAuthoredValue())
 			{
@@ -910,12 +910,12 @@ namespace UE::UsdXformableTranslatorImpl::Private
 				}
 			}
 		};
-		HandleCardFace(XPosAttr, &UMyUsdDrawModeComponent::SetCardTextureXPos, EMyUsdModelCardFace::XPos);
-		HandleCardFace(YPosAttr, &UMyUsdDrawModeComponent::SetCardTextureYPos, EMyUsdModelCardFace::YPos);
-		HandleCardFace(ZPosAttr, &UMyUsdDrawModeComponent::SetCardTextureZPos, EMyUsdModelCardFace::ZPos);
-		HandleCardFace(XNegAttr, &UMyUsdDrawModeComponent::SetCardTextureXNeg, EMyUsdModelCardFace::XNeg);
-		HandleCardFace(YNegAttr, &UMyUsdDrawModeComponent::SetCardTextureYNeg, EMyUsdModelCardFace::YNeg);
-		HandleCardFace(ZNegAttr, &UMyUsdDrawModeComponent::SetCardTextureZNeg, EMyUsdModelCardFace::ZNeg);
+		HandleCardFace(XPosAttr, &UUsdDrawModeComponent::SetCardTextureXPos, EUsdModelCardFace::XPos);
+		HandleCardFace(YPosAttr, &UUsdDrawModeComponent::SetCardTextureYPos, EUsdModelCardFace::YPos);
+		HandleCardFace(ZPosAttr, &UUsdDrawModeComponent::SetCardTextureZPos, EUsdModelCardFace::ZPos);
+		HandleCardFace(XNegAttr, &UUsdDrawModeComponent::SetCardTextureXNeg, EUsdModelCardFace::XNeg);
+		HandleCardFace(YNegAttr, &UUsdDrawModeComponent::SetCardTextureYNeg, EUsdModelCardFace::YNeg);
+		HandleCardFace(ZNegAttr, &UUsdDrawModeComponent::SetCardTextureZNeg, EUsdModelCardFace::ZNeg);
 
 		// Override the AuthoredFaces with the correct value. The texture setter functions will all set the authored faces
 		// when we set any texture in the component, but we also want to set as authored the faces where there *was* some
@@ -924,21 +924,21 @@ namespace UE::UsdXformableTranslatorImpl::Private
 	}
 }	 // namespace UE::UsdXformableTranslatorImpl::Private
 
-USceneComponent* FMyUsdGeomXformableTranslator::CreateAlternativeDrawModeComponents(EMyUsdDrawMode DrawMode)
+USceneComponent* FMyUsdGeomXformableTranslator::CreateAlternativeDrawModeComponents(EUsdDrawMode DrawMode)
 {
 	// If we're in here, our prim is a model, and we always need actors for model prims anyway
 	const bool bNeedsActor = true;
 
 	switch (DrawMode)
 	{
-		case EMyUsdDrawMode::Origin:
-		case EMyUsdDrawMode::Bounds:
+		case EUsdDrawMode::Origin:
+		case EUsdDrawMode::Bounds:
 		{
-			return CreateComponentsEx({UMyUsdDrawModeComponent::StaticClass()}, bNeedsActor);
+			return CreateComponentsEx({UUsdDrawModeComponent::StaticClass()}, bNeedsActor);
 		}
-		case EMyUsdDrawMode::Cards:
+		case EUsdDrawMode::Cards:
 		{
-			UMyUsdDrawModeComponent* Component = Cast<UMyUsdDrawModeComponent>(CreateComponentsEx({UMyUsdDrawModeComponent::StaticClass()}, bNeedsActor));
+			UUsdDrawModeComponent* Component = Cast<UUsdDrawModeComponent>(CreateComponentsEx({UUsdDrawModeComponent::StaticClass()}, bNeedsActor));
 			if (ensure(Component) && Context->UsdAssetCache && Context->PrimLinkCache)
 			{
 				// For now we only assign textures when creating components, not when updating. Maybe in the future we can
@@ -952,8 +952,8 @@ USceneComponent* FMyUsdGeomXformableTranslator::CreateAlternativeDrawModeCompone
 			}
 			return Component;
 		}
-		case EMyUsdDrawMode::Default:
-		case EMyUsdDrawMode::Inherited:
+		case EUsdDrawMode::Default:
+		case EUsdDrawMode::Inherited:
 		{
 			ensure(false);
 			break;
@@ -963,11 +963,11 @@ USceneComponent* FMyUsdGeomXformableTranslator::CreateAlternativeDrawModeCompone
 	return nullptr;
 }
 
-void FMyUsdGeomXformableTranslator::CreateAlternativeDrawModeAssets(EMyUsdDrawMode DrawMode)
+void FMyUsdGeomXformableTranslator::CreateAlternativeDrawModeAssets(EUsdDrawMode DrawMode)
 {
 	// Currently we just use this function to create the textures that we're going to use on the bounds components,
 	// if applicable
-	if (DrawMode != EMyUsdDrawMode::Cards || !Context->UsdAssetCache || !Context->PrimLinkCache)
+	if (DrawMode != EUsdDrawMode::Cards || !Context->UsdAssetCache || !Context->PrimLinkCache)
 	{
 		return;
 	}
@@ -1026,9 +1026,9 @@ void FMyUsdGeomXformableTranslator::CreateAlternativeDrawModeAssets(EMyUsdDrawMo
 
 				// We link the textures to the prim, so that if the prim is reloaded the AMyUsdStageActor knows to potentially
 				// drop the textures. However we put the full attribute path on AssetUserData, so that when we're filling in
-				// our UMyUsdDrawModeComponent later, we know which texture came from which attribute
+				// our UUsdDrawModeComponent later, we know which texture came from which attribute
 				Context->PrimLinkCache->LinkAssetToPrim(PrimPath, Texture);
-				if (UMyUsdAssetUserData* TextureUserData = UsdUnreal::ObjectUtils::GetOrCreateAssetUserData(Texture))
+				if (UUsdAssetUserData* TextureUserData = UsdUnreal::ObjectUtils::GetOrCreateAssetUserData(Texture))
 				{
 					TextureUserData->PrimPaths.AddUnique(UsdToUnreal::ConvertPath(Attr.GetPath()));
 				}
@@ -1045,7 +1045,7 @@ void FMyUsdGeomXformableTranslator::CreateAlternativeDrawModeAssets(EMyUsdDrawMo
 
 namespace UE::UsdXformableTranslatorImpl::Private
 {
-	bool PrimCollapses(const pxr::UsdPrim& Prim, EMyUsdDefaultKind KindsToCollapse, bool bUsePrimKindsForCollapsing, bool bCanCollapseByDefault)
+	bool PrimCollapses(const pxr::UsdPrim& Prim, EUsdDefaultKind KindsToCollapse, bool bUsePrimKindsForCollapsing, bool bCanCollapseByDefault)
 	{
 		UsdUtils::ECollapsingPreference Preference = UsdUtils::GetCollapsingPreference(Prim);
 		switch (Preference)
@@ -1059,12 +1059,12 @@ namespace UE::UsdXformableTranslatorImpl::Private
 				bool bCanBeCollapsed = bCanCollapseByDefault;
 				if (bUsePrimKindsForCollapsing)
 				{
-					EMyUsdDefaultKind PrimKind = UsdUtils::GetDefaultKind(Prim);
+					EUsdDefaultKind PrimKind = UsdUtils::GetDefaultKind(Prim);
 
 					// Note that this is false if PrimKind is None
 					const bool bPrimKindCollapses = EnumHasAnyFlags(KindsToCollapse, PrimKind);
-					bCanBeCollapsed = (KindsToCollapse != EMyUsdDefaultKind::None)
-									  && (bPrimKindCollapses || (PrimKind == EMyUsdDefaultKind::None && GCollapsePrimsWithoutKind));
+					bCanBeCollapsed = (KindsToCollapse != EUsdDefaultKind::None)
+									  && (bPrimKindCollapses || (PrimKind == EUsdDefaultKind::None && GCollapsePrimsWithoutKind));
 
 					if (!bCanBeCollapsed)
 					{
@@ -1096,8 +1096,8 @@ bool FMyUsdGeomXformableTranslator::CollapsesChildren(ECollapsingType Collapsing
 
 	// If we have a custom draw mode, it means we should draw bounds/cards/etc. instead
 	// of our entire subtree, which is basically the same thing as collapsing
-	EMyUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(GetPrim());
-	if (DrawMode != EMyUsdDrawMode::Default)
+	EUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(GetPrim());
+	if (DrawMode != EUsdDrawMode::Default)
 	{
 		return true;
 	}

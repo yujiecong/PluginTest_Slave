@@ -20,7 +20,7 @@ FLinearColor UAssetDefinition_UsdAssetCache::GetAssetColor() const
 
 TSoftClassPtr<UObject> UAssetDefinition_UsdAssetCache::GetAssetClass() const
 {
-	return UMyUsdAssetCache3::StaticClass();
+	return UUsdAssetCache3::StaticClass();
 }
 
 bool UAssetDefinition_UsdAssetCache::CanImport() const

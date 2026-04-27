@@ -89,7 +89,7 @@ namespace UsdGeomPointInstancerTranslatorImpl
 }	 // namespace UsdGeomPointInstancerTranslatorImpl
 
 FMyUsdGeomPointInstancerCreateAssetsTaskChain::FMyUsdGeomPointInstancerCreateAssetsTaskChain(
-	const TSharedRef<FMyUsdSchemaTranslationContext>& InContext,
+	const TSharedRef<FUsdSchemaTranslationContext>& InContext,
 	const UE::FSdfPath& InPrimPath,
 	bool bInIgnoreTopLevelTransform,
 	bool bInIgnoreTopLevelVisibility,
@@ -114,7 +114,7 @@ void FMyUsdGeomPointInstancerCreateAssetsTaskChain::SetupTasks()
 		   LODIndexToMaterialInfo.Reset(1);
 
 		   FMeshDescription& AddedMeshDescription = LODIndexToMeshDescription.Emplace_GetRef();
-		   UsdUtils::FMyUsdPrimMaterialAssignmentInfo& AssignmentInfo = LODIndexToMaterialInfo.Emplace_GetRef();
+		   UsdUtils::FUsdPrimMaterialAssignmentInfo& AssignmentInfo = LODIndexToMaterialInfo.Emplace_GetRef();
 
 		   pxr::TfToken RenderContextToken = pxr::UsdShadeTokens->universalRenderContext;
 		   if (!Context->RenderContext.IsNone())
@@ -128,7 +128,7 @@ void FMyUsdGeomPointInstancerCreateAssetsTaskChain::SetupTasks()
 			   MaterialPurposeToken = UnrealToUsd::ConvertToken(*Context->MaterialPurpose.ToString()).Get();
 		   }
 
-		   UsdToUnreal::FMyUsdMeshConversionOptions Options;
+		   UsdToUnreal::FUsdMeshConversionOptions Options;
 		   Options.TimeCode = Context->Time;
 		   Options.PurposesToLoad = Context->PurposesToLoad;
 		   Options.RenderContext = RenderContextToken;
@@ -156,8 +156,8 @@ void FMyUsdGeomPointInstancerTranslator::CreateAssets()
 	TRACE_CPUPROFILER_EVENT_SCOPE(FMyUsdGeomPointInstancerTranslator::CreateAssets);
 
 	// Don't bother generating assets if we're going to just draw some bounds for this prim instead
-	EMyUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(GetPrim());
-	if (DrawMode != EMyUsdDrawMode::Default)
+	EUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(GetPrim());
+	if (DrawMode != EUsdDrawMode::Default)
 	{
 		CreateAlternativeDrawModeAssets(DrawMode);
 		return;
@@ -290,8 +290,8 @@ USceneComponent* FMyUsdGeomPointInstancerTranslator::CreateComponents()
 	// handles collapsed meshes/static mesh components for the GeomXFormable translator.
 	bool bCreateChildISMs = false;
 	USceneComponent* MainSceneComponent = nullptr;
-	EMyUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(GetPrim());
-	if (DrawMode == EMyUsdDrawMode::Default)
+	EUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(GetPrim());
+	if (DrawMode == EUsdDrawMode::Default)
 	{
 		bCreateChildISMs = true;
 		MainSceneComponent = CreateComponentsEx({USceneComponent::StaticClass()}, {});
@@ -372,7 +372,7 @@ USceneComponent* FMyUsdGeomPointInstancerTranslator::CreateComponents()
 			UClass* ComponentClass = Context->bAllowInterpretingLODs ? UHierarchicalInstancedStaticMeshComponent::StaticClass()
 																	 : UInstancedStaticMeshComponent::StaticClass();
 
-			FMyUsdGeomXformableTranslator XformableTranslator{ComponentClass, Context, UE::FMyUsdTyped(PrototypeUsdPrim)};
+			FMyUsdGeomXformableTranslator XformableTranslator{ComponentClass, Context, UE::FUsdTyped(PrototypeUsdPrim)};
 
 			const bool bNeedsActor = false;
 			UInstancedStaticMeshComponent* ISMComponent = Cast<UInstancedStaticMeshComponent>(
@@ -408,7 +408,7 @@ void FMyUsdGeomPointInstancerTranslator::UpdateComponents(USceneComponent* Point
 
 	// We always spawn exactly an USceneComponent for the "parent" component of the point instancer, so early out if
 	// we dont' have one. This can happen now if we have an alternative draw mode for this point instancer, at which
-	// point this could be an UMyUsdDrawModeComponent
+	// point this could be an UUsdDrawModeComponent
 	if (PointInstancerRootComponent->GetClass() == USceneComponent::StaticClass())
 	{
 		pxr::UsdPrim Prim = GetPrim();
@@ -453,7 +453,7 @@ void FMyUsdGeomPointInstancerTranslator::UpdateComponents(USceneComponent* Point
 		PrototypeMeshes.reserve(PrototypeMeshArr.Num());
 		for (UStaticMesh* PrototypeMesh : PrototypeMeshArr)
 		{
-			if (UMyUsdAssetUserData* UserData = PrototypeMesh->GetAssetUserData<UMyUsdAssetUserData>())
+			if (UUsdAssetUserData* UserData = PrototypeMesh->GetAssetUserData<UUsdAssetUserData>())
 			{
 				for (const FString& SourcePrimPath : UserData->PrimPaths)
 				{
@@ -528,7 +528,7 @@ void FMyUsdGeomPointInstancerTranslator::UpdateComponents(USceneComponent* Point
 
 			// Evaluating point instancer can take a long time and is thread-safe. Move to async task while we work on something else.
 			pxr::UsdTimeCode TimeCode{Context->Time};
-			FMyUsdStageInfo StageInfo{Prim.GetStage()};
+			FUsdStageInfo StageInfo{Prim.GetStage()};
 			Tasks.Emplace(Async(
 				EAsyncExecution::ThreadPool,
 				[TimeCode, StageInfo, PointInstancer, PrototypeIndex, ISMComponent]()
@@ -617,7 +617,7 @@ TSet<UE::FSdfPath> FMyUsdGeomPointInstancerTranslator::CollectAuxiliaryPrims() c
 	for (int32 PrototypeIndex = 0; PrototypeIndex < PrototypePaths.size(); ++PrototypeIndex)
 	{
 		UE::FSdfPath PrototypePath = UE::FSdfPath{PrototypePaths[PrototypeIndex]};
-		UE::FMyUsdPrim PrototypePrim = Context->Stage.GetPrimAtPath(PrototypePath);
+		UE::FUsdPrim PrototypePrim = Context->Stage.GetPrimAtPath(PrototypePath);
 
 		Result.Add(PrototypePath);
 
@@ -631,9 +631,9 @@ TSet<UE::FSdfPath> FMyUsdGeomPointInstancerTranslator::CollectAuxiliaryPrims() c
 			{
 				Result.Add(UE::FSdfPath{ChildPrim.Get().GetPrimPath()});
 
-				TSharedPtr<FMyUsdSchemaTranslator> ChildSchemaTranslator = FMyUsdSchemaTranslatorRegistry::Get().CreateTranslatorForSchema(
+				TSharedPtr<FUsdSchemaTranslator> ChildSchemaTranslator = FUsdSchemaTranslatorRegistry::Get().CreateTranslatorForSchema(
 					Context,
-					UE::FMyUsdTyped(ChildPrim.Get())
+					UE::FUsdTyped(ChildPrim.Get())
 				);
 
 				if (ChildSchemaTranslator)
@@ -657,9 +657,9 @@ TSet<UE::FSdfPath> FMyUsdGeomPointInstancerTranslator::CollectAuxiliaryPrims() c
 			{
 				Result.Add(UE::FSdfPath{PrimRangeIt->GetPrimPath()});
 
-				TSharedPtr<FMyUsdSchemaTranslator> SchemaTranslator = FMyUsdSchemaTranslatorRegistry::Get().CreateTranslatorForSchema(
+				TSharedPtr<FUsdSchemaTranslator> SchemaTranslator = FUsdSchemaTranslatorRegistry::Get().CreateTranslatorForSchema(
 					Context,
-					UE::FMyUsdTyped(*PrimRangeIt)
+					UE::FUsdTyped(*PrimRangeIt)
 				);
 				if (SchemaTranslator && SchemaTranslator->CollapsesChildren(ECollapsingType::Assets))
 				{

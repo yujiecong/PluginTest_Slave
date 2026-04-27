@@ -120,7 +120,7 @@ void FMyUsdObjectFieldsViewModel::CreateField(
 	EObjectFieldType Type,
 	const FString& FieldName,
 	const T& Value,
-	UsdUtils::EMyUsdBasicDataTypes SourceType,
+	UsdUtils::EUsdBasicDataTypes SourceType,
 	const FString& ValueRole,
 	bool bReadOnly
 )
@@ -199,7 +199,7 @@ void FMyUsdObjectFieldsViewModel::SetFieldValue(const FString& FieldName, const 
 			pxr::UsdEditContext EditContext{Stage, Stage->GetRootLayer()};
 			bSuccess = UsdStage.SetMetadata(*FieldName, VtValue);
 		}
-		else if (UE::FMyUsdPrim UsdPrim = UsdStage.GetPrimAtPath(UE::FSdfPath(*ObjectPath)))
+		else if (UE::FUsdPrim UsdPrim = UsdStage.GetPrimAtPath(UE::FSdfPath(*ObjectPath)))
 		{
 			if (UsdUtils::NotifyIfInstanceProxy(UsdPrim))
 			{
@@ -217,14 +217,14 @@ void FMyUsdObjectFieldsViewModel::SetFieldValue(const FString& FieldName, const 
 				FString Kind = InValue.Entries[0][0].Get<FString>();
 				if (Kind.IsEmpty())
 				{
-					bSuccess = IMyUsdPrim::ClearKind(UsdPrim);
+					bSuccess = IUsdPrim::ClearKind(UsdPrim);
 				}
 				else
 				{
-					bSuccess = IMyUsdPrim::SetKind(UsdPrim, UnrealToUsd::ConvertToken(*Kind).Get());
+					bSuccess = IUsdPrim::SetKind(UsdPrim, UnrealToUsd::ConvertToken(*Kind).Get());
 				}
 			}
-			else if (UE::FMyUsdAttribute Attribute = UsdPrim.GetAttribute(*FieldName))
+			else if (UE::FUsdAttribute Attribute = UsdPrim.GetAttribute(*FieldName))
 			{
 				bSuccess = Attribute.Set(VtValue);
 				UsdUtils::NotifyIfOverriddenOpinion(Attribute);
@@ -303,7 +303,7 @@ void FMyUsdObjectFieldsViewModel::SetFieldValue(const FString& FieldName, const 
 #endif	  // #if USE_USD_SDK
 }
 
-void FMyUsdObjectFieldsViewModel::Refresh(const UE::FMyUsdStageWeak& InUsdStage, const TCHAR* InObjectPath, float TimeCode)
+void FMyUsdObjectFieldsViewModel::Refresh(const UE::FUsdStageWeak& InUsdStage, const TCHAR* InObjectPath, float TimeCode)
 {
 	FScopedUnrealAllocs UnrealAllocs;
 
@@ -341,7 +341,7 @@ void FMyUsdObjectFieldsViewModel::Refresh(const UE::FMyUsdStageWeak& InUsdStage,
 		}
 
 		const bool bAttrReadOnly = true;
-		CreateField(EObjectFieldType::Metadata, FieldName, Stringified, UsdUtils::EMyUsdBasicDataTypes::String, TEXT(""), bAttrReadOnly);
+		CreateField(EObjectFieldType::Metadata, FieldName, Stringified, UsdUtils::EUsdBasicDataTypes::String, TEXT(""), bAttrReadOnly);
 	};
 
 	// Lambda to add rows to the model based on USD object metadata. Extracted here because we can reuse it for
@@ -389,7 +389,7 @@ void FMyUsdObjectFieldsViewModel::Refresh(const UE::FMyUsdStageWeak& InUsdStage,
 				EObjectFieldType::Metadata,
 				TEXT("path"),
 				UsdStage.GetRootLayer().GetRealPath(),
-				UsdUtils::EMyUsdBasicDataTypes::String,
+				UsdUtils::EUsdBasicDataTypes::String,
 				Role,
 				bReadOnly
 			);
@@ -431,7 +431,7 @@ void FMyUsdObjectFieldsViewModel::Refresh(const UE::FMyUsdStageWeak& InUsdStage,
 			}
 		}
 		// Show info about a prim
-		else if (UE::FMyUsdPrim UsdPrim = UsdStage.GetPrimAtPath(UE::FSdfPath{*ObjectPath}))
+		else if (UE::FUsdPrim UsdPrim = UsdStage.GetPrimAtPath(UE::FSdfPath{*ObjectPath}))
 		{
 			// For now we can't rename/reparent prims through this
 			const bool bPrimReadOnly = true;
@@ -440,11 +440,11 @@ void FMyUsdObjectFieldsViewModel::Refresh(const UE::FMyUsdStageWeak& InUsdStage,
 				EObjectFieldType::Metadata,
 				TEXT("name"),
 				UsdPrim.GetName().ToString(),
-				UsdUtils::EMyUsdBasicDataTypes::String,
+				UsdUtils::EUsdBasicDataTypes::String,
 				Role,
 				bPrimReadOnly
 			);
-			CreateField(EObjectFieldType::Metadata, TEXT("path"), ObjectPath, UsdUtils::EMyUsdBasicDataTypes::String, Role, bPrimReadOnly);
+			CreateField(EObjectFieldType::Metadata, TEXT("path"), ObjectPath, UsdUtils::EUsdBasicDataTypes::String, Role, bPrimReadOnly);
 
 			// If the prim doesn't have any "kind" authored show a combobox anyway so that we can use this to author new kinds
 			if (!UsdUtils::HasAuthoredKind(UsdPrim))
@@ -452,8 +452,8 @@ void FMyUsdObjectFieldsViewModel::Refresh(const UE::FMyUsdStageWeak& InUsdStage,
 				CreateField(
 					EObjectFieldType::Metadata,
 					TEXT("kind"),
-					UsdToUnreal::ConvertToken(IMyUsdPrim::GetKind(UsdPrim)),
-					UsdUtils::EMyUsdBasicDataTypes::Token
+					UsdToUnreal::ConvertToken(IUsdPrim::GetKind(UsdPrim)),
+					UsdUtils::EUsdBasicDataTypes::Token
 				);
 			}
 
@@ -496,7 +496,7 @@ void FMyUsdObjectFieldsViewModel::Refresh(const UE::FMyUsdStageWeak& InUsdStage,
 						EObjectFieldType::Attribute,
 						AttributeName,
 						Stringified,
-						UsdUtils::EMyUsdBasicDataTypes::String,
+						UsdUtils::EUsdBasicDataTypes::String,
 						TEXT(""),
 						bAttrReadOnly
 					);
@@ -523,7 +523,7 @@ void FMyUsdObjectFieldsViewModel::Refresh(const UE::FMyUsdStageWeak& InUsdStage,
 							Entry.Emplace(TInPlaceType<FString>(), UsdToUnreal::ConvertPath(ConnectedSource));
 
 							UsdUtils::FConvertedVtValue ConnectionPropertyValue;
-							ConnectionPropertyValue.SourceType = UsdUtils::EMyUsdBasicDataTypes::String;
+							ConnectionPropertyValue.SourceType = UsdUtils::EUsdBasicDataTypes::String;
 							ConnectionPropertyValue.Entries = {Entry};
 
 							const bool bConnectionValueReadOnly = true;
@@ -548,7 +548,7 @@ void FMyUsdObjectFieldsViewModel::Refresh(const UE::FMyUsdStageWeak& InUsdStage,
 							EObjectFieldType::Relationship,
 							RelationshipName,
 							UETarget,
-							UsdUtils::EMyUsdBasicDataTypes::String,
+							UsdUtils::EUsdBasicDataTypes::String,
 							TEXT(""),
 							bReadOnly
 						);
@@ -577,7 +577,7 @@ void FMyUsdObjectFieldsViewModel::Refresh(const UE::FMyUsdStageWeak& InUsdStage,
 							EObjectFieldType::Relationship,
 							RelationshipName,
 							CombinedTargets,
-							UsdUtils::EMyUsdBasicDataTypes::String,
+							UsdUtils::EUsdBasicDataTypes::String,
 							TEXT(""),
 							bReadOnly
 						);
@@ -676,7 +676,7 @@ void FMyUsdObjectFieldsViewModel::Sort()
 	}
 }
 
-UE::FMyUsdStageWeak FMyUsdObjectFieldsViewModel::GetUsdStage() const
+UE::FUsdStageWeak FMyUsdObjectFieldsViewModel::GetUsdStage() const
 {
 	return UsdStage;
 }

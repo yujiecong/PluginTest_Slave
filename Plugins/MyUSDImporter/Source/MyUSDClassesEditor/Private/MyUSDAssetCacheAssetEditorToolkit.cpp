@@ -15,7 +15,7 @@ const FName FMyUsdAssetCacheAssetEditorToolkit::TabId("AssetCacheEditor");
 void FMyUsdAssetCacheAssetEditorToolkit::Initialize(
 	const EToolkitMode::Type Mode,
 	const TSharedPtr<IToolkitHost>& InitToolkitHost,
-	UMyUsdAssetCache3* InAssetCache
+	UUsdAssetCache3* InAssetCache
 )
 {
 	const TSharedRef<FTabManager::FLayout>

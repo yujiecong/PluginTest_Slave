@@ -31,7 +31,7 @@
 
 namespace UE::MyUSDExporter::Private
 {
-	UE::FMyUsdPrim GetPrim(const UE::FMyUsdStage& Stage, const FString& PrimPath)
+	UE::FUsdPrim GetPrim(const UE::FUsdStage& Stage, const FString& PrimPath)
 	{
 		if (!Stage)
 		{
@@ -83,9 +83,9 @@ void UMyUsdConversionBlueprintContext::SetStageRootLayer(FFilePath StageRootLaye
 {
 	Cleanup();
 
-	TArray<UE::FMyUsdStage> PreviouslyOpenedStages = UnrealUSDWrapper::GetAllStagesFromCache();
+	TArray<UE::FUsdStage> PreviouslyOpenedStages = UnrealUSDWrapper::GetAllStagesFromCache();
 
-	Stage = UnrealUSDWrapper::OpenStage(*StageRootLayerPath.FilePath, EMyUsdInitialLoadSet::LoadAll);
+	Stage = UnrealUSDWrapper::OpenStage(*StageRootLayerPath.FilePath, EUsdInitialLoadSet::LoadAll);
 	bEraseFromStageCache = !PreviouslyOpenedStages.Contains(Stage);
 }
 
@@ -142,14 +142,14 @@ void UMyUsdConversionBlueprintContext::Cleanup()
 			UnrealUSDWrapper::EraseStageFromCache(Stage);
 		}
 
-		Stage = UE::FMyUsdStage();
+		Stage = UE::FUsdStage();
 	}
 }
 
 bool UMyUsdConversionBlueprintContext::ConvertLightComponent(const ULightComponentBase* Component, const FString& PrimPath, float TimeCode)
 {
 #if USE_USD_SDK
-	UE::FMyUsdPrim Prim = UnrealToUsdImpl::GetPrim(Stage, PrimPath);
+	UE::FUsdPrim Prim = UnrealToUsdImpl::GetPrim(Stage, PrimPath);
 	if (!Prim || !Component)
 	{
 		return false;
@@ -168,7 +168,7 @@ bool UMyUsdConversionBlueprintContext::ConvertDirectionalLightComponent(
 )
 {
 #if USE_USD_SDK
-	UE::FMyUsdPrim Prim = UnrealToUsdImpl::GetPrim(Stage, PrimPath);
+	UE::FUsdPrim Prim = UnrealToUsdImpl::GetPrim(Stage, PrimPath);
 	if (!Prim || !Component)
 	{
 		return false;
@@ -183,7 +183,7 @@ bool UMyUsdConversionBlueprintContext::ConvertDirectionalLightComponent(
 bool UMyUsdConversionBlueprintContext::ConvertRectLightComponent(const URectLightComponent* Component, const FString& PrimPath, float TimeCode)
 {
 #if USE_USD_SDK
-	UE::FMyUsdPrim Prim = UnrealToUsdImpl::GetPrim(Stage, PrimPath);
+	UE::FUsdPrim Prim = UnrealToUsdImpl::GetPrim(Stage, PrimPath);
 	if (!Prim || !Component)
 	{
 		return false;
@@ -198,7 +198,7 @@ bool UMyUsdConversionBlueprintContext::ConvertRectLightComponent(const URectLigh
 bool UMyUsdConversionBlueprintContext::ConvertPointLightComponent(const UPointLightComponent* Component, const FString& PrimPath, float TimeCode)
 {
 #if USE_USD_SDK
-	UE::FMyUsdPrim Prim = UnrealToUsdImpl::GetPrim(Stage, PrimPath);
+	UE::FUsdPrim Prim = UnrealToUsdImpl::GetPrim(Stage, PrimPath);
 	if (!Prim || !Component)
 	{
 		return false;
@@ -213,7 +213,7 @@ bool UMyUsdConversionBlueprintContext::ConvertPointLightComponent(const UPointLi
 bool UMyUsdConversionBlueprintContext::ConvertSkyLightComponent(const USkyLightComponent* Component, const FString& PrimPath, float TimeCode)
 {
 #if USE_USD_SDK
-	UE::FMyUsdPrim Prim = UnrealToUsdImpl::GetPrim(Stage, PrimPath);
+	UE::FUsdPrim Prim = UnrealToUsdImpl::GetPrim(Stage, PrimPath);
 	if (!Prim || !Component)
 	{
 		return false;
@@ -228,7 +228,7 @@ bool UMyUsdConversionBlueprintContext::ConvertSkyLightComponent(const USkyLightC
 bool UMyUsdConversionBlueprintContext::ConvertSpotLightComponent(const USpotLightComponent* Component, const FString& PrimPath, float TimeCode)
 {
 #if USE_USD_SDK
-	UE::FMyUsdPrim Prim = UnrealToUsdImpl::GetPrim(Stage, PrimPath);
+	UE::FUsdPrim Prim = UnrealToUsdImpl::GetPrim(Stage, PrimPath);
 	if (!Prim || !Component)
 	{
 		return false;
@@ -240,10 +240,10 @@ bool UMyUsdConversionBlueprintContext::ConvertSpotLightComponent(const USpotLigh
 #endif	  // USE_USD_SDK
 }
 
-bool UMyUsdConversionBlueprintContext::ConvertDrawModeComponent(const UMyUsdDrawModeComponent* Component, const FString& PrimPath, float TimeCode)
+bool UMyUsdConversionBlueprintContext::ConvertDrawModeComponent(const UUsdDrawModeComponent* Component, const FString& PrimPath, float TimeCode)
 {
 #if USE_USD_SDK
-	UE::FMyUsdPrim Prim = UnrealToUsdImpl::GetPrim(Stage, PrimPath);
+	UE::FUsdPrim Prim = UnrealToUsdImpl::GetPrim(Stage, PrimPath);
 	if (!Prim || !Component)
 	{
 		return false;
@@ -264,7 +264,7 @@ bool UMyUsdConversionBlueprintContext::ConvertAudioComponent(
 )
 {
 #if USE_USD_SDK
-	UE::FMyUsdPrim Prim = UnrealToUsdImpl::GetPrim(Stage, PrimPath);
+	UE::FUsdPrim Prim = UnrealToUsdImpl::GetPrim(Stage, PrimPath);
 	if (!Prim || !Component)
 	{
 		return false;
@@ -279,7 +279,7 @@ bool UMyUsdConversionBlueprintContext::ConvertAudioComponent(
 bool UMyUsdConversionBlueprintContext::ConvertSceneComponent(const USceneComponent* Component, const FString& PrimPath)
 {
 #if USE_USD_SDK
-	UE::FMyUsdPrim Prim = UnrealToUsdImpl::GetPrim(Stage, PrimPath);
+	UE::FUsdPrim Prim = UnrealToUsdImpl::GetPrim(Stage, PrimPath);
 	if (!Prim || !Component)
 	{
 		return false;
@@ -294,7 +294,7 @@ bool UMyUsdConversionBlueprintContext::ConvertSceneComponent(const USceneCompone
 bool UMyUsdConversionBlueprintContext::ConvertIsmComponent(const UInstancedStaticMeshComponent* Component, const FString& PrimPath, float TimeCode)
 {
 #if USE_USD_SDK
-	UE::FMyUsdPrim Prim = UnrealToUsdImpl::GetPrim(Stage, PrimPath);
+	UE::FUsdPrim Prim = UnrealToUsdImpl::GetPrim(Stage, PrimPath);
 	if (!Prim || !Component)
 	{
 		return false;
@@ -313,7 +313,7 @@ bool UMyUsdConversionBlueprintContext::ConvertHismComponent(
 )
 {
 #if USE_USD_SDK
-	UE::FMyUsdPrim Prim = UnrealToUsdImpl::GetPrim(Stage, PrimPath);
+	UE::FUsdPrim Prim = UnrealToUsdImpl::GetPrim(Stage, PrimPath);
 	if (!Prim || !Component)
 	{
 		return false;
@@ -332,7 +332,7 @@ bool UMyUsdConversionBlueprintContext::ConvertHismComponent(
 bool UMyUsdConversionBlueprintContext::ConvertMeshComponent(const UMeshComponent* Component, const FString& PrimPath)
 {
 #if USE_USD_SDK
-	UE::FMyUsdPrim Prim = UnrealToUsdImpl::GetPrim(Stage, PrimPath);
+	UE::FUsdPrim Prim = UnrealToUsdImpl::GetPrim(Stage, PrimPath);
 	if (!Prim || !Component)
 	{
 		return false;
@@ -347,7 +347,7 @@ bool UMyUsdConversionBlueprintContext::ConvertMeshComponent(const UMeshComponent
 bool UMyUsdConversionBlueprintContext::ConvertCineCameraComponent(const UCineCameraComponent* Component, const FString& PrimPath, float TimeCode)
 {
 #if USE_USD_SDK
-	UE::FMyUsdPrim Prim = UnrealToUsdImpl::GetPrim(Stage, PrimPath);
+	UE::FUsdPrim Prim = UnrealToUsdImpl::GetPrim(Stage, PrimPath);
 	if (!Prim || !Component)
 	{
 		return false;
@@ -367,7 +367,7 @@ bool UMyUsdConversionBlueprintContext::ConvertInstancedFoliageActor(
 )
 {
 #if USE_USD_SDK
-	UE::FMyUsdPrim Prim = UnrealToUsdImpl::GetPrim(Stage, PrimPath);
+	UE::FUsdPrim Prim = UnrealToUsdImpl::GetPrim(Stage, PrimPath);
 	if (!Prim || !Actor)
 	{
 		return false;
@@ -388,7 +388,7 @@ bool UMyUsdConversionBlueprintContext::ConvertLandscapeProxyActorMesh(
 )
 {
 #if USE_USD_SDK
-	UE::FMyUsdPrim Prim = UnrealToUsdImpl::GetPrim(Stage, PrimPath);
+	UE::FUsdPrim Prim = UnrealToUsdImpl::GetPrim(Stage, PrimPath);
 	if (!Prim || !Actor)
 	{
 		return false;
@@ -461,7 +461,7 @@ bool UMyUsdConversionBlueprintContext::ConvertLandscapeProxyActorMaterial(
 )
 {
 #if USE_USD_SDK
-	UE::FMyUsdPrim Prim = UnrealToUsdImpl::GetPrim(Stage, PrimPath);
+	UE::FUsdPrim Prim = UnrealToUsdImpl::GetPrim(Stage, PrimPath);
 	if (!Prim || !Actor)
 	{
 		return false;
@@ -532,7 +532,7 @@ bool UMyUsdConversionBlueprintContext::ConvertMaterialOverrides(
 )
 {
 #if USE_USD_SDK
-	UE::FMyUsdPrim Prim = UnrealToUsdImpl::GetPrim(Stage, PrimPath);
+	UE::FUsdPrim Prim = UnrealToUsdImpl::GetPrim(Stage, PrimPath);
 	if (!Prim || !MeshAsset)
 	{
 		return false;
@@ -576,7 +576,7 @@ bool UMyUsdConversionBlueprintContext::RemoveUnrealSurfaceOutput(const FString& 
 		return false;
 	}
 
-	UE::FMyUsdPrim Prim = UnrealToUsdImpl::GetPrim(Stage, PrimPath);
+	UE::FUsdPrim Prim = UnrealToUsdImpl::GetPrim(Stage, PrimPath);
 	if (!Prim)
 	{
 		return false;
@@ -610,7 +610,7 @@ int32 UMyUsdConversionBlueprintContext::GetUsdStageNumFrames()
 #endif	  // USE_USD_SDK
 }
 
-void UMyUsdConversionBlueprintContext::SetPrimAssetInfo(const FString& PrimPath, const FMyUsdUnrealAssetInfo& Info)
+void UMyUsdConversionBlueprintContext::SetPrimAssetInfo(const FString& PrimPath, const FUsdUnrealAssetInfo& Info)
 {
 #if USE_USD_SDK
 	if (!Stage)
@@ -618,7 +618,7 @@ void UMyUsdConversionBlueprintContext::SetPrimAssetInfo(const FString& PrimPath,
 		return;
 	}
 
-	UE::FMyUsdPrim Prim = UnrealToUsdImpl::GetPrim(Stage, PrimPath);
+	UE::FUsdPrim Prim = UnrealToUsdImpl::GetPrim(Stage, PrimPath);
 	if (!Prim)
 	{
 		return;
@@ -628,12 +628,12 @@ void UMyUsdConversionBlueprintContext::SetPrimAssetInfo(const FString& PrimPath,
 #endif	  // USE_USD_SDK
 }
 
-FMyUsdUnrealAssetInfo UMyUsdConversionBlueprintContext::GetPrimAssetInfo(const FString& PrimPath)
+FUsdUnrealAssetInfo UMyUsdConversionBlueprintContext::GetPrimAssetInfo(const FString& PrimPath)
 {
 #if USE_USD_SDK
 	if (Stage)
 	{
-		if (UE::FMyUsdPrim Prim = UnrealToUsdImpl::GetPrim(Stage, PrimPath))
+		if (UE::FUsdPrim Prim = UnrealToUsdImpl::GetPrim(Stage, PrimPath))
 		{
 			return UsdUtils::GetPrimAssetInfo(Prim);
 		}
@@ -645,7 +645,7 @@ FMyUsdUnrealAssetInfo UMyUsdConversionBlueprintContext::GetPrimAssetInfo(const F
 
 void UMyUsdConversionBlueprintContext::SetPrimMetadata(
 	const FString& PrimPath,
-	const FMyUsdCombinedPrimMetadata& Metadata,
+	const FUsdCombinedPrimMetadata& Metadata,
 	const TArray<FString>& BlockedPrefixFilter,
 	bool bInvertFilter
 )
@@ -653,7 +653,7 @@ void UMyUsdConversionBlueprintContext::SetPrimMetadata(
 #if USE_USD_SDK
 	if (Stage)
 	{
-		if (UE::FMyUsdPrim Prim = UnrealToUsdImpl::GetPrim(Stage, PrimPath))
+		if (UE::FUsdPrim Prim = UnrealToUsdImpl::GetPrim(Stage, PrimPath))
 		{
 			UnrealToUsd::ConvertMetadata(Metadata, Prim, BlockedPrefixFilter, bInvertFilter);
 		}
@@ -663,7 +663,7 @@ void UMyUsdConversionBlueprintContext::SetPrimMetadata(
 
 void UMyUsdConversionBlueprintContext::SetPrimMetadataFromUserData(
 	const FString& PrimPath,
-	const UMyUsdAssetUserData* UserData,
+	const UUsdAssetUserData* UserData,
 	const TArray<FString>& BlockedPrefixFilter,
 	bool bInvertFilter
 )
@@ -671,7 +671,7 @@ void UMyUsdConversionBlueprintContext::SetPrimMetadataFromUserData(
 #if USE_USD_SDK
 	if (Stage && UserData)
 	{
-		if (UE::FMyUsdPrim Prim = UnrealToUsdImpl::GetPrim(Stage, PrimPath))
+		if (UE::FUsdPrim Prim = UnrealToUsdImpl::GetPrim(Stage, PrimPath))
 		{
 			UnrealToUsd::ConvertMetadata(UserData, Prim, BlockedPrefixFilter, bInvertFilter);
 		}
@@ -679,19 +679,19 @@ void UMyUsdConversionBlueprintContext::SetPrimMetadataFromUserData(
 #endif	  // USE_USD_SDK
 }
 
-FMyUsdCombinedPrimMetadata UMyUsdConversionBlueprintContext::GetPrimMetadata(
+FUsdCombinedPrimMetadata UMyUsdConversionBlueprintContext::GetPrimMetadata(
 	const FString& PrimPath,
 	const TArray<FString>& BlockedPrefixFilter,
 	bool bInvertFilter,
 	bool bCollectFromEntireSubtrees
 )
 {
-	FMyUsdCombinedPrimMetadata Result;
+	FUsdCombinedPrimMetadata Result;
 
 #if USE_USD_SDK
 	if (Stage)
 	{
-		if (UE::FMyUsdPrim Prim = UnrealToUsdImpl::GetPrim(Stage, PrimPath))
+		if (UE::FUsdPrim Prim = UnrealToUsdImpl::GetPrim(Stage, PrimPath))
 		{
 			bool bSuccess = UsdToUnreal::ConvertMetadata(Prim, Result, BlockedPrefixFilter, bInvertFilter, bCollectFromEntireSubtrees);
 			if (!bSuccess)

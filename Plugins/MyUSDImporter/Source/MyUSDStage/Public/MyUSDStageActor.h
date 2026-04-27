@@ -19,20 +19,20 @@
 
 #define UE_API MYUSDSTAGE_API
 
-class FMyUsdInfoCache;
+class FUsdInfoCache;
 class ISequencer;
 class ULevelSequence;
-class UMyUsdAssetCache2;
-class UMyUsdAssetCache3;
+class UUsdAssetCache2;
+class UUsdAssetCache3;
 class UMyUsdPrimTwin;
 class UMyUsdTransactor;
 enum class EMovieSceneDataChangeType;
-enum class EMyUsdCollisionType : uint8;
-struct FMyUsdSchemaTranslationContext;
+enum class EUsdCollisionType : uint8;
+struct FUsdSchemaTranslationContext;
 namespace UE
 {
-	class FMyUsdGeomBBoxCache;
-	class FMyUsdPrim;
+	class FUsdGeomBBoxCache;
+	class FUsdPrim;
 }
 namespace UsdUtils
 {
@@ -63,7 +63,7 @@ public:
 	EMyUsdStageState StageState;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "USD")
-	TObjectPtr<UMyUsdAssetCache3> AssetCache;
+	TObjectPtr<UUsdAssetCache3> AssetCache;
 
 	/**
 	 * 'Transient' as this shouldn't be saved and should be zero'd when loading (i.e. each stage actor should always have
@@ -83,17 +83,17 @@ public:
 	TObjectPtr<UMyUsdPrimLinkCache> PrimLinkCache;
 
 	UPROPERTY()
-	TObjectPtr<UMyUsdAssetCache2> UsdAssetCache;
+	TObjectPtr<UUsdAssetCache2> UsdAssetCache;
 
 	// These properties are configs so that spawned actors read them from the CDO when spawned.
 	// This allows the defaults for them to be configured on EditorPerProjectUserSettings.ini, and allows us to write
 	// to that config from the USD Stage Editor, specifying our options before the editor is attached to any stage actor.
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "USD", config)
-	EMyUsdInitialLoadSet InitialLoadSet;
+	EUsdInitialLoadSet InitialLoadSet;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "USD", config)
-	EMyUsdInterpolationType InterpolationType;
+	EUsdInterpolationType InterpolationType;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "USD", config)
 	EGeometryCacheImport GeometryCacheImport;
@@ -109,7 +109,7 @@ public:
 	 * Whether to try to combine individual assets and components of the same type on a kind-per-kind basis,
 	 * like multiple Mesh prims into a single Static Mesh
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "USD", config, meta = (Bitmask, BitmaskEnum = "/Script/UnrealUSDWrapper.EMyUsdDefaultKind"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "USD", config, meta = (Bitmask, BitmaskEnum = "/Script/UnrealUSDWrapper.EUsdDefaultKind"))
 	int32 KindsToCollapse;
 
 	/**
@@ -141,7 +141,7 @@ public:
 	bool bCollapseTopLevelPointInstancers;
 
 	/* Only load prims with these specific purposes from the USD file */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "USD", config, meta = (Bitmask, BitmaskEnum = "/Script/UnrealUSDWrapper.EMyUsdPurpose"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "USD", config, meta = (Bitmask, BitmaskEnum = "/Script/UnrealUSDWrapper.EUsdPurpose"))
 	int32 PurposesToLoad;
 
 	/** Try enabling Nanite for static meshes that are generated with at least this many triangles */
@@ -158,11 +158,11 @@ public:
 
 	// Describes what to add to the root bone animation within generated AnimSequences, if anything
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "USD", config)
-	EMyUsdRootMotionHandling RootMotionHandling;
+	EUsdRootMotionHandling RootMotionHandling;
 
 	// What type of collision to use for static meshes generated from Prims that don't have physics schemas applied
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "USD", config)
-	EMyUsdCollisionType FallbackCollisionType;
+	EUsdCollisionType FallbackCollisionType;
 
 	/**
 	 * Subdivision level to use for all subdivision meshes on the opened stage. 0 means "don't subdivide".
@@ -173,7 +173,7 @@ public:
 
 	/* Describes if/how we should collect metadata from USD prims onto the assets and components we generate when opening stages */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "USD", config)
-	FMyUsdMetadataImportOptions MetadataOptions;
+	FUsdMetadataImportOptions MetadataOptions;
 
 public:
 	DECLARE_EVENT_OneParam(AMyUsdStageActor, FOnActorLoaded, AMyUsdStageActor*);
@@ -202,18 +202,18 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "USD", meta = (CallInEditor = "true"))
 	MYUSDSTAGE_API void SetStageState(EMyUsdStageState NewStageState);
 
-	UE_DEPRECATED(5.5, "The UMyUsdAssetCache2 class has been deprecated. Use UMyUsdAssetCache3 and call SetUsdAssetCache instead")
+	UE_DEPRECATED(5.5, "The UUsdAssetCache2 class has been deprecated. Use UUsdAssetCache3 and call SetUsdAssetCache instead")
 	UFUNCTION(BlueprintCallable, Category = "USD", meta = (CallInEditor = "true"))
-	MYUSDSTAGE_API void SetAssetCache(UMyUsdAssetCache2* NewCache);
+	MYUSDSTAGE_API void SetAssetCache(UUsdAssetCache2* NewCache);
 
 	UFUNCTION(BlueprintCallable, Category = "USD", meta = (CallInEditor = "true"))
-	MYUSDSTAGE_API void SetUsdAssetCache(UMyUsdAssetCache3* NewCache);
+	MYUSDSTAGE_API void SetUsdAssetCache(UUsdAssetCache3* NewCache);
 
 	UFUNCTION(BlueprintCallable, Category = "USD", meta = (CallInEditor = "true"))
-	MYUSDSTAGE_API void SetInitialLoadSet(EMyUsdInitialLoadSet NewLoadSet);
+	MYUSDSTAGE_API void SetInitialLoadSet(EUsdInitialLoadSet NewLoadSet);
 
 	UFUNCTION(BlueprintCallable, Category = "USD", meta = (CallInEditor = "true"))
-	MYUSDSTAGE_API void SetInterpolationType(EMyUsdInterpolationType NewType);
+	MYUSDSTAGE_API void SetInterpolationType(EUsdInterpolationType NewType);
 
 	UFUNCTION(BlueprintCallable, Category = "USD", meta = (CallInEditor = "true"))
 	MYUSDSTAGE_API void SetGeometryCacheImport(EGeometryCacheImport ImportOption);
@@ -251,10 +251,10 @@ public:
 	MYUSDSTAGE_API void SetMaterialPurpose(const FName& NewMaterialPurpose);
 
 	UFUNCTION(BlueprintCallable, Category = "USD", meta = (CallInEditor = "true"))
-	MYUSDSTAGE_API void SetRootMotionHandling(EMyUsdRootMotionHandling NewHandlingStrategy);
+	MYUSDSTAGE_API void SetRootMotionHandling(EUsdRootMotionHandling NewHandlingStrategy);
 
 	UFUNCTION(BlueprintCallable, Category = "USD", meta = (CallInEditor = "true"))
-	MYUSDSTAGE_API void SetFallbackCollisionType(EMyUsdCollisionType NewCollisionType);
+	MYUSDSTAGE_API void SetFallbackCollisionType(EUsdCollisionType NewCollisionType);
 
 	UFUNCTION(BlueprintCallable, Category = "USD", meta = (CallInEditor = "true"))
 	MYUSDSTAGE_API void SetSubdivisionLevel(int32 NewLevel);
@@ -333,22 +333,22 @@ public:
 
 public:
 	UE_DEPRECATED(5.4, "This function has been renamed into 'GetOrOpenUsdStage', which better describes what it does")
-	MYUSDSTAGE_API UE::FMyUsdStage& GetOrLoadUsdStage();
+	MYUSDSTAGE_API UE::FUsdStage& GetOrLoadUsdStage();
 
 	// Opens the stage with RootLayer if its not loaded already, and returns the either the isolated stage (if any) or
 	// the base stage
-	MYUSDSTAGE_API UE::FMyUsdStage& GetOrOpenUsdStage();
+	MYUSDSTAGE_API UE::FUsdStage& GetOrOpenUsdStage();
 
 	// Returns either the isolated stage (if any) or the base stage
-	MYUSDSTAGE_API const UE::FMyUsdStage& GetUsdStage() const;
+	MYUSDSTAGE_API const UE::FUsdStage& GetUsdStage() const;
 
 	// Always returns the base stage, regardless of whether we have an isolated stage or not
-	MYUSDSTAGE_API const UE::FMyUsdStage& GetBaseUsdStage() const;
+	MYUSDSTAGE_API const UE::FUsdStage& GetBaseUsdStage() const;
 
 	// Always returns the isolated stage, being an invalid stage in case we're not isolating anything
-	MYUSDSTAGE_API const UE::FMyUsdStage& GetIsolatedUsdStage() const;
+	MYUSDSTAGE_API const UE::FUsdStage& GetIsolatedUsdStage() const;
 
-	MYUSDSTAGE_API void SetUsdStage(const UE::FMyUsdStage& NewStage);
+	MYUSDSTAGE_API void SetUsdStage(const UE::FUsdStage& NewStage);
 
 	/**
 	 * Enters isolated mode by creating a new USD Stage using the provided layer as its root.
@@ -374,14 +374,14 @@ public:
 	MYUSDSTAGE_API void OpenLevelSequence();
 
 	PRAGMA_DISABLE_DEPRECATION_WARNINGS
-	UE_DEPRECATED(5.5, "The FMyUsdInfoCache struct is deprecated in favor of the UMyUsdInfoCache and UMyUsdPrimLinkCache, referenced via UPROPERTYs")
-	MYUSDSTAGE_API TSharedPtr<FMyUsdInfoCache> GetInfoCache();
+	UE_DEPRECATED(5.5, "The FUsdInfoCache struct is deprecated in favor of the UMyUsdInfoCache and UMyUsdPrimLinkCache, referenced via UPROPERTYs")
+	MYUSDSTAGE_API TSharedPtr<FUsdInfoCache> GetInfoCache();
 	PRAGMA_ENABLE_DEPRECATION_WARNINGS
-	MYUSDSTAGE_API TSharedPtr<UE::FMyUsdGeomBBoxCache> GetBBoxCache();
+	MYUSDSTAGE_API TSharedPtr<UE::FUsdGeomBBoxCache> GetBBoxCache();
 	MYUSDSTAGE_API TMap<FString, TMap<FString, int32>> GetMaterialToPrimvarToUVIndex();
 	MYUSDSTAGE_API const UsdUtils::FBlendShapeMap& GetBlendShapeMap();
-	MYUSDSTAGE_API FMyUsdListener& GetUsdListener();
-	MYUSDSTAGE_API const FMyUsdListener& GetUsdListener() const;
+	MYUSDSTAGE_API FUsdListener& GetUsdListener();
+	MYUSDSTAGE_API const FUsdListener& GetUsdListener() const;
 
 	/** Control whether we respond to USD notices or not. Mostly used to prevent us from responding to them when we're writing data to the stage */
 	MYUSDSTAGE_API void StopListeningToUsdNotices();
@@ -422,10 +422,10 @@ protected:
 	bool UnloadAssets(const UE::FSdfPath& PrimPath, bool bForEntireSubtree);
 
 	/** Loads the asset for a single prim */
-	bool LoadAsset(FMyUsdSchemaTranslationContext& TranslationContext, const UE::FMyUsdPrim& Prim);
+	bool LoadAsset(FUsdSchemaTranslationContext& TranslationContext, const UE::FUsdPrim& Prim);
 
 	/** Loads the assets for all prims from StartPrim and its children */
-	bool LoadAssets(FMyUsdSchemaTranslationContext& TranslationContext, const UE::FMyUsdPrim& StartPrim);
+	bool LoadAssets(FUsdSchemaTranslationContext& TranslationContext, const UE::FUsdPrim& StartPrim);
 
 	void Refresh() const;
 	void AnimatePrims();
@@ -435,12 +435,12 @@ protected:
 	UMyUsdPrimTwin* GetOrCreatePrimTwin(const UE::FSdfPath& UsdPrimPath);
 
 	UMyUsdPrimTwin* ExpandPrim(
-		const UE::FMyUsdPrim& Prim,
+		const UE::FUsdPrim& Prim,
 		bool bResync,
-		FMyUsdSchemaTranslationContext& TranslationContext,
+		FUsdSchemaTranslationContext& TranslationContext,
 		TOptional<bool> bParentHasAnimatedVisibility = {}
 	);
-	void UpdatePrim(const UE::FSdfPath& UsdPrimPath, bool bResync, FMyUsdSchemaTranslationContext& TranslationContext);
+	void UpdatePrim(const UE::FSdfPath& UsdPrimPath, bool bResync, FUsdSchemaTranslationContext& TranslationContext);
 
 	void OpenUsdStage();
 	void CloseUsdStage(bool bUnloadIfNeeded = true);
@@ -523,22 +523,22 @@ protected:
 
 	PRAGMA_DISABLE_DEPRECATION_WARNINGS
 	/** Caches various information about prims that are expensive to query */
-	TSharedPtr<FMyUsdInfoCache> InfoCache;
+	TSharedPtr<FUsdInfoCache> InfoCache;
 	PRAGMA_ENABLE_DEPRECATION_WARNINGS
 
 	/** USD bounding box cache for the stage. Constructed on-demand */
-	TSharedPtr<UE::FMyUsdGeomBBoxCache> BBoxCache;
+	TSharedPtr<UE::FUsdGeomBBoxCache> BBoxCache;
 
-	FMyUsdListener UsdListener;
+	FUsdListener UsdListener;
 
 	FMyUsdLevelSequenceHelper LevelSequenceHelper;
 
 	// The main UsdStage that is currently opened
-	UE::FMyUsdStage UsdStage;
+	UE::FUsdStage UsdStage;
 
 	// Another stage that has as root layer one of the non-root local layers of UsdStage. This is the stage we'll
 	// be displaying if it is valid, otherwise we'll be displaying UsdStage directly.
-	UE::FMyUsdStage IsolatedStage;
+	UE::FUsdStage IsolatedStage;
 
 	/** Keep track of blend shapes so that we can map 'inbetween shapes' to their separate morph targets when animating */
 	UsdUtils::FBlendShapeMap BlendShapesByPath;

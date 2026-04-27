@@ -39,7 +39,7 @@ public:
 #if USE_USD_SDK
 		LLM_SCOPE_BYTAG(Usd);
 
-		FMyUsdSchemaTranslatorRegistry& Registry = FMyUsdSchemaTranslatorRegistry::Get();
+		FUsdSchemaTranslatorRegistry& Registry = FUsdSchemaTranslatorRegistry::Get();
 
 		// Register the default translators
 		TranslatorHandles = {
@@ -86,7 +86,7 @@ public:
 
 	virtual void ShutdownModule() override
 	{
-		FMyUsdSchemaTranslatorRegistry& Registry = FMyUsdSchemaTranslatorRegistry::Get();
+		FUsdSchemaTranslatorRegistry& Registry = FUsdSchemaTranslatorRegistry::Get();
 
 		for (const FRegisteredSchemaTranslatorHandle& TranslatorHandle : TranslatorHandles)
 		{
@@ -98,13 +98,13 @@ public:
 #endif	  // WITH_EDITOR
 	}
 
-	virtual FMyUsdSchemaTranslatorRegistry& GetTranslatorRegistry() override
+	virtual FUsdSchemaTranslatorRegistry& GetTranslatorRegistry() override
 	{
-		return FMyUsdSchemaTranslatorRegistry::Get();
+		return FUsdSchemaTranslatorRegistry::Get();
 	}
 
 	PRAGMA_DISABLE_DEPRECATION_WARNINGS
-	virtual FMyUsdRenderContextRegistry& GetRenderContextRegistry() override
+	virtual FUsdRenderContextRegistry& GetRenderContextRegistry() override
 	{
 		return UsdRenderContextRegistry;
 	}
@@ -112,13 +112,13 @@ public:
 
 protected:
 	PRAGMA_DISABLE_DEPRECATION_WARNINGS
-	FMyUsdRenderContextRegistry UsdRenderContextRegistry;
+	FUsdRenderContextRegistry UsdRenderContextRegistry;
 	PRAGMA_ENABLE_DEPRECATION_WARNINGS
 
 	TArray<FRegisteredSchemaTranslatorHandle> TranslatorHandles;
 };
 
-void UsdUnreal::Analytics::CollectSchemaAnalytics(const UE::FMyUsdStage& Stage, const FString& EventName)
+void UsdUnreal::Analytics::CollectSchemaAnalytics(const UE::FUsdStage& Stage, const FString& EventName)
 {
 #if USE_USD_SDK
 	if (!Stage)
@@ -376,7 +376,7 @@ void UsdUnreal::Analytics::CollectSchemaAnalytics(const UE::FMyUsdStage& Stage, 
 		}
 	}
 
-	FMyUsdSchemaTranslatorRegistry& Registry = FMyUsdSchemaTranslatorRegistry::Get();
+	FUsdSchemaTranslatorRegistry& Registry = FUsdSchemaTranslatorRegistry::Get();
 	int32 SchemaTranslatorCount = Registry.GetExternalSchemaTranslatorCount();
 	if (SchemaTranslatorCount > 0)
 	{
@@ -385,7 +385,7 @@ void UsdUnreal::Analytics::CollectSchemaAnalytics(const UE::FMyUsdStage& Stage, 
 
 	if (EventAttributes.Num() > 0)
 	{
-		IMyUsdClassesModule::SendAnalytics(MoveTemp(EventAttributes), FString::Printf(TEXT("%s.CustomSchemaCount"), *EventName));
+		IUsdClassesModule::SendAnalytics(MoveTemp(EventAttributes), FString::Printf(TEXT("%s.CustomSchemaCount"), *EventName));
 	}
 #endif	  // USE_USD_SDK
 }

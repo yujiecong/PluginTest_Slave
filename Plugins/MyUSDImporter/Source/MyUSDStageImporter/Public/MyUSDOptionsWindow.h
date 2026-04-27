@@ -22,15 +22,15 @@ public:
 	SLATE_ARGUMENT(UObject*, OptionsObject)
 	SLATE_ARGUMENT(TSharedPtr<SWindow>, WidgetWindow)
 	SLATE_ARGUMENT(FText, AcceptText)
-	SLATE_ARGUMENT(const UE::FMyUsdStage*, Stage)
+	SLATE_ARGUMENT(const UE::FUsdStage*, Stage)
 	SLATE_END_ARGS()
 
 public:
 	// Show the options window with the given text
-	static UE_API bool ShowOptions(UObject& OptionsObject, const FText& WindowTitle, const FText& AcceptText, const UE::FMyUsdStage* Stage = nullptr);
+	static UE_API bool ShowOptions(UObject& OptionsObject, const FText& WindowTitle, const FText& AcceptText, const UE::FUsdStage* Stage = nullptr);
 
 	// Shortcut functions that show the standard import/export text
-	static UE_API bool ShowImportOptions(UObject& OptionsObject, const UE::FMyUsdStage* StageToImport);
+	static UE_API bool ShowImportOptions(UObject& OptionsObject, const UE::FUsdStage* StageToImport);
 	static UE_API bool ShowExportOptions(UObject& OptionsObject);
 
 	UE_API void Construct(const FArguments& InArgs);

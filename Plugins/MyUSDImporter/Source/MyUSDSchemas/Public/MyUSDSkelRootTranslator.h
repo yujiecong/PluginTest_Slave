@@ -6,7 +6,7 @@
 
 #if USE_USD_SDK
 
-class MYUSDSCHEMAS_API UE_DEPRECATED(5.4, "Use the UsdSkelSkeletonTranslator for skeletal data") FMyUsdSkelRootTranslator
+class MYUSDSCHEMAS_API UE_DEPRECATED(5.4, "Use the UsdSkelSkeletonTranslator for skeletal data") FUsdSkelRootTranslator
 	: public FMyUsdGeomXformableTranslator
 {
 	using Super = FMyUsdGeomXformableTranslator;

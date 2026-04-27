@@ -1,12 +1,12 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "MyGeometryCacheUSDComponent.h"
+#include "GeometryCacheUSDComponent.h"
 
 #include "GeometryCache.h"
 #include "GeometryCacheTrackUSD.h"
-#include "MyGeometryCacheUSDSceneProxy.h"
+#include "GeometryCacheUSDSceneProxy.h"
 
-#include UE_INLINE_GENERATED_CPP_BY_NAME(MyGeometryCacheUSDComponent)
+#include UE_INLINE_GENERATED_CPP_BY_NAME(GeometryCacheUSDComponent)
 
 FPrimitiveSceneProxy* UGeometryCacheUsdComponent::CreateSceneProxy()
 {

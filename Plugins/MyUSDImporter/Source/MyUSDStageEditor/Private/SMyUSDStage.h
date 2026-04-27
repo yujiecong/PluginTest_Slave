@@ -16,13 +16,13 @@ class FLevelCollectionModel;
 class FMenuBuilder;
 class ISceneOutliner;
 enum class EMapChangeType : uint8;
-enum class EMyUsdInitialLoadSet : uint8;
+enum class EUsdInitialLoadSet : uint8;
 struct FSlateBrush;
 namespace UE
 {
-	class FMyUsdPrim;
+	class FUsdPrim;
 	class FSdfPath;
-	class FMyUsdAttribute;
+	class FUsdAttribute;
 }
 
 #if USE_USD_SDK
@@ -49,8 +49,8 @@ public:
 	TArray<UE::FSdfLayer> GetSelectedLayers() const;
 	void SetSelectedLayers(const TArray<UE::FSdfLayer>& NewSelection) const;
 
-	TArray<UE::FMyUsdPrim> GetSelectedPrims() const;
-	void SetSelectedPrims(const TArray<UE::FMyUsdPrim>& NewSelection) const;
+	TArray<UE::FUsdPrim> GetSelectedPrims() const;
+	void SetSelectedPrims(const TArray<UE::FUsdPrim>& NewSelection) const;
 
 	TArray<FString> GetSelectedPropertyNames() const;
 	void SetSelectedPropertyNames(const TArray<FString>& NewSelection);
@@ -128,7 +128,7 @@ protected:
 	void OnSubdivisionLevelValueChanged(int32 InValue);
 	void OnSubdivisionLevelValueCommitted(int32 InValue, ETextCommit::Type InCommitType);
 
-	UE::FMyUsdStageWeak GetCurrentStage() const;
+	UE::FUsdStageWeak GetCurrentStage() const;
 
 	AMyUsdStageActor* GetStageActorOrCDO() const;
 

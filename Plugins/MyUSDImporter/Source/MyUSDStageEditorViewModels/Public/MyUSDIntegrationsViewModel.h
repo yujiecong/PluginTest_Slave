@@ -13,13 +13,13 @@
 class FMyUsdIntegrationsViewModel
 {
 public:
-	UE_API void UpdateAttributes(const UE::FMyUsdStageWeak& UsdStage, const TCHAR* PrimPath);
+	UE_API void UpdateAttributes(const UE::FUsdStageWeak& UsdStage, const TCHAR* PrimPath);
 
 public:
-	TArray<TSharedPtr<UE::FMyUsdAttribute>> Attributes;
+	TArray<TSharedPtr<UE::FUsdAttribute>> Attributes;
 
 	FString PrimPath;
-	UE::FMyUsdStageWeak UsdStage;
+	UE::FUsdStageWeak UsdStage;
 };
 
 #undef UE_API

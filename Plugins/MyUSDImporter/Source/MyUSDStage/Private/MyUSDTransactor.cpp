@@ -151,7 +151,7 @@ namespace UsdUtils
 	 * Converts the received VtValue map to an analogue using converted UE types that can be serialized with the UMyUsdTransactor.
 	 * Needs the stage because we need to manually fetch additional prim/attribute data, in order to support undo/redoing attribute creation
 	 */
-	bool ConvertFieldValueMap(const FObjectChangesByPath& InChanges, const UE::FMyUsdStage& InStage, FTransactorRecordedEdits& InOutEdits)
+	bool ConvertFieldValueMap(const FObjectChangesByPath& InChanges, const UE::FUsdStage& InStage, FTransactorRecordedEdits& InOutEdits)
 	{
 		InOutEdits.Edits.Reserve(InChanges.Num() + InOutEdits.Edits.Num());
 
@@ -163,7 +163,7 @@ namespace UsdUtils
 			UE::FSdfPath UEObjectPath{*ObjectPath};
 
 			UE::FSdfPath PrimPath = UEObjectPath.GetAbsoluteRootOrPrimPath();
-			UE::FMyUsdPrim Prim = InStage.GetPrimAtPath(PrimPath);
+			UE::FUsdPrim Prim = InStage.GetPrimAtPath(PrimPath);
 
 			FString PropertyName = UEObjectPath.IsPropertyPath() ? UEObjectPath.GetName() : FString{};
 
@@ -253,7 +253,7 @@ namespace UsdUtils
 					if (Edit.ObjectType == EObjectType::Attribute && !Prim.IsPseudoRoot() && !PropertyName.IsEmpty()
 						&& !ConvertedChange.Flags.bDidRemoveProperty && !ConvertedChange.Flags.bDidRemovePropertyWithOnlyRequiredFields)
 					{
-						if (UE::FMyUsdAttribute Attribute = Prim.GetAttribute(*PropertyName))
+						if (UE::FUsdAttribute Attribute = Prim.GetAttribute(*PropertyName))
 						{
 							ConvertedAttributeChange.AttributeTypeName = Attribute.GetTypeName().ToString();
 
@@ -293,7 +293,7 @@ namespace UsdUtils
 	bool ApplyPrimChange(
 		const UE::FSdfPath& PrimPath,
 		const FTransactorObjectChange& PrimChange,
-		UE::FMyUsdStage& Stage,
+		UE::FUsdStage& Stage,
 		EApplicationDirection Direction
 	)
 	{
@@ -305,7 +305,7 @@ namespace UsdUtils
 		{
 			USD_LOG_INFO(TEXT("Creating prim '%s' with typename '%s'"), *PrimPath.GetString(), *PrimChange.PrimTypeName);
 
-			UE::FMyUsdPrim Prim = Stage.DefinePrim(PrimPath, *PrimChange.PrimTypeName);
+			UE::FUsdPrim Prim = Stage.DefinePrim(PrimPath, *PrimChange.PrimTypeName);
 			if (!Prim)
 			{
 				return false;
@@ -342,7 +342,7 @@ namespace UsdUtils
 			// to be able to GetPrimAtPath with this path
 			UE::FSdfPath UsdCurrentPath = UE::FSdfPath(*CurrentPath).StripAllVariantSelections();
 
-			if (UE::FMyUsdPrim Prim = Stage.GetPrimAtPath(UsdCurrentPath))
+			if (UE::FUsdPrim Prim = Stage.GetPrimAtPath(UsdCurrentPath))
 			{
 				USD_LOG_INFO(TEXT("Renaming prim '%s' to '%s'"), *Prim.GetPrimPath().GetString(), *NewName);
 
@@ -352,7 +352,7 @@ namespace UsdUtils
 					return true;
 				}
 			}
-			else if (UE::FMyUsdPrim TargetPrim = Stage.GetPrimAtPath(UsdCurrentPath.ReplaceName(*NewName)))
+			else if (UE::FUsdPrim TargetPrim = Stage.GetPrimAtPath(UsdCurrentPath.ReplaceName(*NewName)))
 			{
 				// We couldn't find a prim at the old path but found one at the new path, so just assume its the prim that we
 				// wanted to rename anyway, as USD wouldn't have let us rename a prim onto an existing path in the first place.
@@ -367,7 +367,7 @@ namespace UsdUtils
 		return false;
 	}
 
-	bool ApplyAttributeTimeSamples(const FTransactorAttributeChange& AttributeChange, const UE::FSdfPath& ObjectPath, UE::FMyUsdPrim& Prim)
+	bool ApplyAttributeTimeSamples(const FTransactorAttributeChange& AttributeChange, const UE::FSdfPath& ObjectPath, UE::FUsdPrim& Prim)
 	{
 		if (!Prim || AttributeChange.TimeSamples.Num() == 0 || AttributeChange.TimeSamples.Num() != AttributeChange.TimeValues.Num())
 		{
@@ -378,7 +378,7 @@ namespace UsdUtils
 
 		// Try Getting first because we shouldn't trust our AttributeTypeName to always just CreateAttribute, as it may be just deduced from a value
 		// and be different
-		UE::FMyUsdAttribute Attribute = Prim.GetAttribute(*PropertyName);
+		UE::FUsdAttribute Attribute = Prim.GetAttribute(*PropertyName);
 		if (!Attribute)
 		{
 			Attribute = Prim.CreateAttribute(*PropertyName, *AttributeChange.AttributeTypeName);
@@ -433,7 +433,7 @@ namespace UsdUtils
 	}
 
 	bool ApplyAttributeChange(
-		const UE::FMyUsdPrim& Prim,			 // This is always the leafmost, relevant prim. Regardless of ObjectType
+		const UE::FUsdPrim& Prim,			 // This is always the leafmost, relevant prim. Regardless of ObjectType
 		const UE::FSdfPath& ObjectPath,		 // Path to the object containing the field. Could be a property or prim
 		const EObjectType ObjectType,		 // Describes what the ObjectPath is pointing to
 		const FString& Field,				 // The actual field name. "default" for attr default values, or "kind"/"payload" for metadata, etc.
@@ -451,8 +451,8 @@ namespace UsdUtils
 		bool bCreated = false;
 
 		FString PropertyName = ObjectPath.IsPropertyPath() ? ObjectPath.GetName() : FString{};
-		UE::FMyUsdAttribute Attribute;
-		UE::FMyUsdRelationship Relationship;
+		UE::FUsdAttribute Attribute;
+		UE::FUsdRelationship Relationship;
 
 		if (bRemoveProperty)
 		{
@@ -581,8 +581,8 @@ namespace UsdUtils
 			else
 			{
 				// We have to manually convert from the TArray<FString> that our ConvertedValue is holding,
-				// as unlike for UE::FMyUsdAttribute, we can't just feed a VtValue into the UE::FMyUsdRelationship
-				if (Value.SourceType == EMyUsdBasicDataTypes::String && Value.bIsArrayValued)
+				// as unlike for UE::FUsdAttribute, we can't just feed a VtValue into the UE::FUsdRelationship
+				if (Value.SourceType == EUsdBasicDataTypes::String && Value.bIsArrayValued)
 				{
 					TArray<UE::FSdfPath> Targets;
 					for (const FConvertedVtValueEntry& Entry : Value.Entries)
@@ -639,7 +639,7 @@ namespace UsdUtils
 		return true;
 	}
 
-	bool ApplyStageMetadataChange(const FString& FieldName, const FConvertedVtValue& Value, UE::FMyUsdStage& Stage)
+	bool ApplyStageMetadataChange(const FString& FieldName, const FConvertedVtValue& Value, UE::FUsdStage& Stage)
 	{
 		if (!Stage || FieldName.IsEmpty())
 		{
@@ -675,7 +675,7 @@ namespace UsdUtils
 	/** Applies the field value pairs to all prims on the stage, and returns a list of prim paths for modified prims */
 	TSet<FString> ApplyFieldMapToStage(const FTransactorEditStorage& EditStorage, EApplicationDirection Direction, AMyUsdStageActor* StageActor)
 	{
-		UE::FMyUsdStage& Stage = StageActor->GetOrOpenUsdStage();
+		UE::FUsdStage& Stage = StageActor->GetOrOpenUsdStage();
 		if (!Stage)
 		{
 			return {};
@@ -772,7 +772,7 @@ namespace UsdUtils
 							continue;
 						}
 
-						UE::FMyUsdPrim Prim = Stage.GetPrimAtPath(PrimPath);
+						UE::FUsdPrim Prim = Stage.GetPrimAtPath(PrimPath);
 						if (!Prim)
 						{
 							continue;
@@ -1019,7 +1019,7 @@ namespace UsdUtils
 				BlockNotices.Emplace(StageActor->GetUsdListener());
 			}
 
-			UE::FMyUsdStage& Stage = StageActor->GetOrOpenUsdStage();
+			UE::FUsdStage& Stage = StageActor->GetOrOpenUsdStage();
 
 			TSet<FString> PrimsChanged;
 			if (bIsApplyingConcertSync && ReceivedValuesBeforeUndo.IsSet())
@@ -1163,7 +1163,7 @@ void UMyUsdTransactor::Update(const UsdUtils::FObjectChangesByPath& NewInfoChang
 		return;
 	}
 
-	// In case we close a stage in the same transaction where the actor is destroyed - our UE::FMyUsdStage could turn invalid at any point otherwise
+	// In case we close a stage in the same transaction where the actor is destroyed - our UE::FUsdStage could turn invalid at any point otherwise
 	// Not much else we can do as this will get to us before the StageActor's destructor/Destroyed are called
 	AMyUsdStageActor* StageActorPtr = StageActor.Get();
 	if (!StageActorPtr || StageActorPtr->IsActorBeingDestroyed())
@@ -1173,7 +1173,7 @@ void UMyUsdTransactor::Update(const UsdUtils::FObjectChangesByPath& NewInfoChang
 
 	Modify();
 
-	const UE::FMyUsdStage& Stage = StageActorPtr->GetOrOpenUsdStage();
+	const UE::FUsdStage& Stage = StageActorPtr->GetOrOpenUsdStage();
 	if (!Stage)
 	{
 		return;

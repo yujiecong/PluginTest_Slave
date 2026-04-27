@@ -100,7 +100,7 @@ class ULevelExporterUSDOptions : public UObject
 public:
 	/** Basic options about the stage to export */
 	UPROPERTY(EditAnywhere, config, BlueprintReadWrite, Category = "Stage options", meta = (ShowOnlyInnerProperties))
-	FMyUsdStageOptions StageOptions;
+	FUsdStageOptions StageOptions;
 
 	/** StartTimeCode to be used for all exported layers */
 	UPROPERTY(EditAnywhere, config, BlueprintReadWrite, Category = "Stage options")

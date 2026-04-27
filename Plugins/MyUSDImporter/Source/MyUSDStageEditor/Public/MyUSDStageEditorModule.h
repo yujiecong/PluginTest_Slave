@@ -11,8 +11,8 @@ class AMyUsdStageActor;
 class UMyUsdStageImportOptions;
 namespace UE
 {
-	class FMyUsdPrim;
-	class FMyUsdAttribute;
+	class FUsdPrim;
+	class FUsdAttribute;
 }
 
 class IMyUsdStageEditorModule : public IModuleInterface
@@ -20,7 +20,7 @@ class IMyUsdStageEditorModule : public IModuleInterface
 public:
 
 	/**
-	 * Check out MyUSDStageEditorBlueprintLibrary.h for documentation regarding these functions.
+	 * Check out USDStageEditorBlueprintLibrary.h for documentation regarding these functions.
 	 */
 
 	bool OpenStageEditor() const;
@@ -33,8 +33,8 @@ public:
 	TArray<UE::FSdfLayer> GetSelectedLayers() const;
 	void SetSelectedLayers(const TArray<UE::FSdfLayer>& NewSelection) const;
 
-	TArray<UE::FMyUsdPrim> GetSelectedPrims() const;
-	void SetSelectedPrims(const TArray<UE::FMyUsdPrim>& NewSelection) const;
+	TArray<UE::FUsdPrim> GetSelectedPrims() const;
+	void SetSelectedPrims(const TArray<UE::FUsdPrim>& NewSelection) const;
 
 	TArray<FString> GetSelectedPropertyNames() const;
 	void SetSelectedPropertyNames(const TArray<FString>& NewSelection) const;

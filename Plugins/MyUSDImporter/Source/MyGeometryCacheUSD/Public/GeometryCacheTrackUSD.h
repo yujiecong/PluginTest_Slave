@@ -10,7 +10,7 @@
 #include "GeometryCacheMeshData.h"
 #include "GeometryCacheTrack.h"
 #include "GeometryCacheTrackUSDTypes.h"
-#include "MyGeometryCacheUSDStream.h"
+#include "GeometryCacheUSDStream.h"
 
 #include "GeometryCacheTrackUSD.generated.h"
 
@@ -27,7 +27,7 @@ class UGeometryCacheTrackUsd : public UGeometryCacheTrack
 
 public:
 	UE_API void Initialize(
-		const UE::FMyUsdStage& InStage,
+		const UE::FUsdStage& InStage,
 		const FString& InPrimPath,
 		int32 InStartFrameIndex,
 		int32 InEndFrameIndex,
@@ -36,7 +36,7 @@ public:
 
 	UE_DEPRECATED(5.3, "The RenderContext and InMaterialToPrimvarToUVIndex parameters are no longer used.")
 	UE_API void Initialize(
-		const UE::FMyUsdStage& InStage,
+		const UE::FUsdStage& InStage,
 		const FString& InPrimPath,
 		const FName& InRenderContext,
 		const TMap<FString, TMap<FString, int32>>& InMaterialToPrimvarToUVIndex,
@@ -92,11 +92,11 @@ public:
 	FString PrimPath;
 
 #if USE_USD_SDK
-	UsdToUnreal::FMyUsdMeshConversionOptions MeshConversionOptions;
+	UsdToUnreal::FUsdMeshConversionOptions MeshConversionOptions;
 #endif
 
-	UE::FMyUsdStage CurrentStagePinned;
-	UE::FMyUsdStageWeak CurrentStageWeak;
+	UE::FUsdStage CurrentStagePinned;
+	UE::FUsdStageWeak CurrentStageWeak;
 	FString StageRootLayerPath;
 
 private:

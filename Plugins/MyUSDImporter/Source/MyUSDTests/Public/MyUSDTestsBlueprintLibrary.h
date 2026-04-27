@@ -13,7 +13,7 @@
  * Library of functions that can be used via Python scripting to help testing the other USD functionality
  */
 UCLASS(MinimalAPI, meta = (ScriptName = "USDTestingLibrary"))
-class MyUSDTestsBlueprintLibrary : public UBlueprintFunctionLibrary
+class USDTestsBlueprintLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 

@@ -11,7 +11,7 @@ UMyUsdAssetCacheFactory::UMyUsdAssetCacheFactory(const FObjectInitializer& Objec
 {
 	bCreateNew = true;
 	bEditAfterNew = true;
-	SupportedClass = UMyUsdAssetCache3::StaticClass();
+	SupportedClass = UUsdAssetCache3::StaticClass();
 }
 
 UObject* UMyUsdAssetCacheFactory::FactoryCreateNew(
@@ -23,7 +23,7 @@ UObject* UMyUsdAssetCacheFactory::FactoryCreateNew(
 	FFeedbackContext* Warn
 )
 {
-	return NewObject<UMyUsdAssetCache3>(InParent, Name, Flags | RF_Transactional | RF_Public | RF_Standalone);
+	return NewObject<UUsdAssetCache3>(InParent, Name, Flags | RF_Transactional | RF_Public | RF_Standalone);
 }
 
 bool UMyUsdAssetCacheFactory::ShouldShowInNewMenu() const

@@ -2,7 +2,7 @@
 
 #include "SMyUSDIntegrationsPanel.h"
 
-#include UE_INLINE_GENERATED_CPP_BY_NAME(SMyUSDIntegrationsPanel)
+#include UE_INLINE_GENERATED_CPP_BY_NAME(SUSDIntegrationsPanel)
 
 #if USE_USD_SDK
 
@@ -30,9 +30,9 @@
 #include "Widgets/Input/SNumericEntryBox.h"
 #include "Widgets/Views/SHeaderRow.h"
 
-#define LOCTEXT_NAMESPACE "SMyUSDIntegrationsPanel"
+#define LOCTEXT_NAMESPACE "SUSDIntegrationsPanel"
 
-namespace UE::SMyUsdIntergrationsPanel::Private
+namespace UE::SUsdIntergrationsPanel::Private
 {
 	const FMargin LeftRowPadding(6.0f, 0.0f, 2.0f, 0.0f);
 	const FMargin RightRowPadding(3.0f, 0.0f, 2.0f, 0.0f);
@@ -40,11 +40,11 @@ namespace UE::SMyUsdIntergrationsPanel::Private
 	const TCHAR* NormalFont = TEXT("PropertyWindow.NormalFont");
 }
 
-void SMyUsdIntegrationsPanelRow::Construct(const FArguments& InArgs, TSharedPtr<UE::FMyUsdAttribute> InAttr, const TSharedRef<STableViewBase>& OwnerTable)
+void SMyUsdIntegrationsPanelRow::Construct(const FArguments& InArgs, TSharedPtr<UE::FUsdAttribute> InAttr, const TSharedRef<STableViewBase>& OwnerTable)
 {
 	Attribute = InAttr;
 
-	SMultiColumnTableRow<TSharedPtr<UE::FMyUsdAttribute>>::Construct(SMultiColumnTableRow<TSharedPtr<UE::FMyUsdAttribute>>::FArguments(), OwnerTable);
+	SMultiColumnTableRow<TSharedPtr<UE::FUsdAttribute>>::Construct(SMultiColumnTableRow<TSharedPtr<UE::FUsdAttribute>>::FArguments(), OwnerTable);
 }
 
 TSharedRef<SWidget> SMyUsdIntegrationsPanelRow::GenerateWidgetForColumn(const FName& ColumnName)
@@ -136,7 +136,7 @@ TSharedRef<SWidget> SMyUsdIntegrationsPanelRow::GenerateWidgetForColumn(const FN
 			// clang-format off
 			SAssignNew(ColumnWidget, STextBlock)
 			.Text(*TextToDisplay)
-			.Font(FAppStyle::GetFontStyle(UE::SMyUsdIntergrationsPanel::Private::NormalFont))
+			.Font(FAppStyle::GetFontStyle(UE::SUsdIntergrationsPanel::Private::NormalFont))
 			.ToolTipText(*ToolTipText);
 			// clang-format on
 		}
@@ -150,7 +150,7 @@ TSharedRef<SWidget> SMyUsdIntegrationsPanelRow::GenerateWidgetForColumn(const FN
 	{
 		bIsLeftColumn = false;
 
-		TSharedPtr<UE::FMyUsdAttribute> AttributeCopy = Attribute;
+		TSharedPtr<UE::FUsdAttribute> AttributeCopy = Attribute;
 		if (!AttributeCopy || !*AttributeCopy)
 		{
 			return ColumnWidget;
@@ -164,7 +164,7 @@ TSharedRef<SWidget> SMyUsdIntegrationsPanelRow::GenerateWidgetForColumn(const FN
 				RowHeight = FOptionalSize();
 
 				FSinglePropertyParams Params;
-				Params.Font = FAppStyle::GetFontStyle(UE::SMyUsdIntergrationsPanel::Private::NormalFont);
+				Params.Font = FAppStyle::GetFontStyle(UE::SUsdIntergrationsPanel::Private::NormalFont);
 				Params.NamePlacement = EPropertyNamePlacement::Hidden;
 
 				UE::FVtValue Value;
@@ -187,7 +187,7 @@ TSharedRef<SWidget> SMyUsdIntegrationsPanelRow::GenerateWidgetForColumn(const FN
 				FSimpleDelegate PropertyChanged = FSimpleDelegate::CreateLambda(
 					[AttributeCopy]()
 					{
-						UE::FMyUsdPrim Prim = AttributeCopy->GetPrim();
+						UE::FUsdPrim Prim = AttributeCopy->GetPrim();
 						if (UsdUtils::NotifyIfInstanceProxy(Prim))
 						{
 							return;
@@ -230,7 +230,7 @@ TSharedRef<SWidget> SMyUsdIntegrationsPanelRow::GenerateWidgetForColumn(const FN
 				RowHeight = FOptionalSize();
 
 				FSinglePropertyParams Params;
-				Params.Font = FAppStyle::GetFontStyle(UE::SMyUsdIntergrationsPanel::Private::NormalFont);
+				Params.Font = FAppStyle::GetFontStyle(UE::SUsdIntergrationsPanel::Private::NormalFont);
 				Params.NamePlacement = EPropertyNamePlacement::Hidden;
 
 				UE::FVtValue Value;
@@ -253,7 +253,7 @@ TSharedRef<SWidget> SMyUsdIntegrationsPanelRow::GenerateWidgetForColumn(const FN
 				FSimpleDelegate PropertyChanged = FSimpleDelegate::CreateLambda(
 					[AttributeCopy]()
 					{
-						UE::FMyUsdPrim Prim = AttributeCopy->GetPrim();
+						UE::FUsdPrim Prim = AttributeCopy->GetPrim();
 						if (UsdUtils::NotifyIfInstanceProxy(Prim))
 						{
 							return;
@@ -282,7 +282,7 @@ TSharedRef<SWidget> SMyUsdIntegrationsPanelRow::GenerateWidgetForColumn(const FN
 				ColumnWidget = PropertyView.ToSharedRef();
 
 				// Disable the widget if we're using an FKControlRig instead
-				if (UE::FMyUsdAttribute FKEnabledAttr = Attribute->GetPrim().GetAttribute(
+				if (UE::FUsdAttribute FKEnabledAttr = Attribute->GetPrim().GetAttribute(
 						*UsdToUnreal::ConvertToken(UnrealIdentifiers::UnrealUseFKControlRig)
 					))
 				{
@@ -325,7 +325,7 @@ TSharedRef<SWidget> SMyUsdIntegrationsPanelRow::GenerateWidgetForColumn(const FN
 				})
 				.OnCheckStateChanged_Lambda([AttributeCopy](ECheckBoxState NewValue)
 				{
-					UE::FMyUsdPrim Prim = AttributeCopy->GetPrim();
+					UE::FUsdPrim Prim = AttributeCopy->GetPrim();
 					if (UsdUtils::NotifyIfInstanceProxy(Prim))
 					{
 						return;
@@ -356,10 +356,10 @@ TSharedRef<SWidget> SMyUsdIntegrationsPanelRow::GenerateWidgetForColumn(const FN
 			.VAlign(VAlign_Center)
 			[
 				SNew(SNumericEntryBox<float>)
-				.Font(FAppStyle::GetFontStyle(UE::SMyUsdIntergrationsPanel::Private::NormalFont))
+				.Font(FAppStyle::GetFontStyle(UE::SUsdIntergrationsPanel::Private::NormalFont))
 				.OnValueCommitted_Lambda([AttributeCopy](float NewValue, ETextCommit::Type CommitType)
 				{
-					UE::FMyUsdPrim Prim = AttributeCopy->GetPrim();
+					UE::FUsdPrim Prim = AttributeCopy->GetPrim();
 					if (UsdUtils::NotifyIfInstanceProxy(Prim))
 					{
 						return;
@@ -404,13 +404,13 @@ TSharedRef<SWidget> SMyUsdIntegrationsPanelRow::GenerateWidgetForColumn(const FN
 			SAssignNew(ColumnWidget, SLiveLinkSubjectRepresentationPicker)
 			.ShowRole(false)
 			.ShowSource(false)
-			.Font(FAppStyle::GetFontStyle(UE::SMyUsdIntergrationsPanel::Private::NormalFont))
+			.Font(FAppStyle::GetFontStyle(UE::SUsdIntergrationsPanel::Private::NormalFont))
 			.Value_Lambda([AttributeCopy]()
 			{
 				SLiveLinkSubjectRepresentationPicker::FLiveLinkSourceSubjectRole Result;
 				if (AttributeCopy && *AttributeCopy)
 				{
-					const UE::FMyUsdPrim& Prim = AttributeCopy->GetPrim();
+					const UE::FUsdPrim& Prim = AttributeCopy->GetPrim();
 					Result.Role = (Prim.IsA(TEXT("SkelRoot")) || Prim.IsA(TEXT("Skeleton")))
 									  ? ULiveLinkAnimationRole::StaticClass()
 									  : ULiveLinkTransformRole::StaticClass();
@@ -433,7 +433,7 @@ TSharedRef<SWidget> SMyUsdIntegrationsPanelRow::GenerateWidgetForColumn(const FN
 			})
 			.OnValueChanged_Lambda([AttributeCopy](SLiveLinkSubjectRepresentationPicker::FLiveLinkSourceSubjectRole NewValue)
 			{
-				UE::FMyUsdPrim Prim = AttributeCopy->GetPrim();
+				UE::FUsdPrim Prim = AttributeCopy->GetPrim();
 				if (UsdUtils::NotifyIfInstanceProxy(Prim))
 				{
 					return;
@@ -482,7 +482,7 @@ TSharedRef<SWidget> SMyUsdIntegrationsPanelRow::GenerateWidgetForColumn(const FN
 				})
 				.OnCheckStateChanged_Lambda([AttributeCopy, AttributeName](ECheckBoxState NewState)
 				{
-					UE::FMyUsdPrim Prim = AttributeCopy->GetPrim();
+					UE::FUsdPrim Prim = AttributeCopy->GetPrim();
 					if (UsdUtils::NotifyIfInstanceProxy(Prim))
 					{
 						return;
@@ -520,7 +520,7 @@ TSharedRef<SWidget> SMyUsdIntegrationsPanelRow::GenerateWidgetForColumn(const FN
 			+ SHorizontalBox::Slot()
 			.HAlign(HAlign_Left)
 			.VAlign(VAlign_Center)
-			.Padding(bIsLeftColumn ? UE::SMyUsdIntergrationsPanel::Private::LeftRowPadding : UE::SMyUsdIntergrationsPanel::Private::RightRowPadding)
+			.Padding(bIsLeftColumn ? UE::SUsdIntergrationsPanel::Private::LeftRowPadding : UE::SUsdIntergrationsPanel::Private::RightRowPadding)
 			.AutoWidth()
 			[
 				ColumnWidget
@@ -554,7 +554,7 @@ void SMyUsdIntegrationsPanel::Construct(const FArguments& InArgs)
 	// clang-format on
 }
 
-void SMyUsdIntegrationsPanel::SetPrimPath(const UE::FMyUsdStageWeak& InUsdStage, const TCHAR* InPrimPath)
+void SMyUsdIntegrationsPanel::SetPrimPath(const UE::FUsdStageWeak& InUsdStage, const TCHAR* InPrimPath)
 {
 	ViewModel.UpdateAttributes(InUsdStage, InPrimPath);
 
@@ -563,7 +563,7 @@ void SMyUsdIntegrationsPanel::SetPrimPath(const UE::FMyUsdStageWeak& InUsdStage,
 	RequestListRefresh();
 }
 
-TSharedRef<ITableRow> SMyUsdIntegrationsPanel::OnGenerateRow(TSharedPtr<UE::FMyUsdAttribute> InAttr, const TSharedRef<STableViewBase>& OwnerTable)
+TSharedRef<ITableRow> SMyUsdIntegrationsPanel::OnGenerateRow(TSharedPtr<UE::FUsdAttribute> InAttr, const TSharedRef<STableViewBase>& OwnerTable)
 {
 	return SNew(SMyUsdIntegrationsPanelRow, InAttr, OwnerTable);
 }

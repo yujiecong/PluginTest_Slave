@@ -9,14 +9,14 @@
 
 #define UE_API MYUSDSTAGE_API
 
-class FMyUsdInfoCache;
+class FUsdInfoCache;
 namespace UE
 {
 	class FSdfPath;
 }
 
 /**
- * Minimal UObject wrapper around FMyUsdInfoCache, since we want this data to be
+ * Minimal UObject wrapper around FUsdInfoCache, since we want this data to be
  * owned by an independently serializable UObject, but the implementation must be in
  * an RTTI-enabled module
  */
@@ -32,11 +32,11 @@ public:
 	UE_API virtual void Serialize(FArchive& Ar) override;
 	// End UObject interface
 
-	UE_API FMyUsdInfoCache& GetInner();
-	UE_API const FMyUsdInfoCache& GetInner() const;
+	UE_API FUsdInfoCache& GetInner();
+	UE_API const FUsdInfoCache& GetInner() const;
 
 private:
-	TPimplPtr<FMyUsdInfoCache> Impl;
+	TPimplPtr<FUsdInfoCache> Impl;
 };
 
 #undef UE_API

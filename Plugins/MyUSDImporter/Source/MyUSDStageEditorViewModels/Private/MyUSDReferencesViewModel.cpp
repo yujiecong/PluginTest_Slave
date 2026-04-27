@@ -22,7 +22,7 @@
 #include "MyUSDIncludesEnd.h"
 #endif	  // #if USE_USD_SDK
 
-void FMyUsdReferencesViewModel::UpdateReferences(const UE::FMyUsdStageWeak& InUsdStage, const TCHAR* InPrimPath)
+void FMyUsdReferencesViewModel::UpdateReferences(const UE::FUsdStageWeak& InUsdStage, const TCHAR* InPrimPath)
 {
 	// We're provided with an empty prim path when we're meant to clear our references and go invisible,
 	// so always do that
@@ -108,7 +108,7 @@ void FMyUsdReferencesViewModel::RemoveReference(const TSharedPtr<FMyUsdReference
 		// Annoyingly there is no pxr::UsdReferences::GetReferences() (even though there are add/clear/set?).
 		// We must iterate through all composition arcs again to find the exact reference.
 		//
-		// That is a good idea anyway though because since we first constructed our FMyUsdReferences in this way,
+		// That is a good idea anyway though because since we first constructed our FUsdReferences in this way,
 		// we know that the path strings will match exactly, whether they're relative/absolute paths,
 		// upper/lower case drive letters, etc.
 		//

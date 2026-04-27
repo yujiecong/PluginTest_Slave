@@ -22,12 +22,12 @@ public:
 class FMyUsdReferencesViewModel
 {
 public:
-	UE_API void UpdateReferences(const UE::FMyUsdStageWeak& UsdStage, const TCHAR* PrimPath);
+	UE_API void UpdateReferences(const UE::FUsdStageWeak& UsdStage, const TCHAR* PrimPath);
 	UE_API void RemoveReference(const TSharedPtr<FMyUsdReference>& Reference);
 	UE_API void ReloadReference(const TSharedPtr<FMyUsdReference>& Reference);
 
 public:
-	UE::FMyUsdStageWeak UsdStage;
+	UE::FUsdStageWeak UsdStage;
 	UE::FSdfPath PrimPath;
 	TArray<TSharedPtr<FMyUsdReference>> References;
 };

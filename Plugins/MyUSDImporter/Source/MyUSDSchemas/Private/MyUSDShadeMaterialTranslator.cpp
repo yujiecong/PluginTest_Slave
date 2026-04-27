@@ -38,7 +38,7 @@ namespace UE::UsdShadeTranslator::Private
 {
 	void RecursiveUpgradeMaterialsAndTexturesToVT(
 		const TSet<UTexture*>& TexturesToUpgrade,
-		const TSharedRef<FMyUsdSchemaTranslationContext>& Context,
+		const TSharedRef<FUsdSchemaTranslationContext>& Context,
 		TSet<UMaterialInterface*>& VisitedMaterials,
 		TSet<UMaterialInterface*>& NewMaterials
 	)
@@ -172,10 +172,10 @@ namespace UE::UsdShadeTranslator::Private
 
 								NewMID->CopyParameterOverrides(MI);
 
-								UMyUsdMaterialAssetUserData* OldUserData = UserMaterial->GetAssetUserData<UMyUsdMaterialAssetUserData>();
+								UUsdMaterialAssetUserData* OldUserData = UserMaterial->GetAssetUserData<UUsdMaterialAssetUserData>();
 								if (OldUserData)
 								{
-									UMyUsdMaterialAssetUserData* NewUserData = DuplicateObject(OldUserData, NewMID);
+									UUsdMaterialAssetUserData* NewUserData = DuplicateObject(OldUserData, NewMID);
 									NewMID->AddAssetUserData(NewUserData);
 								}
 
@@ -198,7 +198,7 @@ namespace UE::UsdShadeTranslator::Private
 		}
 	}
 
-	void UpgradeMaterialsAndTexturesToVT(TSet<UTexture*> TexturesToUpgrade, TSharedRef<FMyUsdSchemaTranslationContext>& Context)
+	void UpgradeMaterialsAndTexturesToVT(TSet<UTexture*> TexturesToUpgrade, TSharedRef<FUsdSchemaTranslationContext>& Context)
 	{
 		TSet<UMaterialInterface*> VisitedMaterials;
 		TSet<UMaterialInterface*> NewMaterials;
@@ -243,7 +243,7 @@ namespace UE::UsdShadeTranslator::Private
 	// materials sometimes but changing the reference materials on the project settings should be rare.
 	void HashPreviewSurfaceReferences(FSHA1& InOutHash)
 	{
-		const UMyUsdProjectSettings* Settings = GetDefault<UMyUsdProjectSettings>();
+		const UUsdProjectSettings* Settings = GetDefault<UUsdProjectSettings>();
 		if (!Settings)
 		{
 			return;
@@ -390,14 +390,14 @@ void FMyUsdShadeMaterialTranslator::CreateAssets()
 				UE::UsdShadeTranslator::Private::UpgradeMaterialsAndTexturesToVT(NonVTTextures, Context);
 			}
 
-			EMyUsdReferenceMaterialProperties Properties = EMyUsdReferenceMaterialProperties::None;
+			EUsdReferenceMaterialProperties Properties = EUsdReferenceMaterialProperties::None;
 			if (bIsMaterialTranslucent)
 			{
-				Properties |= EMyUsdReferenceMaterialProperties::Translucent;
+				Properties |= EUsdReferenceMaterialProperties::Translucent;
 			}
 			if (VTTextures.Num() > 0)
 			{
-				Properties |= EMyUsdReferenceMaterialProperties::VT;
+				Properties |= EUsdReferenceMaterialProperties::VT;
 			}
 			UMaterialInterface* ReferenceMaterial = Cast<UMaterialInterface>(
 				UsdUnreal::MaterialUtils::GetReferencePreviewSurfaceMaterial(Properties).TryLoad()
@@ -440,10 +440,10 @@ void FMyUsdShadeMaterialTranslator::CreateAssets()
 			Context->ObjectFlags | RF_Transient,	// We never want MIDs to become assets in the content browser
 			[bIsMaterialTranslucent](UPackage* Outer, FName SanitizedName, EObjectFlags FlagsToUse)
 			{
-				EMyUsdReferenceMaterialProperties Properties = EMyUsdReferenceMaterialProperties::None;
+				EUsdReferenceMaterialProperties Properties = EUsdReferenceMaterialProperties::None;
 				if (bIsMaterialTranslucent)
 				{
-					Properties |= EMyUsdReferenceMaterialProperties::Translucent;
+					Properties |= EUsdReferenceMaterialProperties::Translucent;
 				}
 				UMaterialInterface* ReferenceMaterial = Cast<UMaterialInterface>(
 					UsdUnreal::MaterialUtils::GetReferencePreviewSurfaceMaterial(Properties).TryLoad()
@@ -533,7 +533,7 @@ void FMyUsdShadeMaterialTranslator::PostImportMaterial(const FString& PrefixedMa
 		return;
 	}
 
-	if (UMyUsdMaterialAssetUserData* UserData = UsdUnreal::ObjectUtils::GetOrCreateAssetUserData<UMyUsdMaterialAssetUserData>(ImportedMaterial))
+	if (UUsdMaterialAssetUserData* UserData = UsdUnreal::ObjectUtils::GetOrCreateAssetUserData<UUsdMaterialAssetUserData>(ImportedMaterial))
 	{
 		UserData->PrimPaths.AddUnique(PrimPath.GetString());
 
@@ -562,7 +562,7 @@ void FMyUsdShadeMaterialTranslator::PostImportMaterial(const FString& PrefixedMa
 	// MaterialX or MDL translators, so they should already be tracked by the same asset cache the material is tracked by.
 	// This is important because it lets the stage actor drop its references to old unused textures in the
 	// asset cache if they aren't being used by any other material
-	TSet<UObject*> Dependencies = IMyUsdClassesModule::GetAssetDependencies(ImportedMaterial);
+	TSet<UObject*> Dependencies = IUsdClassesModule::GetAssetDependencies(ImportedMaterial);
 	for (UObject* Object : Dependencies)
 	{
 		if (UTexture* Texture = Cast<UTexture>(Object))
@@ -575,7 +575,7 @@ void FMyUsdShadeMaterialTranslator::PostImportMaterial(const FString& PrefixedMa
 				Context->UsdAssetCache->TouchAssetPath(Texture);
 				Context->PrimLinkCache->LinkAssetToPrim(PrimPath, Texture);
 
-				if (UMyUsdAssetUserData* TextureUserData = UsdUnreal::ObjectUtils::GetOrCreateAssetUserData(Texture))
+				if (UUsdAssetUserData* TextureUserData = UsdUnreal::ObjectUtils::GetOrCreateAssetUserData(Texture))
 				{
 					TextureUserData->PrimPaths.AddUnique(PrimPath.GetString());
 				}

@@ -9,10 +9,10 @@
 class AMyUsdStageActor;
 class FUICommandList;
 enum class EPayloadsTrigger;
-enum class EMyUsdDuplicateType : uint8;
+enum class EUsdDuplicateType : uint8;
 namespace UE
 {
-	class FMyUsdPrim;
+	class FUsdPrim;
 }
 namespace UsdUtils
 {
@@ -24,7 +24,7 @@ namespace UsdUtils
 DECLARE_DELEGATE_OneParam(FOnPrimSelectionChanged, const TArray<FString>& /* NewSelection */);
 DECLARE_DELEGATE_OneParam(FOnAddPrim, FString);
 
-class SMyUsdStageTreeView : public SMyUsdTreeView<FMyUsdPrimViewModelRef>
+class SMyUsdStageTreeView : public SMyUsdTreeView<FUsdPrimViewModelRef>
 {
 public:
 	SLATE_BEGIN_ARGS(SMyUsdStageTreeView)
@@ -36,19 +36,19 @@ public:
 	void Construct(const FArguments& InArgs);
 	virtual ~SMyUsdStageTreeView() override;
 
-	void Refresh(const UE::FMyUsdStageWeak& NewStage);
+	void Refresh(const UE::FUsdStageWeak& NewStage);
 	void RefreshPrim(const FString& PrimPath, bool bResync);
 
-	FMyUsdPrimViewModelPtr GetItemFromPrimPath(const FString& PrimPath);
+	FUsdPrimViewModelPtr GetItemFromPrimPath(const FString& PrimPath);
 
 	void SetSelectedPrimPaths(const TArray<FString>& PrimPaths);
-	void SetSelectedPrims(const TArray<UE::FMyUsdPrim>& Prims);
+	void SetSelectedPrims(const TArray<UE::FUsdPrim>& Prims);
 	TArray<FString> GetSelectedPrimPaths();
-	TArray<UE::FMyUsdPrim> GetSelectedPrims();
+	TArray<UE::FUsdPrim> GetSelectedPrims();
 
 private:
-	virtual TSharedRef<ITableRow> OnGenerateRow(FMyUsdPrimViewModelRef InDisplayNode, const TSharedRef<STableViewBase>& OwnerTable) override;
-	virtual void OnGetChildren(FMyUsdPrimViewModelRef InParent, TArray<FMyUsdPrimViewModelRef>& OutChildren) const override;
+	virtual TSharedRef<ITableRow> OnGenerateRow(FUsdPrimViewModelRef InDisplayNode, const TSharedRef<STableViewBase>& OwnerTable) override;
+	virtual void OnGetChildren(FUsdPrimViewModelRef InParent, TArray<FUsdPrimViewModelRef>& OutChildren) const override;
 
 	// Required so that we can use the cut/copy/paste/etc. shortcuts
 	virtual bool SupportsKeyboardFocus() const override
@@ -57,11 +57,11 @@ private:
 	}
 	virtual FReply OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent) override;
 
-	void ScrollItemIntoView(FMyUsdPrimViewModelRef TreeItem);
-	virtual void OnTreeItemScrolledIntoView(FMyUsdPrimViewModelRef TreeItem, const TSharedPtr<ITableRow>& Widget) override;
+	void ScrollItemIntoView(FUsdPrimViewModelRef TreeItem);
+	virtual void OnTreeItemScrolledIntoView(FUsdPrimViewModelRef TreeItem, const TSharedPtr<ITableRow>& Widget) override;
 
-	void OnPrimNameCommitted(const FMyUsdPrimViewModelRef& TreeItem, const FText& InPrimName);
-	void OnPrimNameUpdated(const FMyUsdPrimViewModelRef& TreeItem, const FText& InPrimName, FText& ErrorMessage);
+	void OnPrimNameCommitted(const FUsdPrimViewModelRef& TreeItem, const FText& InPrimName);
+	void OnPrimNameUpdated(const FUsdPrimViewModelRef& TreeItem, const FText& InPrimName, FText& ErrorMessage);
 
 	virtual void SetupColumns() override;
 	TSharedPtr<SWidget> ConstructPrimContextMenu();
@@ -77,7 +77,7 @@ private:
 	void OnCutPrim();
 	void OnCopyPrim();
 	void OnPastePrim();
-	void OnDuplicatePrim(EMyUsdDuplicateType DuplicateType);
+	void OnDuplicatePrim(EUsdDuplicateType DuplicateType);
 	void OnDeletePrim();
 	void OnRenamePrim();
 	void OnSetCollapsingPreference(UsdUtils::ECollapsingPreference Preference);
@@ -105,7 +105,7 @@ private:
 	void RequestExpansionStateRestore();
 	virtual void Tick( const FGeometry& AllottedGeometry, const double InCurrentTime, const float InDeltaTime ) override;
 
-	void SelectItemsInternal(const TArray<FMyUsdPrimViewModelRef>& ItemsToSelect);
+	void SelectItemsInternal(const TArray<FUsdPrimViewModelRef>& ItemsToSelect);
 
 public:
 	// We update only on slate tick, but can receive a USD notice at any point, from any thread.
@@ -126,7 +126,7 @@ public:
 
 private:
 	// Should always be valid, we keep the one we're given on Refresh()
-	UE::FMyUsdStageWeak UsdStage;
+	UE::FUsdStageWeak UsdStage;
 
 	TWeakPtr<FMyUsdPrimViewModel> PendingRenameItem;
 

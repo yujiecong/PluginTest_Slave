@@ -19,17 +19,17 @@ public:
 
 public:
 	void Construct(const FArguments& InArgs);
-	void SetObjectPath(const UE::FMyUsdStageWeak& UsdStage, const TCHAR* InObjectPath);
+	void SetObjectPath(const UE::FUsdStageWeak& UsdStage, const TCHAR* InObjectPath);
 
 	TArray<FString> GetSelectedFieldNames() const;
 	void SetSelectedFieldNames(const TArray<FString>& NewSelection);
 
-	UE::FMyUsdStageWeak GetUsdStage() const;
+	UE::FUsdStageWeak GetUsdStage() const;
 	FString GetObjectPath() const;
 
 protected:
 	TSharedRef<ITableRow> OnGenerateRow(TSharedPtr<FMyUsdObjectFieldViewModel> InDisplayNode, const TSharedRef<STableViewBase>& OwnerTable);
-	void GenerateFieldList(const UE::FMyUsdStageWeak& UsdStage, const TCHAR* InObjectPath);
+	void GenerateFieldList(const UE::FUsdStageWeak& UsdStage, const TCHAR* InObjectPath);
 
 	void Sort(const EColumnSortPriority::Type SortPriority, const FName& ColumnId, const EColumnSortMode::Type NewSortMode);
 	EColumnSortMode::Type GetColumnSortMode(const FName ColumnId) const;

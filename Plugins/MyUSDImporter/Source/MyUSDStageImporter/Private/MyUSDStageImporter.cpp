@@ -88,7 +88,7 @@ namespace UE::MyUSDStageImporter::Private
 
 		FScopedUsdMessageLog ScopedLog;
 
-		UE::FMyUsdStage Stage;
+		UE::FUsdStage Stage;
 		if (bNeedsMasking)
 		{
 			// If we're masking we'll make a unique stage for us.
@@ -107,7 +107,7 @@ namespace UE::MyUSDStageImporter::Private
 				Stage = UnrealUSDWrapper::OpenMaskedStage(
 					ImportContext.Stage.GetRootLayer(),
 					ImportContext.Stage.GetSessionLayer(),
-					EMyUsdInitialLoadSet::LoadAll,
+					EUsdInitialLoadSet::LoadAll,
 					ImportContext.ImportOptions->PrimsToImport,
 					bForceReloadLayersFromDisk
 				);
@@ -116,7 +116,7 @@ namespace UE::MyUSDStageImporter::Private
 			{
 				Stage = UnrealUSDWrapper::OpenMaskedStage(
 					*FilePath,
-					EMyUsdInitialLoadSet::LoadAll,
+					EUsdInitialLoadSet::LoadAll,
 					ImportContext.ImportOptions->PrimsToImport,
 					bForceReloadLayersFromDisk
 				);
@@ -124,7 +124,7 @@ namespace UE::MyUSDStageImporter::Private
 		}
 		else
 		{
-			for (const UE::FMyUsdStage& OpenedStage : UnrealUSDWrapper::GetAllStagesFromCache())
+			for (const UE::FUsdStage& OpenedStage : UnrealUSDWrapper::GetAllStagesFromCache())
 			{
 				FString RootPath = OpenedStage.GetRootLayer().GetRealPath();
 				FPaths::NormalizeFilename(RootPath);
@@ -138,15 +138,15 @@ namespace UE::MyUSDStageImporter::Private
 			const bool bForceReloadLayersFromDisk = !ImportContext.bReadFromStageCache;
 			Stage = UnrealUSDWrapper::OpenStage(
 				*FilePath,
-				EMyUsdInitialLoadSet::LoadAll,
+				EUsdInitialLoadSet::LoadAll,
 				ImportContext.bReadFromStageCache,
 				bForceReloadLayersFromDisk
 			);
 		}
 
-		if (FMyUsdLogManager::HasAccumulatedErrors())
+		if (FUsdLogManager::HasAccumulatedErrors())
 		{
-			ImportContext.Stage = UE::FMyUsdStage();
+			ImportContext.Stage = UE::FUsdStage();
 			USD_LOG_USERERROR(FText::Format(LOCTEXT("CouldNotImportUSDFile", "Could not import USD file {0}"), FText::FromString(FilePath)));
 		}
 		else
@@ -260,17 +260,17 @@ namespace UE::MyUSDStageImporter::Private
 #endif	  // #if USE_USD_SDK
 	}
 
-	void CreateAssetsForPrims(const TArray<UE::FMyUsdPrim>& Prims, FMyUsdSchemaTranslationContext& TranslationContext, const FText& ProgressMessage)
+	void CreateAssetsForPrims(const TArray<UE::FUsdPrim>& Prims, FUsdSchemaTranslationContext& TranslationContext, const FText& ProgressMessage)
 	{
 		TRACE_CPUPROFILER_EVENT_SCOPE(CreateAssetsForPrims);
 
 		FScopedSlowTask SlowTask(Prims.Num(), ProgressMessage);
 
-		for (const UE::FMyUsdPrim& Prim : Prims)
+		for (const UE::FUsdPrim& Prim : Prims)
 		{
-			if (TSharedPtr<FMyUsdSchemaTranslator> SchemaTranslator = FMyUsdSchemaTranslatorRegistry::Get().CreateTranslatorForSchema(
+			if (TSharedPtr<FUsdSchemaTranslator> SchemaTranslator = FUsdSchemaTranslatorRegistry::Get().CreateTranslatorForSchema(
 					TranslationContext.AsShared(),
-					UE::FMyUsdTyped(Prim)
+					UE::FUsdTyped(Prim)
 				))
 			{
 				SchemaTranslator->CreateAssets();
@@ -282,7 +282,7 @@ namespace UE::MyUSDStageImporter::Private
 		TranslationContext.CompleteTasks();
 	}
 
-	void CreateNaniteAssemblyAssets(const TArray<UE::FMyUsdPrim>& Prims, FMyUsdSchemaTranslationContext& TranslationContext)
+	void CreateNaniteAssemblyAssets(const TArray<UE::FUsdPrim>& Prims, FUsdSchemaTranslationContext& TranslationContext)
 	{
 #if USE_USD_SDK && WITH_EDITOR
 
@@ -297,9 +297,9 @@ namespace UE::MyUSDStageImporter::Private
 			);
 		}
 
-		for (const UE::FMyUsdPrim& Prim : Prims)
+		for (const UE::FUsdPrim& Prim : Prims)
 		{
-			FMyUsdNaniteAssemblyTranslator AssemblyTranslator(TranslationContext.AsShared(), UE::FMyUsdTyped(Prim));
+			FMyUsdNaniteAssemblyTranslator AssemblyTranslator(TranslationContext.AsShared(), UE::FUsdTyped(Prim));
 			AssemblyTranslator.CreateAssets();
 		}
 
@@ -307,14 +307,14 @@ namespace UE::MyUSDStageImporter::Private
 #endif // USE_USD_SDK && WITH_EDITOR
 	}
 
-	void CacheCollapsingState(FMyUsdSchemaTranslationContext& TranslationContext)
+	void CacheCollapsingState(FUsdSchemaTranslationContext& TranslationContext)
 	{
 		// It's better to always rebuild the info cache because our import options may have changed
 		// from the options used when the cache was first built, which could change collapsing states, etc.
 		TranslationContext.UsdInfoCache->RebuildCacheForSubtrees({UE::FSdfPath::AbsoluteRootPath()}, TranslationContext);
 	}
 
-	void ImportMaterials(FMyUsdStageImportContext& ImportContext, FMyUsdSchemaTranslationContext& TranslationContext)
+	void ImportMaterials(FMyUsdStageImportContext& ImportContext, FUsdSchemaTranslationContext& TranslationContext)
 	{
 		TRACE_CPUPROFILER_EVENT_SCOPE(ImportMaterials);
 
@@ -323,12 +323,12 @@ namespace UE::MyUSDStageImporter::Private
 			return;
 		}
 
-		TArray<UE::FMyUsdPrim> MaterialPrims = UsdUtils::GetAllPrimsOfType(ImportContext.Stage.GetPseudoRoot(), TEXT("UsdShadeMaterial"));
+		TArray<UE::FUsdPrim> MaterialPrims = UsdUtils::GetAllPrimsOfType(ImportContext.Stage.GetPseudoRoot(), TEXT("UsdShadeMaterial"));
 
 		CreateAssetsForPrims(MaterialPrims, TranslationContext, LOCTEXT("CreateMaterials", "Creating materials"));
 	}
 
-	void ImportMeshes(FMyUsdStageImportContext& ImportContext, FMyUsdSchemaTranslationContext& TranslationContext)
+	void ImportMeshes(FMyUsdStageImportContext& ImportContext, FUsdSchemaTranslationContext& TranslationContext)
 	{
 		TRACE_CPUPROFILER_EVENT_SCOPE(ImportMeshes);
 
@@ -338,11 +338,11 @@ namespace UE::MyUSDStageImporter::Private
 			return;
 		}
 
-		auto PruneCollapsedMeshes = [&TranslationContext](const UE::FMyUsdPrim& UsdPrim) -> bool
+		auto PruneCollapsedMeshes = [&TranslationContext](const UE::FUsdPrim& UsdPrim) -> bool
 		{
-			if (TSharedPtr<FMyUsdSchemaTranslator> SchemaTranslator = FMyUsdSchemaTranslatorRegistry::Get().CreateTranslatorForSchema(
+			if (TSharedPtr<FUsdSchemaTranslator> SchemaTranslator = FUsdSchemaTranslatorRegistry::Get().CreateTranslatorForSchema(
 					TranslationContext.AsShared(),
-					UE::FMyUsdTyped(UsdPrim)
+					UE::FUsdTyped(UsdPrim)
 				))
 			{
 				return SchemaTranslator->CollapsesChildren(ECollapsingType::Assets);
@@ -351,7 +351,7 @@ namespace UE::MyUSDStageImporter::Private
 			return false;
 		};
 
-		TArray<UE::FMyUsdPrim> MeshPrims = UsdUtils::GetAllPrimsOfType(
+		TArray<UE::FUsdPrim> MeshPrims = UsdUtils::GetAllPrimsOfType(
 			ImportContext.Stage.GetPseudoRoot(),
 			TEXT("UsdGeomXformable"),
 			PruneCollapsedMeshes
@@ -365,7 +365,7 @@ namespace UE::MyUSDStageImporter::Private
 
 	void ImportAnimation(
 		FMyUsdStageImportContext& ImportContext,
-		UE::FMyUsdPrim& Prim,
+		UE::FUsdPrim& Prim,
 		bool bAnimatedVisibility,
 		TOptional<bool> bHasAnimatedBounds,
 		USceneComponent* SceneComponent
@@ -388,9 +388,9 @@ namespace UE::MyUSDStageImporter::Private
 
 	void ImportActor(
 		FMyUsdStageImportContext& ImportContext,
-		UE::FMyUsdPrim& Prim,
+		UE::FUsdPrim& Prim,
 		bool bForceVisibilityAnimationTracks,
-		FMyUsdSchemaTranslationContext& TranslationContext
+		FUsdSchemaTranslationContext& TranslationContext
 	)
 	{
 		TRACE_CPUPROFILER_EVENT_SCOPE(ImportActor);
@@ -402,8 +402,8 @@ namespace UE::MyUSDStageImporter::Private
 
 		// Spawn components and/or actors for this prim
 		UE::FSdfPath PrimPath = Prim.GetPrimPath();
-		if (TSharedPtr<FMyUsdSchemaTranslator> SchemaTranslator = FMyUsdSchemaTranslatorRegistry::Get()
-																	.CreateTranslatorForSchema(TranslationContext.AsShared(), UE::FMyUsdTyped(Prim)))
+		if (TSharedPtr<FUsdSchemaTranslator> SchemaTranslator = FUsdSchemaTranslatorRegistry::Get()
+																	.CreateTranslatorForSchema(TranslationContext.AsShared(), UE::FUsdTyped(Prim)))
 		{
 			Component = SchemaTranslator->CreateComponents();
 
@@ -432,7 +432,7 @@ namespace UE::MyUSDStageImporter::Private
 			TGuardValue<USceneComponent*> ParentComponentGuard(TranslationContext.ParentComponent, ContextParentComponent);
 
 			const bool bTraverseInstanceProxies = true;
-			for (UE::FMyUsdPrim Child : Prim.GetFilteredChildren(bTraverseInstanceProxies))
+			for (UE::FUsdPrim Child : Prim.GetFilteredChildren(bTraverseInstanceProxies))
 			{
 				ImportActor(ImportContext, Child, bAnimatedVisibility, TranslationContext);
 			}
@@ -454,7 +454,7 @@ namespace UE::MyUSDStageImporter::Private
 				const TOptional<bool> HasAnimatedBounds = {};
 				ImportAnimation(ImportContext, Prim, bAnimatedVisibility, HasAnimatedBounds, Component);
 			}
-			else if (EMyUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(Prim); DrawMode != EMyUsdDrawMode::Default)
+			else if (EUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(Prim); DrawMode != EUsdDrawMode::Default)
 			{
 				if (UsdUtils::HasAnimatedBounds(
 						Prim,
@@ -472,7 +472,7 @@ namespace UE::MyUSDStageImporter::Private
 		SlowTask.EnterProgressFrame();
 	}
 
-	void ImportActors(FMyUsdStageImportContext& ImportContext, FMyUsdSchemaTranslationContext& TranslationContext)
+	void ImportActors(FMyUsdStageImportContext& ImportContext, FUsdSchemaTranslationContext& TranslationContext)
 	{
 		if (!ImportContext.ImportOptions->bImportActors)
 		{
@@ -480,7 +480,7 @@ namespace UE::MyUSDStageImporter::Private
 		}
 
 		const bool bForceVisibilityAnimationTracks = false;
-		UE::FMyUsdPrim RootPrim = ImportContext.Stage.GetPseudoRoot();
+		UE::FUsdPrim RootPrim = ImportContext.Stage.GetPseudoRoot();
 		ImportActor(ImportContext, RootPrim, bForceVisibilityAnimationTracks, TranslationContext);
 	}
 
@@ -496,7 +496,7 @@ namespace UE::MyUSDStageImporter::Private
 		FString PrimPath;
 		if (IInterface_AssetUserData* UserDataInterface = Cast<IInterface_AssetUserData>(Asset))
 		{
-			if (UMyUsdAssetUserData* UserData = UserDataInterface->GetAssetUserData<UMyUsdAssetUserData>())
+			if (UUsdAssetUserData* UserData = UserDataInterface->GetAssetUserData<UUsdAssetUserData>())
 			{
 				if (!UserData->PrimPaths.IsEmpty())
 				{
@@ -542,10 +542,10 @@ namespace UE::MyUSDStageImporter::Private
 			return;
 		}
 
-		UMyUsdAssetImportData* ImportData = UsdUnreal::ObjectUtils::GetAssetImportData(Asset);
+		UUsdAssetImportData* ImportData = UsdUnreal::ObjectUtils::GetAssetImportData(Asset);
 		if (!ImportData)
 		{
-			ImportData = NewObject<UMyUsdAssetImportData>(Asset);
+			ImportData = NewObject<UUsdAssetImportData>(Asset);
 			UsdUnreal::ObjectUtils::SetAssetImportData(Asset, ImportData);
 		}
 
@@ -775,7 +775,7 @@ namespace UE::MyUSDStageImporter::Private
 
 	// Our asset could have come from an asset cache, where it could have been reused across different stages. After import, we only
 	// want to keep the metadata fields that came from the actually imported stage though, so here we prune the others
-	void PrunePrimMetadata(UObject* Asset, const UE::FMyUsdStage& Stage)
+	void PrunePrimMetadata(UObject* Asset, const UE::FUsdStage& Stage)
 	{
 		IInterface_AssetUserData* UserDataInterface = Cast<IInterface_AssetUserData>(Asset);
 		if (!UserDataInterface)
@@ -783,7 +783,7 @@ namespace UE::MyUSDStageImporter::Private
 			return;
 		}
 
-		UMyUsdAssetUserData* UserData = UserDataInterface->GetAssetUserData<UMyUsdAssetUserData>();
+		UUsdAssetUserData* UserData = UserDataInterface->GetAssetUserData<UUsdAssetUserData>();
 		if (!UserData)
 		{
 			return;
@@ -791,7 +791,7 @@ namespace UE::MyUSDStageImporter::Private
 
 		FString ImportedStageIdentifier = Stage.GetRootLayer().GetIdentifier();
 
-		for (TMap<FString, FMyUsdCombinedPrimMetadata>::TIterator Iter = UserData->StageIdentifierToMetadata.CreateIterator(); Iter; ++Iter)
+		for (TMap<FString, FUsdCombinedPrimMetadata>::TIterator Iter = UserData->StageIdentifierToMetadata.CreateIterator(); Iter; ++Iter)
 		{
 			if (Iter->Key != ImportedStageIdentifier)
 			{
@@ -1032,7 +1032,7 @@ namespace UE::MyUSDStageImporter::Private
 			{
 				if (IInterface_AssetUserData* UserDataInterface = Cast<IInterface_AssetUserData>(Asset))
 				{
-					if (UMyUsdAssetUserData* UserData = UserDataInterface->GetAssetUserData<UMyUsdAssetUserData>())
+					if (UUsdAssetUserData* UserData = UserDataInterface->GetAssetUserData<UUsdAssetUserData>())
 					{
 						// For skeletal stuff, the primpaths point to the SkelRoot, so it is useful to place the assets in there,
 						// as we'll always have at least the skeletal mesh and the skeleton
@@ -1546,13 +1546,13 @@ namespace UE::MyUSDStageImporter::Private
 
 		// Always discard the context's reference to the stage because it may be a persistent import context (like
 		// the non-static data member of UMyUsdStageImportFactory
-		ImportContext.Stage = UE::FMyUsdStage();
-		ImportContext.LevelSequenceHelper.Init(UE::FMyUsdStage());
+		ImportContext.Stage = UE::FUsdStage();
+		ImportContext.LevelSequenceHelper.Init(UE::FUsdStage());
 #endif	  // #if USE_USD_SDK
 	}
 
 	/**
-	 * UMyUsdAssetCache3 can track which assets are requested/added to itself during translation, but it may miss some dependencies
+	 * UUsdAssetCache3 can track which assets are requested/added to itself during translation, but it may miss some dependencies
 	 * that are only retrieved/added themselves when the original asset is first parsed. This function recursively collects all of those.
 	 * Example: An UMaterialInstance is already in the cache, so when translating we just retrieve the existing asset --> The textures that it's using
 	 * won't be retrieved or marked as "Used" Example: An USkeletalMesh is already in the cache, so in the same way we would miss its USkeleton,
@@ -1598,7 +1598,7 @@ namespace UE::MyUSDStageImporter::Private
 					OutAssetsAndDependencies.Add(Asset);
 				}
 
-				TSet<UObject*> Dependencies = IMyUsdClassesModule::GetAssetDependencies(Asset);
+				TSet<UObject*> Dependencies = IUsdClassesModule::GetAssetDependencies(Asset);
 				AssetQueue.Append(Dependencies.Array());
 			}
 		}
@@ -1701,7 +1701,7 @@ namespace UE::MyUSDStageImporter::Private
 			FString EventName = Operation;
 			if (Asset)
 			{
-				const FString ClassName = IMyUsdClassesModule::GetClassNameForAnalytics(Asset);
+				const FString ClassName = IUsdClassesModule::GetClassNameForAnalytics(Asset);
 
 				// e.g. "Reimport.StaticMesh"
 				EventName = FString::Printf(TEXT("%s.%s"), *EventName, *ClassName);
@@ -1713,7 +1713,7 @@ namespace UE::MyUSDStageImporter::Private
 				UsdUtils::AddAnalyticsAttributes(*ImportContext.ImportOptions, EventAttributes);
 			}
 
-			IMyUsdClassesModule::AddAssetCountAttributes(ImportedAssets, EventAttributes);
+			IUsdClassesModule::AddAssetCountAttributes(ImportedAssets, EventAttributes);
 
 			FString RootLayerIdentifier = ImportContext.FilePath;
 			if (ImportContext.Stage)
@@ -1724,7 +1724,7 @@ namespace UE::MyUSDStageImporter::Private
 				}
 			}
 
-			IMyUsdClassesModule::SendAnalytics(
+			IUsdClassesModule::SendAnalytics(
 				MoveTemp(EventAttributes),
 				EventName,
 				ImportContext.bIsAutomated,
@@ -1904,7 +1904,7 @@ void UMyUsdStageImporter::ImportFromFile(FMyUsdStageImportContext& ImportContext
 		TransactionSuppressor.Emplace(GEditor->Trans, nullptr);
 	}
 
-	FMyUsdDelegates::OnPreUsdImport.Broadcast(ImportContext.FilePath);
+	FUsdDelegates::OnPreUsdImport.Broadcast(ImportContext.FilePath);
 
 	AActor* ExistingSceneActor = UE::MyUSDStageImporter::Private::GetExistingSceneActor(ImportContext);
 
@@ -1918,18 +1918,18 @@ void UMyUsdStageImporter::ImportFromFile(FMyUsdStageImportContext& ImportContext
 	UsdUtils::FBlendShapeMap BlendShapesByPath;
 
 	// Ensure a valid asset cache
-	TStrongObjectPtr<UMyUsdAssetCache3> AssetCachePin;
+	TStrongObjectPtr<UUsdAssetCache3> AssetCachePin;
 	if (!ImportContext.UsdAssetCache && ImportContext.ImportOptions->bUseExistingAssetCache)
 	{
 		// Try using a provided ExistingAssetCache if that wasn't put on our import context already
-		ImportContext.UsdAssetCache = Cast<UMyUsdAssetCache3>(ImportContext.ImportOptions->ExistingAssetCache.TryLoad());
+		ImportContext.UsdAssetCache = Cast<UUsdAssetCache3>(ImportContext.ImportOptions->ExistingAssetCache.TryLoad());
 	}
 	if (!ImportContext.UsdAssetCache)
 	{
 		// Get a transient AssetCache.
 		// By being in the transient package this cache will also dump its assets in the transient package.
 		// We will then take these assets and publish them to the final import folder.
-		ImportContext.UsdAssetCache = NewObject<UMyUsdAssetCache3>();
+		ImportContext.UsdAssetCache = NewObject<UUsdAssetCache3>();
 		AssetCachePin.Reset(ImportContext.UsdAssetCache);
 	}
 	if (!ensure(ImportContext.UsdAssetCache))
@@ -1952,7 +1952,7 @@ void UMyUsdStageImporter::ImportFromFile(FMyUsdStageImportContext& ImportContext
 	ImportContext.LevelSequenceHelper.Init(ImportContext.Stage);	// Must happen after the context gets an InfoCache!
 	ImportContext.LevelSequenceHelper.SetRootMotionHandling(ImportContext.ImportOptions->RootMotionHandling);
 
-	EMyUsdPurpose PurposesToImport = static_cast<EMyUsdPurpose>(ImportContext.ImportOptions->PurposesToImport);
+	EUsdPurpose PurposesToImport = static_cast<EUsdPurpose>(ImportContext.ImportOptions->PurposesToImport);
 
 	float ImportTime = ImportContext.ImportOptions->bImportAtSpecificTimeCode ? ImportContext.ImportOptions->ImportTimeCode
 																			  : static_cast<float>(UsdUtils::GetDefaultTimeCode());
@@ -1961,10 +1961,10 @@ void UMyUsdStageImporter::ImportFromFile(FMyUsdStageImportContext& ImportContext
 	{
 		const bool bUseExtentsHint = true;
 		const bool bIgnoreVisibility = false;
-		ImportContext.BBoxCache = MakeShared<UE::FMyUsdGeomBBoxCache>(ImportTime, PurposesToImport, bUseExtentsHint, bIgnoreVisibility);
+		ImportContext.BBoxCache = MakeShared<UE::FUsdGeomBBoxCache>(ImportTime, PurposesToImport, bUseExtentsHint, bIgnoreVisibility);
 	}
 
-	TOptional<EMyUsdPurpose> IncludedPurposesToRevertBBoxCacheTo;
+	TOptional<EUsdPurpose> IncludedPurposesToRevertBBoxCacheTo;
 	if (ImportContext.BBoxCache->GetIncludedPurposes() != PurposesToImport)
 	{
 		IncludedPurposesToRevertBBoxCacheTo = ImportContext.BBoxCache->GetIncludedPurposes();
@@ -1982,7 +1982,7 @@ void UMyUsdStageImporter::ImportFromFile(FMyUsdStageImportContext& ImportContext
 	// currently being drawn
 	FGlobalComponentRecreateRenderStateContext RecreateRenderStateContext;
 
-	TSharedRef<FMyUsdSchemaTranslationContext> TranslationContext = MakeShared<FMyUsdSchemaTranslationContext>(
+	TSharedRef<FUsdSchemaTranslationContext> TranslationContext = MakeShared<FUsdSchemaTranslationContext>(
 		ImportContext.Stage,
 		*ImportContext.UsdAssetCache
 	);
@@ -1999,7 +1999,7 @@ void UMyUsdStageImporter::ImportFromFile(FMyUsdStageImportContext& ImportContext
 	TranslationContext->SubdivisionLevel = ImportContext.ImportOptions->SubdivisionLevel;
 	TranslationContext->MetadataOptions = ImportContext.ImportOptions->MetadataOptions;
 	TranslationContext->ParentComponent = ImportContext.SceneActor ? ImportContext.SceneActor->GetRootComponent() : nullptr;
-	TranslationContext->KindsToCollapse = (EMyUsdDefaultKind)ImportContext.ImportOptions->KindsToCollapse;
+	TranslationContext->KindsToCollapse = (EUsdDefaultKind)ImportContext.ImportOptions->KindsToCollapse;
 	TranslationContext->bUsePrimKindsForCollapsing = ImportContext.ImportOptions->bUsePrimKindsForCollapsing;
 	TranslationContext->bMergeIdenticalMaterialSlots = ImportContext.ImportOptions->bMergeIdenticalMaterialSlots;
 	TranslationContext->bShareAssetsForIdenticalPrims = ImportContext.ImportOptions->bShareAssetsForIdenticalPrims;
@@ -2056,7 +2056,7 @@ void UMyUsdStageImporter::ImportFromFile(FMyUsdStageImportContext& ImportContext
 		ImportContext.BBoxCache->SetTime(TimeToRevertBBoxCacheTo.GetValue());
 	}
 
-	FMyUsdDelegates::OnPostUsdImport.Broadcast(ImportContext.FilePath);
+	FUsdDelegates::OnPostUsdImport.Broadcast(ImportContext.FilePath);
 
 	// Analytics
 	{
@@ -2124,7 +2124,7 @@ bool UMyUsdStageImporter::ReimportSingleAsset(
 		TransactionSuppressor.Emplace(GEditor->Trans, nullptr);
 	}
 
-	FMyUsdDelegates::OnPreUsdImport.Broadcast(ImportContext.FilePath);
+	FUsdDelegates::OnPreUsdImport.Broadcast(ImportContext.FilePath);
 
 	// We still need the scene actor to remap all other users of the mesh to the new reimported one. It's not critical if we fail though,
 	// the goal is to just reimport the asset
@@ -2138,18 +2138,18 @@ bool UMyUsdStageImporter::ReimportSingleAsset(
 	UsdUtils::FBlendShapeMap BlendShapesByPath;
 
 	// Ensure a valid asset cache
-	TStrongObjectPtr<UMyUsdAssetCache3> AssetCachePin;
+	TStrongObjectPtr<UUsdAssetCache3> AssetCachePin;
 	if (!ImportContext.UsdAssetCache && ImportContext.ImportOptions->bUseExistingAssetCache)
 	{
 		// Try using a provided ExistingAssetCache if that wasn't put on our import context already
-		ImportContext.UsdAssetCache = Cast<UMyUsdAssetCache3>(ImportContext.ImportOptions->ExistingAssetCache.TryLoad());
+		ImportContext.UsdAssetCache = Cast<UUsdAssetCache3>(ImportContext.ImportOptions->ExistingAssetCache.TryLoad());
 	}
 	if (!ImportContext.UsdAssetCache)
 	{
 		// Get a transient AssetCache.
 		// By being in the transient package this cache will also dump its assets in the transient package.
 		// We will then take these assets and publish them to the final import folder.
-		ImportContext.UsdAssetCache = NewObject<UMyUsdAssetCache3>();
+		ImportContext.UsdAssetCache = NewObject<UUsdAssetCache3>();
 		AssetCachePin.Reset(ImportContext.UsdAssetCache);
 	}
 	if (!ensure(ImportContext.UsdAssetCache))
@@ -2172,7 +2172,7 @@ bool UMyUsdStageImporter::ReimportSingleAsset(
 	ImportContext.LevelSequenceHelper.Init(ImportContext.Stage);	// Must happen after the context gets an InfoCache!
 	ImportContext.LevelSequenceHelper.SetRootMotionHandling(ImportContext.ImportOptions->RootMotionHandling);
 
-	EMyUsdPurpose PurposesToImport = static_cast<EMyUsdPurpose>(ImportContext.ImportOptions->PurposesToImport);
+	EUsdPurpose PurposesToImport = static_cast<EUsdPurpose>(ImportContext.ImportOptions->PurposesToImport);
 
 	float ImportTime = ImportContext.ImportOptions->bImportAtSpecificTimeCode ? ImportContext.ImportOptions->ImportTimeCode
 																			  : static_cast<float>(UsdUtils::GetDefaultTimeCode());
@@ -2181,9 +2181,9 @@ bool UMyUsdStageImporter::ReimportSingleAsset(
 	{
 		const bool bUseExtentsHint = true;
 		const bool bIgnoreVisibility = false;
-		ImportContext.BBoxCache = MakeShared<UE::FMyUsdGeomBBoxCache>(ImportTime, PurposesToImport, bUseExtentsHint, bIgnoreVisibility);
+		ImportContext.BBoxCache = MakeShared<UE::FUsdGeomBBoxCache>(ImportTime, PurposesToImport, bUseExtentsHint, bIgnoreVisibility);
 	}
-	TOptional<EMyUsdPurpose> IncludedPurposesToRevertTo;
+	TOptional<EUsdPurpose> IncludedPurposesToRevertTo;
 	if (ImportContext.BBoxCache->GetIncludedPurposes() != PurposesToImport)
 	{
 		IncludedPurposesToRevertTo = ImportContext.BBoxCache->GetIncludedPurposes();
@@ -2201,7 +2201,7 @@ bool UMyUsdStageImporter::ReimportSingleAsset(
 	// currently being drawn
 	FGlobalComponentRecreateRenderStateContext RecreateRenderStateContext;
 
-	TSharedRef<FMyUsdSchemaTranslationContext> TranslationContext = MakeShared<FMyUsdSchemaTranslationContext>(
+	TSharedRef<FUsdSchemaTranslationContext> TranslationContext = MakeShared<FUsdSchemaTranslationContext>(
 		ImportContext.Stage,
 		*ImportContext.UsdAssetCache
 	);
@@ -2217,7 +2217,7 @@ bool UMyUsdStageImporter::ReimportSingleAsset(
 	TranslationContext->FallbackCollisionType = ImportContext.ImportOptions->FallbackCollisionType;
 	TranslationContext->SubdivisionLevel = ImportContext.ImportOptions->SubdivisionLevel;
 	TranslationContext->MetadataOptions = ImportContext.ImportOptions->MetadataOptions;
-	TranslationContext->KindsToCollapse = (EMyUsdDefaultKind)ImportContext.ImportOptions->KindsToCollapse;
+	TranslationContext->KindsToCollapse = (EUsdDefaultKind)ImportContext.ImportOptions->KindsToCollapse;
 	TranslationContext->bUsePrimKindsForCollapsing = ImportContext.ImportOptions->bUsePrimKindsForCollapsing;
 	TranslationContext->bMergeIdenticalMaterialSlots = ImportContext.ImportOptions->bMergeIdenticalMaterialSlots;
 	TranslationContext->bShareAssetsForIdenticalPrims = ImportContext.ImportOptions->bShareAssetsForIdenticalPrims;
@@ -2236,7 +2236,7 @@ bool UMyUsdStageImporter::ReimportSingleAsset(
 	{
 		UE::MyUSDStageImporter::Private::CacheCollapsingState(TranslationContext.Get());
 
-		UE::FMyUsdPrim TargetPrim = ImportContext.Stage.GetPrimAtPath(UE::FSdfPath(*OriginalPrimPath));
+		UE::FUsdPrim TargetPrim = ImportContext.Stage.GetPrimAtPath(UE::FSdfPath(*OriginalPrimPath));
 		if (TargetPrim)
 		{
 			UE::MyUSDStageImporter::Private::CreateAssetsForPrims({TargetPrim}, TranslationContext.Get(), LOCTEXT("CreateAssets", "Creating assets"));
@@ -2257,10 +2257,10 @@ bool UMyUsdStageImporter::ReimportSingleAsset(
 	UObject* ReimportedObject = nullptr;
 	for (UObject* Asset : ActiveAssets)
 	{
-		UMyUsdAssetUserData* UserData = nullptr;
+		UUsdAssetUserData* UserData = nullptr;
 		if (IInterface_AssetUserData* UserDataInterface = Cast<IInterface_AssetUserData>(Asset))
 		{
-			UserData = UserDataInterface->GetAssetUserData<UMyUsdAssetUserData>();
+			UserData = UserDataInterface->GetAssetUserData<UUsdAssetUserData>();
 		}
 
 		if (Asset && UserData && Asset->GetClass() == OriginalAsset->GetClass() && UserData->PrimPaths.Contains(OriginalPrimPath))
@@ -2311,7 +2311,7 @@ bool UMyUsdStageImporter::ReimportSingleAsset(
 		ImportContext.BBoxCache->SetTime(TimeToRevertBBoxCacheTo.GetValue());
 	}
 
-	FMyUsdDelegates::OnPostUsdImport.Broadcast(ImportContext.FilePath);
+	FUsdDelegates::OnPostUsdImport.Broadcast(ImportContext.FilePath);
 
 	// Analytics
 	{

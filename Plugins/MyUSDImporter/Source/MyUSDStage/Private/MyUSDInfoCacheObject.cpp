@@ -8,25 +8,25 @@
 
 UMyUsdInfoCache::UMyUsdInfoCache()
 {
-	Impl = MakePimpl<FMyUsdInfoCache>();
+	Impl = MakePimpl<FUsdInfoCache>();
 }
 
 void UMyUsdInfoCache::Serialize(FArchive& Ar)
 {
 	TRACE_CPUPROFILER_EVENT_SCOPE(UMyUsdInfoCache::Serialize);
 
-	if (FMyUsdInfoCache* ImplPtr = Impl.Get())
+	if (FUsdInfoCache* ImplPtr = Impl.Get())
 	{
 		ImplPtr->Serialize(Ar);
 	}
 }
 
-FMyUsdInfoCache& UMyUsdInfoCache::GetInner()
+FUsdInfoCache& UMyUsdInfoCache::GetInner()
 {
 	return *Impl;
 }
 
-const FMyUsdInfoCache& UMyUsdInfoCache::GetInner() const
+const FUsdInfoCache& UMyUsdInfoCache::GetInner() const
 {
 	return *Impl;
 }

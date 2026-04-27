@@ -13,7 +13,7 @@
 class SHeaderRow;
 namespace UE
 {
-	class FMyUsdAttribute;
+	class FUsdAttribute;
 }
 
 // We need an actual UObject and UPROPERTY to use the property editor module and generate one of the
@@ -35,7 +35,7 @@ public:
 
 #if USE_USD_SDK
 
-class SMyUsdIntegrationsPanelRow : public SMultiColumnTableRow<TSharedPtr<UE::FMyUsdAttribute>>
+class SMyUsdIntegrationsPanelRow : public SMultiColumnTableRow<TSharedPtr<UE::FUsdAttribute>>
 {
 public:
 	SLATE_BEGIN_ARGS(SMyUsdIntegrationsPanelRow)
@@ -44,18 +44,18 @@ public:
 	SLATE_END_ARGS()
 
 public:
-	void Construct(const FArguments& InArgs, TSharedPtr<UE::FMyUsdAttribute> InAttr, const TSharedRef<STableViewBase>& OwnerTable);
+	void Construct(const FArguments& InArgs, TSharedPtr<UE::FUsdAttribute> InAttr, const TSharedRef<STableViewBase>& OwnerTable);
 
 	virtual TSharedRef<SWidget> GenerateWidgetForColumn(const FName& ColumnName) override;
 
 private:
-	TSharedPtr<UE::FMyUsdAttribute> Attribute;
+	TSharedPtr<UE::FUsdAttribute> Attribute;
 };
 
 // We don't really need a list view here since we'll mostly always know exactly what attributes are going to
 // be displayed here beforehand, but doing so is a simple way of ensuring a consistent look between this panel
 // and the variants/references panels, that *do* need to be lists
-class SMyUsdIntegrationsPanel : public SListView<TSharedPtr<UE::FMyUsdAttribute>>
+class SMyUsdIntegrationsPanel : public SListView<TSharedPtr<UE::FUsdAttribute>>
 {
 	SLATE_BEGIN_ARGS(SMyUsdIntegrationsPanel)
 	{
@@ -64,10 +64,10 @@ class SMyUsdIntegrationsPanel : public SListView<TSharedPtr<UE::FMyUsdAttribute>
 
 public:
 	void Construct(const FArguments& InArgs);
-	void SetPrimPath(const UE::FMyUsdStageWeak& UsdStage, const TCHAR* PrimPath);
+	void SetPrimPath(const UE::FUsdStageWeak& UsdStage, const TCHAR* PrimPath);
 
 protected:
-	TSharedRef<ITableRow> OnGenerateRow(TSharedPtr<UE::FMyUsdAttribute> InAttr, const TSharedRef<STableViewBase>& OwnerTable);
+	TSharedRef<ITableRow> OnGenerateRow(TSharedPtr<UE::FUsdAttribute> InAttr, const TSharedRef<STableViewBase>& OwnerTable);
 
 private:
 	TSharedPtr<SHeaderRow> HeaderRowWidget;

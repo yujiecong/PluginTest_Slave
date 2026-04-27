@@ -36,7 +36,7 @@ class SMyUsdReferencesList : public SListView<TSharedPtr<FMyUsdReference>>
 
 public:
 	void Construct(const FArguments& InArgs);
-	void SetPrimPath(const UE::FMyUsdStageWeak& UsdStage, const TCHAR* PrimPath);
+	void SetPrimPath(const UE::FUsdStageWeak& UsdStage, const TCHAR* PrimPath);
 
 protected:
 	TSharedRef<ITableRow> OnGenerateRow(TSharedPtr<FMyUsdReference> InDisplayNode, const TSharedRef<STableViewBase>& OwnerTable);

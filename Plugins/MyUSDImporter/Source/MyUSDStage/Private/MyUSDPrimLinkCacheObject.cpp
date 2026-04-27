@@ -8,25 +8,25 @@
 
 UMyUsdPrimLinkCache::UMyUsdPrimLinkCache()
 {
-	Impl = MakePimpl<FMyUsdPrimLinkCache>();
+	Impl = MakePimpl<FUsdPrimLinkCache>();
 }
 
 void UMyUsdPrimLinkCache::Serialize(FArchive& Ar)
 {
 	TRACE_CPUPROFILER_EVENT_SCOPE(UMyUsdPrimLinkCache::Serialize);
 
-	if (FMyUsdPrimLinkCache* ImplPtr = Impl.Get())
+	if (FUsdPrimLinkCache* ImplPtr = Impl.Get())
 	{
 		ImplPtr->Serialize(Ar);
 	}
 }
 
-FMyUsdPrimLinkCache& UMyUsdPrimLinkCache::GetInner()
+FUsdPrimLinkCache& UMyUsdPrimLinkCache::GetInner()
 {
 	return *Impl;
 }
 
-const FMyUsdPrimLinkCache& UMyUsdPrimLinkCache::GetInner() const
+const FUsdPrimLinkCache& UMyUsdPrimLinkCache::GetInner() const
 {
 	return *Impl;
 }

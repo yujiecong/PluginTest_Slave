@@ -117,7 +117,7 @@ namespace UE::UsdGroomTranslatorUtils::Private
 		return {};
 	}
 
-	UObject* GetGroomBindingSourceMesh(const pxr::UsdPrim& Prim, const FMyUsdPrimLinkCache& PrimLinkCache, EGroomBindingMeshType BindingType)
+	UObject* GetGroomBindingSourceMesh(const pxr::UsdPrim& Prim, const FUsdPrimLinkCache& PrimLinkCache, EGroomBindingMeshType BindingType)
 	{
 		FScopedUsdAllocs Allocs;
 
@@ -153,8 +153,8 @@ namespace UsdGroomTranslatorUtils
 
 	void CreateGroomBindingAsset(
 		const pxr::UsdPrim& Prim,
-		UMyUsdAssetCache3& AssetCache,
-		FMyUsdPrimLinkCache& PrimLinkCache,
+		UUsdAssetCache3& AssetCache,
+		FUsdPrimLinkCache& PrimLinkCache,
 		EObjectFlags ObjectFlags,
 		bool bShareAssetsForIdenticalPrims
 	)
@@ -245,7 +245,7 @@ namespace UsdGroomTranslatorUtils
 		}
 	}
 
-	void SetGroomFromPrim(const pxr::UsdPrim& Prim, const FMyUsdPrimLinkCache& PrimLinkCache, USceneComponent* SceneComponent)
+	void SetGroomFromPrim(const pxr::UsdPrim& Prim, const FUsdPrimLinkCache& PrimLinkCache, USceneComponent* SceneComponent)
 	{
 		if (!SceneComponent)
 		{

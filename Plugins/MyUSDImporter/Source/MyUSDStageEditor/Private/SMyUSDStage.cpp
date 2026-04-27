@@ -51,12 +51,12 @@
 
 #if USE_USD_SDK
 
-namespace SMyUSDStageConstants
+namespace SUSDStageConstants
 {
 	static const FMargin SectionPadding(1.f, 1.f, 1.f, 1.f);
 }
 
-namespace SMyUSDStageImpl
+namespace SUSDStageImpl
 {
 #if PLATFORM_LINUX
 	struct FCaseSensitiveStringSetFuncs : BaseKeyFuncs<FString, FString>
@@ -207,7 +207,7 @@ namespace SMyUSDStageImpl
 				{
 					if (const AMyUsdStageActor* StageActor = Cast<const AMyUsdStageActor>(ActorTreeItem->Actor.Get()))
 					{
-						if (const UE::FMyUsdStage& Stage = StageActor->GetUsdStage())
+						if (const UE::FUsdStage& Stage = StageActor->GetUsdStage())
 						{
 							return Stage.GetRootLayer().GetDisplayName();
 						}
@@ -267,7 +267,7 @@ namespace SMyUSDStageImpl
 	private:
 		TWeakPtr<ISceneOutliner> WeakSceneOutliner;
 	};
-}	 // namespace SMyUSDStageImpl
+}	 // namespace SUSDStageImpl
 
 void SMyUsdStage::Construct(const FArguments& InArgs)
 {
@@ -280,12 +280,12 @@ void SMyUsdStage::Construct(const FArguments& InArgs)
 	EndPIEHandle = FEditorDelegates::EndPIE.AddSP(SharedThis(this), &SMyUsdStage::OnEndPIE);
 
 	IMyUsdStageModule& UsdStageModule = FModuleManager::Get().LoadModuleChecked<IMyUsdStageModule>("UsdStage");
-	ViewModel.UsdStageActor = UsdStageModule.FindUsdStageActor(IMyUsdClassesModule::GetCurrentWorld());
+	ViewModel.UsdStageActor = UsdStageModule.FindUsdStageActor(IUsdClassesModule::GetCurrentWorld());
 
 	bUpdatingViewportSelection = false;
 	bUpdatingPrimSelection = false;
 
-	UE::FMyUsdStage UsdStage;
+	UE::FUsdStage UsdStage;
 
 	OnEditorCloseHandle = GEditor->OnEditorClose().AddLambda(
 		[this]()
@@ -345,7 +345,7 @@ void SMyUsdStage::Construct(const FArguments& InArgs)
 
 			+SVerticalBox::Slot()
 			.FillHeight(1.f)
-			.Padding(SMyUSDStageConstants::SectionPadding)
+			.Padding(SUSDStageConstants::SectionPadding)
 			[
 				SNew(SSplitter)
 				.Orientation(Orient_Vertical)
@@ -429,7 +429,7 @@ void SMyUsdStage::SetSelectedLayers(const TArray<UE::FSdfLayer>& NewSelection) c
 	}
 }
 
-TArray<UE::FMyUsdPrim> SMyUsdStage::GetSelectedPrims() const
+TArray<UE::FUsdPrim> SMyUsdStage::GetSelectedPrims() const
 {
 	if (UsdStageTreeView)
 	{
@@ -439,7 +439,7 @@ TArray<UE::FMyUsdPrim> SMyUsdStage::GetSelectedPrims() const
 	return {};
 }
 
-void SMyUsdStage::SetSelectedPrims(const TArray<UE::FMyUsdPrim>& NewSelection) const
+void SMyUsdStage::SetSelectedPrims(const TArray<UE::FUsdPrim>& NewSelection) const
 {
 	if (UsdStageTreeView)
 	{
@@ -505,7 +505,7 @@ void SMyUsdStage::AttachToStageActor(AMyUsdStageActor* InUsdStageActor, bool bFl
 
 	if (InUsdStageActor)
 	{
-		UE::FMyUsdStage UsdStage = static_cast<const AMyUsdStageActor*>(InUsdStageActor)->GetUsdStage();
+		UE::FUsdStage UsdStage = static_cast<const AMyUsdStageActor*>(InUsdStageActor)->GetUsdStage();
 
 		if (this->UsdPrimInfoWidget && InUsdStageActor)
 		{
@@ -723,7 +723,7 @@ TSharedRef<SWidget> SMyUsdStage::MakeActorPickerMenuContent()
 			FCreateSceneOutlinerColumn::CreateLambda(
 				[](ISceneOutliner& InSceneOutliner)
 				{
-					return MakeShareable(new SMyUSDStageImpl::FStageNameOutlinerColumn(InSceneOutliner));
+					return MakeShareable(new SUSDStageImpl::FStageNameOutlinerColumn(InSceneOutliner));
 				}
 			),
 			bCanBeHidden,
@@ -736,7 +736,7 @@ TSharedRef<SWidget> SMyUsdStage::MakeActorPickerMenuContent()
 		InitOptions.bShowCreateNewFolder = false;
 		InitOptions.bFocusSearchBoxWhenOpened = true;
 		InitOptions.ColumnMap.Add(FSceneOutlinerBuiltInColumnTypes::Label(), ActorColumnInfo);
-		InitOptions.ColumnMap.Add(SMyUSDStageImpl::FStageNameOutlinerColumn::GetID(), StageColumnInfo);
+		InitOptions.ColumnMap.Add(SUSDStageImpl::FStageNameOutlinerColumn::GetID(), StageColumnInfo);
 		InitOptions.Filters->AddFilterPredicate<FActorTreeItem>(FActorTreeItem::FFilterPredicate::CreateLambda(
 			[](const AActor* Actor)
 			{
@@ -808,7 +808,7 @@ TSharedRef<SWidget> SMyUsdStage::MakeIsolateWarningButton()
 		{
 			if (const AMyUsdStageActor* StageActor = ViewModel.UsdStageActor.Get())
 			{
-				if (const UE::FMyUsdStage& CurrentStage = StageActor->GetUsdStage())
+				if (const UE::FUsdStage& CurrentStage = StageActor->GetUsdStage())
 				{
 					return FText::Format(
 						LOCTEXT("IsolateWarningButtonToolTip", "The USD Stage editor and the Unreal level are displaying an isolated stage with '{0}' as its root layer.\nPress this button to revert to displaying the entire composed stage."),
@@ -873,7 +873,7 @@ void SMyUsdStage::FillFileMenu(FMenuBuilder& MenuBuilder)
 					{
 						if (const AMyUsdStageActor* StageActor = ViewModel.UsdStageActor.Get())
 						{
-							if (UE::FMyUsdStage Stage = StageActor->GetUsdStage())
+							if (UE::FUsdStage Stage = StageActor->GetUsdStage())
 							{
 								return true;
 							}
@@ -904,7 +904,7 @@ void SMyUsdStage::FillFileMenu(FMenuBuilder& MenuBuilder)
 					{
 						if (const AMyUsdStageActor* StageActor = ViewModel.UsdStageActor.Get())
 						{
-							if (UE::FMyUsdStage Stage = StageActor->GetUsdStage())
+							if (UE::FUsdStage Stage = StageActor->GetUsdStage())
 							{
 								if (!Stage.GetRootLayer().IsAnonymous())
 								{
@@ -932,7 +932,7 @@ void SMyUsdStage::FillFileMenu(FMenuBuilder& MenuBuilder)
 					{
 						if (const AMyUsdStageActor* StageActor = ViewModel.UsdStageActor.Get())
 						{
-							if (UE::FMyUsdStage Stage = StageActor->GetUsdStage())
+							if (UE::FUsdStage Stage = StageActor->GetUsdStage())
 							{
 								return true;
 							}
@@ -993,7 +993,7 @@ void SMyUsdStage::FillActionsMenu(FMenuBuilder& MenuBuilder)
 					{
 						if (const AMyUsdStageActor* StageActor = ViewModel.UsdStageActor.Get())
 						{
-							if (UE::FMyUsdStage Stage = StageActor->GetUsdStage())
+							if (UE::FUsdStage Stage = StageActor->GetUsdStage())
 							{
 								return true;
 							}
@@ -1018,7 +1018,7 @@ void SMyUsdStage::FillActionsMenu(FMenuBuilder& MenuBuilder)
 					{
 						if (const AMyUsdStageActor* StageActor = ViewModel.UsdStageActor.Get())
 						{
-							if (UE::FMyUsdStage Stage = StageActor->GetUsdStage())
+							if (UE::FUsdStage Stage = StageActor->GetUsdStage())
 							{
 								return true;
 							}
@@ -1209,7 +1209,7 @@ void SMyUsdStage::FillExportSubMenu(FMenuBuilder& MenuBuilder)
 				{
 					if (const AMyUsdStageActor* StageActor = ViewModel.UsdStageActor.Get())
 					{
-						if (UE::FMyUsdStage Stage = StageActor->GetUsdStage())
+						if (UE::FUsdStage Stage = StageActor->GetUsdStage())
 						{
 							return true;
 						}
@@ -1239,7 +1239,7 @@ void SMyUsdStage::FillExportSubMenu(FMenuBuilder& MenuBuilder)
 				{
 					if (const AMyUsdStageActor* StageActor = ViewModel.UsdStageActor.Get())
 					{
-						if (UE::FMyUsdStage Stage = StageActor->GetUsdStage())
+						if (UE::FUsdStage Stage = StageActor->GetUsdStage())
 						{
 							return true;
 						}
@@ -1269,7 +1269,7 @@ void SMyUsdStage::FillExportSubMenu(FMenuBuilder& MenuBuilder)
 				{
 					if (const AMyUsdStageActor* StageActor = ViewModel.UsdStageActor.Get())
 					{
-						if (UE::FMyUsdStage Stage = StageActor->GetUsdStage())
+						if (UE::FUsdStage Stage = StageActor->GetUsdStage())
 						{
 							return true;
 						}
@@ -1387,7 +1387,7 @@ void SMyUsdStage::FillPayloadsSubMenu(FMenuBuilder& MenuBuilder)
 					{
 						if (!StageActor->GetUsdStage() || ViewModel.HasDefaultLoadRule())
 						{
-							return StageActor->InitialLoadSet == EMyUsdInitialLoadSet::LoadAll;
+							return StageActor->InitialLoadSet == EUsdInitialLoadSet::LoadAll;
 						}
 					}
 					return false;
@@ -1433,7 +1433,7 @@ void SMyUsdStage::FillPayloadsSubMenu(FMenuBuilder& MenuBuilder)
 					{
 						if (!StageActor->GetUsdStage() || ViewModel.HasDefaultLoadRule())
 						{
-							return StageActor->InitialLoadSet == EMyUsdInitialLoadSet::LoadNone;
+							return StageActor->InitialLoadSet == EUsdInitialLoadSet::LoadNone;
 						}
 					}
 					return false;
@@ -1447,7 +1447,7 @@ void SMyUsdStage::FillPayloadsSubMenu(FMenuBuilder& MenuBuilder)
 
 void SMyUsdStage::FillPurposesToLoadSubMenu(FMenuBuilder& MenuBuilder)
 {
-	auto AddPurposeEntry = [&](const EMyUsdPurpose& Purpose, const FText& Text)
+	auto AddPurposeEntry = [&](const EUsdPurpose& Purpose, const FText& Text)
 	{
 		MenuBuilder.AddMenuEntry(
 			Text,
@@ -1467,7 +1467,7 @@ void SMyUsdStage::FillPurposesToLoadSubMenu(FMenuBuilder& MenuBuilder)
 							// c.f. comment in SMyUsdStage::FillCollapsingSubMenu
 							TGuardValue<bool> MaintainSelectionGuard(bUpdatingViewportSelection, true);
 
-							StageActor->SetPurposesToLoad((int32)((EMyUsdPurpose)StageActor->PurposesToLoad ^ Purpose));
+							StageActor->SetPurposesToLoad((int32)((EUsdPurpose)StageActor->PurposesToLoad ^ Purpose));
 							if (StageActor->IsTemplate())
 							{
 								StageActor->SaveConfig();
@@ -1481,7 +1481,7 @@ void SMyUsdStage::FillPurposesToLoadSubMenu(FMenuBuilder& MenuBuilder)
 					{
 						if (AMyUsdStageActor* StageActor = GetStageActorOrCDO())
 						{
-							return EnumHasAllFlags((EMyUsdPurpose)StageActor->PurposesToLoad, Purpose);
+							return EnumHasAllFlags((EUsdPurpose)StageActor->PurposesToLoad, Purpose);
 						}
 						return false;
 					}
@@ -1492,9 +1492,9 @@ void SMyUsdStage::FillPurposesToLoadSubMenu(FMenuBuilder& MenuBuilder)
 		);
 	};
 
-	AddPurposeEntry(EMyUsdPurpose::Proxy, LOCTEXT("ProxyPurpose", "Proxy"));
-	AddPurposeEntry(EMyUsdPurpose::Render, LOCTEXT("RenderPurpose", "Render"));
-	AddPurposeEntry(EMyUsdPurpose::Guide, LOCTEXT("GuidePurpose", "Guide"));
+	AddPurposeEntry(EUsdPurpose::Proxy, LOCTEXT("ProxyPurpose", "Proxy"));
+	AddPurposeEntry(EUsdPurpose::Render, LOCTEXT("RenderPurpose", "Render"));
+	AddPurposeEntry(EUsdPurpose::Guide, LOCTEXT("GuidePurpose", "Guide"));
 }
 
 void SMyUsdStage::FillRenderContextSubMenu(FMenuBuilder& MenuBuilder)
@@ -1565,7 +1565,7 @@ void SMyUsdStage::FillMaterialPurposeSubMenu(FMenuBuilder& MenuBuilder)
 	};
 
 	// Add additional purposes from project settings
-	if (const UMyUsdProjectSettings* ProjectSettings = GetDefault<UMyUsdProjectSettings>())
+	if (const UUsdProjectSettings* ProjectSettings = GetDefault<UUsdProjectSettings>())
 	{
 		MaterialPurposes.Reserve(MaterialPurposes.Num() + ProjectSettings->AdditionalMaterialPurposes.Num());
 
@@ -1672,7 +1672,7 @@ void SMyUsdStage::FillMaterialPurposeSubMenu(FMenuBuilder& MenuBuilder)
 
 				if (bIsNew)
 				{
-					if (UMyUsdProjectSettings* ProjectSettings = GetMutableDefault<UMyUsdProjectSettings>())
+					if (UUsdProjectSettings* ProjectSettings = GetMutableDefault<UUsdProjectSettings>())
 					{
 						ProjectSettings->AdditionalMaterialPurposes.AddUnique(NewPurpose);
 						ProjectSettings->SaveConfig();
@@ -1704,9 +1704,9 @@ void SMyUsdStage::FillMaterialPurposeSubMenu(FMenuBuilder& MenuBuilder)
 
 void SMyUsdStage::FillRootMotionSubMenu(FMenuBuilder& MenuBuilder)
 {
-	auto AddRootMotionEntry = [&](const EMyUsdRootMotionHandling& HandlingStrategy, const FText& Text)
+	auto AddRootMotionEntry = [&](const EUsdRootMotionHandling& HandlingStrategy, const FText& Text)
 	{
-		UEnum* Enum = StaticEnum<EMyUsdRootMotionHandling>();
+		UEnum* Enum = StaticEnum<EUsdRootMotionHandling>();
 		FText ToolTip = Enum->GetToolTipTextByIndex(Enum->GetIndexByValue(static_cast<uint8>(HandlingStrategy)));
 
 		MenuBuilder.AddMenuEntry(
@@ -1752,16 +1752,16 @@ void SMyUsdStage::FillRootMotionSubMenu(FMenuBuilder& MenuBuilder)
 		);
 	};
 
-	AddRootMotionEntry(EMyUsdRootMotionHandling::NoAdditionalRootMotion, LOCTEXT("NoAdditionalRootMotionText", "No additional root motion"));
-	AddRootMotionEntry(EMyUsdRootMotionHandling::UseMotionFromSkelRoot, LOCTEXT("UseMotionFromSkelRootText", "Use motion from SkelRoot"));
-	AddRootMotionEntry(EMyUsdRootMotionHandling::UseMotionFromSkeleton, LOCTEXT("UseMotionFromSkeletonText", "Use motion from Skeleton"));
+	AddRootMotionEntry(EUsdRootMotionHandling::NoAdditionalRootMotion, LOCTEXT("NoAdditionalRootMotionText", "No additional root motion"));
+	AddRootMotionEntry(EUsdRootMotionHandling::UseMotionFromSkelRoot, LOCTEXT("UseMotionFromSkelRootText", "Use motion from SkelRoot"));
+	AddRootMotionEntry(EUsdRootMotionHandling::UseMotionFromSkeleton, LOCTEXT("UseMotionFromSkeletonText", "Use motion from Skeleton"));
 }
 
 void SMyUsdStage::FillFallbackCollisionTypeMenu(FMenuBuilder& MenuBuilder)
 {
-	auto AddFallbackCollisionTypeEntry = [&](const EMyUsdCollisionType& NewFallbackType, const FText& Text)
+	auto AddFallbackCollisionTypeEntry = [&](const EUsdCollisionType& NewFallbackType, const FText& Text)
 	{
-		UEnum* Enum = StaticEnum<EMyUsdCollisionType>();
+		UEnum* Enum = StaticEnum<EUsdCollisionType>();
 		FText ToolTip = Enum->GetToolTipTextByIndex(Enum->GetIndexByValue(static_cast<uint8>(NewFallbackType)));
 
 		MenuBuilder.AddMenuEntry(
@@ -1807,13 +1807,13 @@ void SMyUsdStage::FillFallbackCollisionTypeMenu(FMenuBuilder& MenuBuilder)
 		);
 	};
 
-	AddFallbackCollisionTypeEntry(EMyUsdCollisionType::None, LOCTEXT("CollisionNone", "None"));
-	AddFallbackCollisionTypeEntry(EMyUsdCollisionType::ConvexDecomposition, LOCTEXT("CollisionConvexDecomposition", "Convex decomposition"));
-	AddFallbackCollisionTypeEntry(EMyUsdCollisionType::ConvexHull, LOCTEXT("CollisionConvexHull", "Convex hull"));
-	AddFallbackCollisionTypeEntry(EMyUsdCollisionType::Sphere, LOCTEXT("CollisionSphere", "Sphere"));
-	AddFallbackCollisionTypeEntry(EMyUsdCollisionType::Cube, LOCTEXT("CollisionCube", "Cube"));
-	AddFallbackCollisionTypeEntry(EMyUsdCollisionType::MeshSimplification, LOCTEXT("CollisionMeshSimplification", "Mesh simplification"));
-	AddFallbackCollisionTypeEntry(EMyUsdCollisionType::Capsule, LOCTEXT("CollisionCapsule", "Capsule"));
+	AddFallbackCollisionTypeEntry(EUsdCollisionType::None, LOCTEXT("CollisionNone", "None"));
+	AddFallbackCollisionTypeEntry(EUsdCollisionType::ConvexDecomposition, LOCTEXT("CollisionConvexDecomposition", "Convex decomposition"));
+	AddFallbackCollisionTypeEntry(EUsdCollisionType::ConvexHull, LOCTEXT("CollisionConvexHull", "Convex hull"));
+	AddFallbackCollisionTypeEntry(EUsdCollisionType::Sphere, LOCTEXT("CollisionSphere", "Sphere"));
+	AddFallbackCollisionTypeEntry(EUsdCollisionType::Cube, LOCTEXT("CollisionCube", "Cube"));
+	AddFallbackCollisionTypeEntry(EUsdCollisionType::MeshSimplification, LOCTEXT("CollisionMeshSimplification", "Mesh simplification"));
+	AddFallbackCollisionTypeEntry(EUsdCollisionType::Capsule, LOCTEXT("CollisionCapsule", "Capsule"));
 }
 
 void SMyUsdStage::FillSubdivisionLevelSubMenu(FMenuBuilder& MenuBuilder)
@@ -1886,7 +1886,7 @@ void SMyUsdStage::FillMetadataSubMenu(FMenuBuilder& MenuBuilder)
 	DetailView->SetIsCustomRowVisibleDelegate(FIsCustomRowVisible::CreateLambda(
 		[](FName RowName, FName ParentName) -> bool
 		{
-			static const FName FilterPropertyName = GET_MEMBER_NAME_CHECKED(FMyUsdMetadataImportOptions, BlockedPrefixFilters);
+			static const FName FilterPropertyName = GET_MEMBER_NAME_CHECKED(FUsdMetadataImportOptions, BlockedPrefixFilters);
 			return RowName == FilterPropertyName;
 		}
 	));
@@ -2015,7 +2015,7 @@ void SMyUsdStage::FillCollapsingSubMenu(FMenuBuilder& MenuBuilder)
 		EUserInterfaceActionType::ToggleButton
 	);
 
-	auto AddKindToCollapseEntry = [&](const EMyUsdDefaultKind Kind, const FText& Text, FCanExecuteAction CanExecuteAction)
+	auto AddKindToCollapseEntry = [&](const EUsdDefaultKind Kind, const FText& Text, FCanExecuteAction CanExecuteAction)
 	{
 		MenuBuilder.AddMenuEntry(
 			Text,
@@ -2044,7 +2044,7 @@ void SMyUsdStage::FillCollapsingSubMenu(FMenuBuilder& MenuBuilder)
 							// (the collapsing root), which is not ideal.
 							TGuardValue<bool> MaintainSelectionGuard(bUpdatingViewportSelection, true);
 
-							StageActor->SetKindsToCollapse((int32)((EMyUsdDefaultKind)StageActor->KindsToCollapse ^ Kind));
+							StageActor->SetKindsToCollapse((int32)((EUsdDefaultKind)StageActor->KindsToCollapse ^ Kind));
 							if (StageActor->IsTemplate())
 							{
 								StageActor->SaveConfig();
@@ -2058,7 +2058,7 @@ void SMyUsdStage::FillCollapsingSubMenu(FMenuBuilder& MenuBuilder)
 					{
 						if (AMyUsdStageActor* StageActor = GetStageActorOrCDO())
 						{
-							return EnumHasAllFlags((EMyUsdDefaultKind)StageActor->KindsToCollapse, Kind);
+							return EnumHasAllFlags((EUsdDefaultKind)StageActor->KindsToCollapse, Kind);
 						}
 						return false;
 					}
@@ -2071,10 +2071,10 @@ void SMyUsdStage::FillCollapsingSubMenu(FMenuBuilder& MenuBuilder)
 
 	MenuBuilder.BeginSection("Kinds to collapse", LOCTEXT("KindsToCollapse", "Kinds to collapse"));
 
-	AddKindToCollapseEntry(EMyUsdDefaultKind::Model, LOCTEXT("ModelKind", "Model"), FCanExecuteAction{});
+	AddKindToCollapseEntry(EUsdDefaultKind::Model, LOCTEXT("ModelKind", "Model"), FCanExecuteAction{});
 
 	AddKindToCollapseEntry(
-		EMyUsdDefaultKind::Component,
+		EUsdDefaultKind::Component,
 		LOCTEXT("ModelComponent", "   Component"),
 		FCanExecuteAction::CreateLambda(
 			[this]()
@@ -2082,7 +2082,7 @@ void SMyUsdStage::FillCollapsingSubMenu(FMenuBuilder& MenuBuilder)
 				if (AMyUsdStageActor* StageActor = GetStageActorOrCDO())
 				{
 					// If we're collapsing all "model" kinds, the all "component"s should be collapsed anyway
-					if (!EnumHasAnyFlags((EMyUsdDefaultKind)StageActor->KindsToCollapse, EMyUsdDefaultKind::Model))
+					if (!EnumHasAnyFlags((EUsdDefaultKind)StageActor->KindsToCollapse, EUsdDefaultKind::Model))
 					{
 						return true;
 					}
@@ -2094,14 +2094,14 @@ void SMyUsdStage::FillCollapsingSubMenu(FMenuBuilder& MenuBuilder)
 	);
 
 	AddKindToCollapseEntry(
-		EMyUsdDefaultKind::Group,
+		EUsdDefaultKind::Group,
 		LOCTEXT("ModelGroup", "   Group"),
 		FCanExecuteAction::CreateLambda(
 			[this]()
 			{
 				if (AMyUsdStageActor* StageActor = GetStageActorOrCDO())
 				{
-					if (!EnumHasAnyFlags((EMyUsdDefaultKind)StageActor->KindsToCollapse, EMyUsdDefaultKind::Model))
+					if (!EnumHasAnyFlags((EUsdDefaultKind)StageActor->KindsToCollapse, EUsdDefaultKind::Model))
 					{
 						return true;
 					}
@@ -2113,15 +2113,15 @@ void SMyUsdStage::FillCollapsingSubMenu(FMenuBuilder& MenuBuilder)
 	);
 
 	AddKindToCollapseEntry(
-		EMyUsdDefaultKind::Assembly,
+		EUsdDefaultKind::Assembly,
 		LOCTEXT("ModelAssembly", "      Assembly"),
 		FCanExecuteAction::CreateLambda(
 			[this]()
 			{
 				if (AMyUsdStageActor* StageActor = GetStageActorOrCDO())
 				{
-					if (!EnumHasAnyFlags((EMyUsdDefaultKind)StageActor->KindsToCollapse, EMyUsdDefaultKind::Model)
-						&& !EnumHasAnyFlags((EMyUsdDefaultKind)StageActor->KindsToCollapse, EMyUsdDefaultKind::Group))
+					if (!EnumHasAnyFlags((EUsdDefaultKind)StageActor->KindsToCollapse, EUsdDefaultKind::Model)
+						&& !EnumHasAnyFlags((EUsdDefaultKind)StageActor->KindsToCollapse, EUsdDefaultKind::Group))
 					{
 						return true;
 					}
@@ -2132,7 +2132,7 @@ void SMyUsdStage::FillCollapsingSubMenu(FMenuBuilder& MenuBuilder)
 		)
 	);
 
-	AddKindToCollapseEntry(EMyUsdDefaultKind::Subcomponent, LOCTEXT("ModelSubcomponent", "Subcomponent"), FCanExecuteAction{});
+	AddKindToCollapseEntry(EUsdDefaultKind::Subcomponent, LOCTEXT("ModelSubcomponent", "Subcomponent"), FCanExecuteAction{});
 
 	MenuBuilder.EndSection();
 }
@@ -2207,7 +2207,7 @@ void SMyUsdStage::FillInterpolationTypeSubMenu(FMenuBuilder& MenuBuilder)
 						// c.f. comment in SMyUsdStage::FillCollapsingSubMenu
 						TGuardValue<bool> MaintainSelectionGuard(bUpdatingViewportSelection, true);
 
-						StageActor->SetInterpolationType(EMyUsdInterpolationType::Linear);
+						StageActor->SetInterpolationType(EUsdInterpolationType::Linear);
 						if (StageActor->IsTemplate())
 						{
 							StageActor->SaveConfig();
@@ -2221,7 +2221,7 @@ void SMyUsdStage::FillInterpolationTypeSubMenu(FMenuBuilder& MenuBuilder)
 				{
 					if (AMyUsdStageActor* StageActor = GetStageActorOrCDO())
 					{
-						return StageActor->InterpolationType == EMyUsdInterpolationType::Linear;
+						return StageActor->InterpolationType == EUsdInterpolationType::Linear;
 					}
 					return false;
 				}
@@ -2253,7 +2253,7 @@ void SMyUsdStage::FillInterpolationTypeSubMenu(FMenuBuilder& MenuBuilder)
 						// c.f. comment in SMyUsdStage::FillCollapsingSubMenu
 						TGuardValue<bool> MaintainSelectionGuard(bUpdatingViewportSelection, true);
 
-						StageActor->SetInterpolationType(EMyUsdInterpolationType::Held);
+						StageActor->SetInterpolationType(EUsdInterpolationType::Held);
 						if (StageActor->IsTemplate())
 						{
 							StageActor->SaveConfig();
@@ -2267,7 +2267,7 @@ void SMyUsdStage::FillInterpolationTypeSubMenu(FMenuBuilder& MenuBuilder)
 				{
 					if (AMyUsdStageActor* StageActor = GetStageActorOrCDO())
 					{
-						return StageActor->InterpolationType == EMyUsdInterpolationType::Held;
+						return StageActor->InterpolationType == EUsdInterpolationType::Held;
 					}
 					return false;
 				}
@@ -2445,7 +2445,7 @@ void SMyUsdStage::FillSelectionSubMenu(FMenuBuilder& MenuBuilder)
 						{
 							TGuardValue<bool> SelectionLoopGuard(bUpdatingViewportSelection, true);
 
-							SMyUSDStageImpl::SelectGeneratedComponentsAndActors(
+							SUSDStageImpl::SelectGeneratedComponentsAndActors(
 								ViewModel.UsdStageActor.Get(),
 								UsdStageTreeView->GetSelectedPrimPaths()
 							);
@@ -2523,7 +2523,7 @@ void SMyUsdStage::FileSave(const FString& FilePath)
 		return;
 	}
 
-	UE::FMyUsdStage UsdStage = static_cast<const AMyUsdStageActor*>(StageActor)->GetUsdStage();
+	UE::FUsdStage UsdStage = static_cast<const AMyUsdStageActor*>(StageActor)->GetUsdStage();
 	if (!UsdStage)
 	{
 		return;
@@ -2563,7 +2563,7 @@ void SMyUsdStage::FileExportAllLayers(const FString& OutputDirectory)
 		return;
 	}
 
-	UE::FMyUsdStage UsdStage = StageActor->GetUsdStage();
+	UE::FUsdStage UsdStage = StageActor->GetUsdStage();
 	if (!UsdStage)
 	{
 		return;
@@ -2604,7 +2604,7 @@ void SMyUsdStage::FileExportAllLayers(const FString& OutputDirectory)
 	// Manually load any layer that is referenced by any of the stage's layers, but not currently loaded.
 	// This can happen if e.g. an unselected variant appends a reference or has a payload.
 	// We will need to actually load these as opposed to just copy-paste the files as we may need to update references/paths
-	SMyUSDStageImpl::AppendAllExternalReferences(LayerStack);
+	SUSDStageImpl::AppendAllExternalReferences(LayerStack);
 
 	// Discard session layers, but keep the root layer if it's anonymous (temp stage)
 	for (int32 Index = LayerStack.Num() - 1; Index >= 0; --Index)
@@ -2665,7 +2665,7 @@ void SMyUsdStage::FileExportAllLayers(const FString& OutputDirectory)
 			// Update references to assets (e.g. textures) so that they're absolute and also work from the new file
 			UsdUtils::ConvertAssetRelativePathsToAbsolute(OutputLayer, Layer);
 
-			// Remap references to layers so that they point at the other newly saved files. Note that SMyUSDStageImpl::AppendAllExternalReferences
+			// Remap references to layers so that they point at the other newly saved files. Note that SUSDStageImpl::AppendAllExternalReferences
 			// will have collected all external references already, so OldPathToSavedPath should have entries for all references we'll find
 			for (const FString& AssetDependency : OutputLayer.GetCompositionAssetDependencies())
 			{
@@ -2693,7 +2693,7 @@ void SMyUsdStage::FileExportAllLayers(const FString& OutputDirectory)
 		bool bAutomated = false;
 		double ElapsedSeconds = FPlatformTime::ToSeconds64(FPlatformTime::Cycles64() - StartTime);
 		FString Extension = FPaths::GetExtension(UsdStage.GetRootLayer().GetDisplayName());
-		IMyUsdClassesModule::SendAnalytics(
+		IUsdClassesModule::SendAnalytics(
 			MoveTemp(EventAttributes),
 			TEXT("ExportStageLayers"),
 			bAutomated,
@@ -2712,7 +2712,7 @@ void SMyUsdStage::FileExportFlattenedStage(const FString& OutputLayer)
 		return;
 	}
 
-	UE::FMyUsdStage UsdStage = StageActor->GetUsdStage();
+	UE::FUsdStage UsdStage = StageActor->GetUsdStage();
 	if (!UsdStage)
 	{
 		return;
@@ -2747,7 +2747,7 @@ void SMyUsdStage::FileExportFlattenedStage(const FString& OutputLayer)
 		bool bAutomated = false;
 		double ElapsedSeconds = FPlatformTime::ToSeconds64(FPlatformTime::Cycles64() - StartTime);
 		FString Extension = FPaths::GetExtension(OutputLayerCopy);
-		IMyUsdClassesModule::SendAnalytics(
+		IUsdClassesModule::SendAnalytics(
 			{},
 			TEXT("ExportStageFlattened"),
 			bAutomated,
@@ -2766,7 +2766,7 @@ void SMyUsdStage::FileExportFlattenedLayerStack(const FString& OutputLayer)
 		return;
 	}
 
-	UE::FMyUsdStage UsdStage = StageActor->GetUsdStage();
+	UE::FUsdStage UsdStage = StageActor->GetUsdStage();
 	if (!UsdStage)
 	{
 		return;
@@ -2789,7 +2789,7 @@ void SMyUsdStage::FileExportFlattenedLayerStack(const FString& OutputLayer)
 	FScopedUsdMessageLog ScopedLog;
 
 	UE::FSdfLayer FlattenedLayer = UsdUtils::FlattenLayerStack(UsdStage);
-	if (FMyUsdLogManager::HasAccumulatedErrors())
+	if (FUsdLogManager::HasAccumulatedErrors())
 	{
 		return;
 	}
@@ -2809,7 +2809,7 @@ void SMyUsdStage::FileExportFlattenedLayerStack(const FString& OutputLayer)
 		bool bAutomated = false;
 		double ElapsedSeconds = FPlatformTime::ToSeconds64(FPlatformTime::Cycles64() - StartTime);
 		FString Extension = FPaths::GetExtension(OutputLayerCopy);
-		IMyUsdClassesModule::SendAnalytics(
+		IUsdClassesModule::SendAnalytics(
 			{},
 			TEXT("ExportStageFlattenedLayerStack"),
 			bAutomated,
@@ -2967,7 +2967,7 @@ void SMyUsdStage::OnPrimSelectionChanged(const TArray<FString>& PrimPaths)
 		return;
 	}
 
-	UE::FMyUsdStage UsdStage = static_cast<const AMyUsdStageActor*>(StageActor)->GetUsdStage();
+	UE::FUsdStage UsdStage = static_cast<const AMyUsdStageActor*>(StageActor)->GetUsdStage();
 	SelectedPrimPath = PrimPaths.Num() == 1 ? PrimPaths[0] : TEXT("");
 
 	if (UsdPrimInfoWidget)
@@ -2991,7 +2991,7 @@ void SMyUsdStage::OnPrimSelectionChanged(const TArray<FString>& PrimPaths)
 	{
 		TGuardValue<bool> SelectionLoopGuard(bUpdatingViewportSelection, true);
 
-		SMyUSDStageImpl::SelectGeneratedComponentsAndActors(StageActor, PrimPaths);
+		SUSDStageImpl::SelectGeneratedComponentsAndActors(StageActor, PrimPaths);
 	}
 }
 
@@ -3076,8 +3076,8 @@ void SMyUsdStage::OnSlateTick(float Time)
 		// May be nullptr, but that is ok. Its how the widgets are reset
 		AMyUsdStageActor* StageActor = ViewModel.UsdStageActor.Get();
 
-		UE::FMyUsdStageWeak IsolatedStage = StageActor ? StageActor->GetIsolatedUsdStage() : UE::FMyUsdStage{};
-		UE::FMyUsdStageWeak BaseStage = StageActor ? StageActor->GetBaseUsdStage() : UE::FMyUsdStage{};
+		UE::FUsdStageWeak IsolatedStage = StageActor ? StageActor->GetIsolatedUsdStage() : UE::FUsdStage{};
+		UE::FUsdStageWeak BaseStage = StageActor ? StageActor->GetBaseUsdStage() : UE::FUsdStage{};
 
 		// The layers tree view always needs to receive both the full stage as well as the isolated
 		const bool bResync = LayersTreeViewState == SMyUsdLayersTreeView::ELayersTreeViewState::ResyncNeeded;
@@ -3376,7 +3376,7 @@ void SMyUsdStage::OnSubdivisionLevelValueCommitted(int32 InValue, ETextCommit::T
 	}
 }
 
-UE::FMyUsdStageWeak SMyUsdStage::GetCurrentStage() const
+UE::FUsdStageWeak SMyUsdStage::GetCurrentStage() const
 {
 	const AMyUsdStageActor* StageActor = ViewModel.UsdStageActor.Get();
 	if (StageActor)
@@ -3384,7 +3384,7 @@ UE::FMyUsdStageWeak SMyUsdStage::GetCurrentStage() const
 		return StageActor->GetUsdStage();
 	}
 
-	return UE::FMyUsdStageWeak{};
+	return UE::FUsdStageWeak{};
 }
 
 AMyUsdStageActor* SMyUsdStage::GetStageActorOrCDO() const

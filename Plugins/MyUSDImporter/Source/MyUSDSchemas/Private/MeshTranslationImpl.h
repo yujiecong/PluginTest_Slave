@@ -15,28 +15,28 @@ PXR_NAMESPACE_OPEN_SCOPE
 	class UsdPrim;
 PXR_NAMESPACE_CLOSE_SCOPE
 
-class FMyUsdInfoCache;
-class FMyUsdPrimLinkCache;
+class FUsdInfoCache;
+class FUsdPrimLinkCache;
 class UMaterialInterface;
 class UMeshComponent;
-class UMyUsdAssetCache3;
-class UMyUsdMeshAssetUserData;
-struct FMyUsdSchemaTranslationContext;
+class UUsdAssetCache3;
+class UUsdMeshAssetUserData;
+struct FUsdSchemaTranslationContext;
 namespace UsdUtils
 {
-	struct FMyUsdPrimMaterialSlot;
-	struct FMyUsdPrimMaterialAssignmentInfo;
+	struct FUsdPrimMaterialSlot;
+	struct FUsdPrimMaterialAssignmentInfo;
 }
 
 /** Implementation that can be shared between the Skeleton translator and GeomMesh translators */
 namespace MeshTranslationImpl
 {
 	/** Resolves the material assignments in AssignmentInfo, returning an UMaterialInterface for each material slot */
-	TMap<const UsdUtils::FMyUsdPrimMaterialSlot*, UMaterialInterface*> ResolveMaterialAssignmentInfo(
+	TMap<const UsdUtils::FUsdPrimMaterialSlot*, UMaterialInterface*> ResolveMaterialAssignmentInfo(
 		const pxr::UsdPrim& UsdPrim,
-		const TArray<UsdUtils::FMyUsdPrimMaterialAssignmentInfo>& AssignmentInfo,
-		UMyUsdAssetCache3& AssetCache,
-		FMyUsdPrimLinkCache& PrimLinkCache,
+		const TArray<UsdUtils::FUsdPrimMaterialAssignmentInfo>& AssignmentInfo,
+		UUsdAssetCache3& AssetCache,
+		FUsdPrimLinkCache& PrimLinkCache,
 		EObjectFlags Flags,
 		bool bShareAssetsForIdenticalPrims
 	);
@@ -49,12 +49,12 @@ namespace MeshTranslationImpl
 		const pxr::UsdPrim& Prim,
 		const TArray<UMaterialInterface*>& ExistingAssignments,
 		UMeshComponent& MeshComponent,
-		FMyUsdSchemaTranslationContext& Context
+		FUsdSchemaTranslationContext& Context
 	);
 
 	void RecordSourcePrimsForMaterialSlots(
-		const TArray<UsdUtils::FMyUsdPrimMaterialAssignmentInfo>& LODIndexToMaterialInfo,
-		UMyUsdMeshAssetUserData* UserData
+		const TArray<UsdUtils::FUsdPrimMaterialAssignmentInfo>& LODIndexToMaterialInfo,
+		UUsdMeshAssetUserData* UserData
 	);
 }	 // namespace MeshTranslationImpl
 

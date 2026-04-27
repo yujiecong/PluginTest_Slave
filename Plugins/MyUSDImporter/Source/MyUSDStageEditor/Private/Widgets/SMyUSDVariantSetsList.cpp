@@ -120,7 +120,7 @@ TSharedRef<ITableRow> SVariantsList::OnGenerateRow(TSharedPtr<FMyUsdVariantSetVi
 	return SNew(SMyUsdVariantRow, InDisplayNode, OwnerTable).OnVariantSelectionChanged(this, &SVariantsList::OnVariantSelectionChanged);
 }
 
-void SVariantsList::SetPrimPath(const UE::FMyUsdStageWeak& UsdStage, const TCHAR* InPrimPath)
+void SVariantsList::SetPrimPath(const UE::FUsdStageWeak& UsdStage, const TCHAR* InPrimPath)
 {
 	ViewModel.UpdateVariantSets(UsdStage, InPrimPath);
 

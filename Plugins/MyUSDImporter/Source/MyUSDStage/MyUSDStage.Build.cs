@@ -13,7 +13,7 @@ namespace UnrealBuildTool.Rules
 			PublicDependencyModuleNames.AddRange(
 				new string[]
 				{
-					"MyUSDSchemas" // Has to be a public dependency because the stage actor has an FMyUsdInfoCache member
+					"MyUSDSchemas" // Has to be a public dependency because the stage actor has an FUsdInfoCache member
 				}
 			);
 

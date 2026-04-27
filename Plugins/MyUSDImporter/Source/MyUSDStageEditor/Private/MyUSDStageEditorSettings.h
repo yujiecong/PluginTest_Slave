@@ -12,7 +12,7 @@ class UMyUsdStageEditorSettings : public UObject
 	GENERATED_BODY()
 
 public:
-	/** Whether our prim selection in SMyUSDStageTreeView is kept synchronized with the viewport selection */
+	/** Whether our prim selection in SUSDStageTreeView is kept synchronized with the viewport selection */
 	UPROPERTY(config, EditAnywhere, Category = USD)
 	bool bSelectionSynced = true;
 

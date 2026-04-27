@@ -10,7 +10,7 @@
 #include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
 
-#include UE_INLINE_GENERATED_CPP_BY_NAME(MyUSDStageEditorBlueprintLibrary)
+#include UE_INLINE_GENERATED_CPP_BY_NAME(USDStageEditorBlueprintLibrary)
 
 bool UMyUsdStageEditorBlueprintLibrary::OpenStageEditor()
 {
@@ -73,12 +73,12 @@ void UMyUsdStageEditorBlueprintLibrary::SetSelectedLayerIdentifiers(const TArray
 TArray<FString> UMyUsdStageEditorBlueprintLibrary::GetSelectedPrimPaths()
 {
 	IMyUsdStageEditorModule& StageEditorModule = FModuleManager::GetModuleChecked<IMyUsdStageEditorModule>("MyUSDStageEditor");
-	TArray<UE::FMyUsdPrim> Prims = StageEditorModule.GetSelectedPrims();
+	TArray<UE::FUsdPrim> Prims = StageEditorModule.GetSelectedPrims();
 
 	TArray<FString> PrimPaths;
 	PrimPaths.Reserve(Prims.Num());
 
-	for (const UE::FMyUsdPrim& Prim : Prims)
+	for (const UE::FUsdPrim& Prim : Prims)
 	{
 		PrimPaths.Add(Prim.GetPrimPath().GetString());
 	}
@@ -95,18 +95,18 @@ void UMyUsdStageEditorBlueprintLibrary::SetSelectedPrimPaths(const TArray<FStrin
 		return;
 	}
 
-	UE::FMyUsdStage Stage = StageActor->GetUsdStage();
+	UE::FUsdStage Stage = StageActor->GetUsdStage();
 	if (!Stage)
 	{
 		return;
 	}
 
-	TArray<UE::FMyUsdPrim> Prims;
+	TArray<UE::FUsdPrim> Prims;
 	Prims.Reserve(NewSelection.Num());
 
 	for (const FString& PrimPath : NewSelection)
 	{
-		if (UE::FMyUsdPrim SelectedPrim = Stage.GetPrimAtPath(UE::FSdfPath{*PrimPath}))
+		if (UE::FUsdPrim SelectedPrim = Stage.GetPrimAtPath(UE::FSdfPath{*PrimPath}))
 		{
 			Prims.Add(SelectedPrim);
 		}

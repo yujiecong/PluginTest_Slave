@@ -13,8 +13,8 @@
 
 #define UE_API MYUSDSTAGEEDITORVIEWMODELS_API
 
-using FMyUsdPrimViewModelRef = TSharedRef<class FMyUsdPrimViewModel>;
-using FMyUsdPrimViewModelPtr = TSharedPtr<class FMyUsdPrimViewModel>;
+using FUsdPrimViewModelRef = TSharedRef<class FMyUsdPrimViewModel>;
+using FUsdPrimViewModelPtr = TSharedPtr<class FMyUsdPrimViewModel>;
 
 class FMyUsdPrimModel : public TSharedFromThis<FMyUsdPrimModel>
 {
@@ -55,9 +55,9 @@ public:
 class FMyUsdPrimViewModel : public IMyUsdTreeViewItem
 {
 public:
-	UE_API FMyUsdPrimViewModel(FMyUsdPrimViewModel* InParentItem, const UE::FMyUsdStageWeak& InUsdStage, const UE::FMyUsdPrim& InPrim = {});
+	UE_API FMyUsdPrimViewModel(FMyUsdPrimViewModel* InParentItem, const UE::FUsdStageWeak& InUsdStage, const UE::FUsdPrim& InPrim = {});
 
-	UE_API TArray<FMyUsdPrimViewModelRef>& UpdateChildren();
+	UE_API TArray<FUsdPrimViewModelRef>& UpdateChildren();
 
 	UE_API void SetIsExpanded(bool bNewIsExpanded);
 	UE_API bool ShouldGenerateChildren() const;
@@ -92,11 +92,11 @@ public:
 	UE_API void ClearPayloads();
 
 public:
-	UE::FMyUsdStageWeak UsdStage;
-	UE::FMyUsdPrim UsdPrim;
+	UE::FUsdStageWeak UsdStage;
+	UE::FUsdPrim UsdPrim;
 
 	FMyUsdPrimViewModel* ParentItem;
-	TArray<FMyUsdPrimViewModelRef> Children;
+	TArray<FUsdPrimViewModelRef> Children;
 
 	TSharedRef<FMyUsdPrimModel> RowData;	  // Data model
 

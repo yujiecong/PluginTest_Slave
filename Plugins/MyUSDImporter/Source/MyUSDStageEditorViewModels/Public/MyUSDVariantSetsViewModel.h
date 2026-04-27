@@ -29,10 +29,10 @@ private:
 class FMyUsdVariantSetsViewModel
 {
 public:
-	UE_API void UpdateVariantSets(const UE::FMyUsdStageWeak& InUsdStage, const TCHAR* PrimPath);
+	UE_API void UpdateVariantSets(const UE::FUsdStageWeak& InUsdStage, const TCHAR* PrimPath);
 
 public:
-	UE::FMyUsdStageWeak UsdStage;
+	UE::FUsdStageWeak UsdStage;
 	FString PrimPath;
 
 	TArray<TSharedPtr<FMyUsdVariantSetViewModel>> VariantSets;

@@ -9,7 +9,7 @@
 #include "UsdWrappers/MyUsdPrim.h"
 #include "UsdWrappers/MyUsdStage.h"
 
-void FMyUsdIntegrationsViewModel::UpdateAttributes(const UE::FMyUsdStageWeak& InUsdStage, const TCHAR* InPrimPath)
+void FMyUsdIntegrationsViewModel::UpdateAttributes(const UE::FUsdStageWeak& InUsdStage, const TCHAR* InPrimPath)
 {
 #if USE_USD_SDK
 	UsdStage = InUsdStage;
@@ -49,7 +49,7 @@ void FMyUsdIntegrationsViewModel::UpdateAttributes(const UE::FMyUsdStageWeak& In
 		}
 	};
 
-	if (UE::FMyUsdPrim Prim = InUsdStage.GetPrimAtPath(UE::FSdfPath{InPrimPath}))
+	if (UE::FUsdPrim Prim = InUsdStage.GetPrimAtPath(UE::FSdfPath{InPrimPath}))
 	{
 		if (!Prim.IsPseudoRoot())
 		{
@@ -62,9 +62,9 @@ void FMyUsdIntegrationsViewModel::UpdateAttributes(const UE::FMyUsdStageWeak& In
 
 			for (const FString& AttributeName : AttributeNames)
 			{
-				if (UE::FMyUsdAttribute Attr = Prim.GetAttribute(*AttributeName))
+				if (UE::FUsdAttribute Attr = Prim.GetAttribute(*AttributeName))
 				{
-					Attributes.Add(MakeShared<UE::FMyUsdAttribute>(Attr));
+					Attributes.Add(MakeShared<UE::FUsdAttribute>(Attr));
 				}
 			}
 		}

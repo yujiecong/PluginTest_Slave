@@ -21,7 +21,7 @@ class UAnimSequenceExporterUSDOptions : public UObject
 public:
 	/** Export options to use for the layer where the animation is emitted */
 	UPROPERTY(EditAnywhere, config, BlueprintReadWrite, Category = "Stage options", meta = (ShowOnlyInnerProperties))
-	FMyUsdStageOptions StageOptions;
+	FUsdStageOptions StageOptions;
 
 	/** Whether to also export the skeletal mesh data of the preview mesh */
 	UPROPERTY(EditAnywhere, config, BlueprintReadWrite, Category = "Mesh options")

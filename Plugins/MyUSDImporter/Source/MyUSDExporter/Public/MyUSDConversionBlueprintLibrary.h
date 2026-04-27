@@ -17,7 +17,7 @@ class AInstancedFoliageActor;
 class UFoliageType;
 class ULevel;
 class ULevelExporterUSDOptions;
-class UMyUsdAssetUserData;
+class UUsdAssetUserData;
 struct FMatrix2D;
 struct FMatrix3D;
 
@@ -242,7 +242,7 @@ public:
 	/**
 	 * Removes all the prim specs for Prim on the given Layer.
 	 *
-	 * This function is useful in case the prim is inside a variant set: In that case, just calling FMyUsdStage::RemovePrim()
+	 * This function is useful in case the prim is inside a variant set: In that case, just calling FUsdStage::RemovePrim()
 	 * will attempt to remove the "/Root/Example/Child", which wouldn't remove the "/Root{Varset=Var}Example/Child" spec,
 	 * meaning the prim may still be left on the stage. Note that it's even possible to have both of those specs at the same time:
 	 * for example when we have a prim inside a variant set, but outside of it we have overrides to the same prim. This function
@@ -304,7 +304,7 @@ public:
 
 	/**
 	 * Duplicates all provided Prims one-by-one, performing the requested DuplicateType.
-	 * See the documentation on EMyUsdDuplicateType for the different operation types.
+	 * See the documentation on EUsdDuplicateType for the different operation types.
 	 *
 	 * The duplicated prims may be renamed in order to have valid names for the target location, which is why this
 	 * function returns the pasted prim paths.
@@ -322,20 +322,20 @@ public:
 	static UE_API TArray<FString> DuplicatePrims(
 		const FString& StageRootLayer,
 		const TArray<FString>& PrimPaths,
-		EMyUsdDuplicateType DuplicateType,
+		EUsdDuplicateType DuplicateType,
 		const FString& TargetLayer
 	);
 
-	/* Retrieve the first instance of UMyUsdAssetUserData contained on the Object, if any */
+	/* Retrieve the first instance of UUsdAssetUserData contained on the Object, if any */
 	UFUNCTION(BlueprintCallable, Category = "USD|Metadata utils")
-	static UE_API UMyUsdAssetUserData* GetUsdAssetUserData(UObject* Object);
+	static UE_API UUsdAssetUserData* GetUsdAssetUserData(UObject* Object);
 
 	/*
-	 * Sets AssetUserData as the single UMyUsdAssetUserData on the Object, overwriting an existing one if encountered.
+	 * Sets AssetUserData as the single UUsdAssetUserData on the Object, overwriting an existing one if encountered.
 	 * Returns true if it managed to add AssetUserData to Object.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "USD|Metadata utils")
-	static UE_API bool SetUsdAssetUserData(UObject* Object, UMyUsdAssetUserData* AssetUserData);
+	static UE_API bool SetUsdAssetUserData(UObject* Object, UUsdAssetUserData* AssetUserData);
 
 	/*
 	 * Utilities that make it easier to get/set metadata fields without having to manipulate the nested struct instances directly.
@@ -354,7 +354,7 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "USD|Metadata utils")
 	static UE_API bool SetMetadataField(
-		UMyUsdAssetUserData* AssetUserData,
+		UUsdAssetUserData* AssetUserData,
 		const FString& Key,
 		const FString& Value,
 		const FString& ValueTypeName,
@@ -364,7 +364,7 @@ public:
 	);
 	UFUNCTION(BlueprintCallable, Category = "USD|Metadata utils")
 	static UE_API bool ClearMetadataField(
-		UMyUsdAssetUserData* AssetUserData,
+		UUsdAssetUserData* AssetUserData,
 		const FString& Key,
 		const FString& StageIdentifier = "",
 		const FString& PrimPath = "",
@@ -372,14 +372,14 @@ public:
 	);
 	UFUNCTION(BlueprintCallable, Category = "USD|Metadata utils")
 	static UE_API bool HasMetadataField(
-		UMyUsdAssetUserData* AssetUserData,
+		UUsdAssetUserData* AssetUserData,
 		const FString& Key,
 		const FString& StageIdentifier = "",
 		const FString& PrimPath = ""
 	);
 	UFUNCTION(BlueprintCallable, Category = "USD|Metadata utils")
-	static UE_API FMyUsdMetadataValue GetMetadataField(
-		UMyUsdAssetUserData* AssetUserData,
+	static UE_API FUsdMetadataValue GetMetadataField(
+		UUsdAssetUserData* AssetUserData,
 		const FString& Key,
 		const FString& StageIdentifier = "",
 		const FString& PrimPath = ""

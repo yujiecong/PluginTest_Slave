@@ -10,9 +10,9 @@
 
 #define UE_API MYUSDSTAGEIMPORTER_API
 
-using FMyUsdPrimPreviewModelViewRef = TSharedRef<struct FMyUsdPrimPreviewModelView>;
-using FMyUsdPrimPreviewModelViewPtr = TSharedPtr<struct FMyUsdPrimPreviewModelView>;
-using FMyUsdPrimPreviewModelViewWeak = TWeakPtr<struct FMyUsdPrimPreviewModelView>;
+using FUsdPrimPreviewModelViewRef = TSharedRef<struct FMyUsdPrimPreviewModelView>;
+using FUsdPrimPreviewModelViewPtr = TSharedPtr<struct FMyUsdPrimPreviewModelView>;
+using FUsdPrimPreviewModelViewWeak = TWeakPtr<struct FMyUsdPrimPreviewModelView>;
 
 struct FMyUsdPrimPreviewModel
 {
@@ -41,11 +41,11 @@ struct FMyUsdPrimPreviewModelView : public IMyUsdTreeViewItem
 {
 	int32 ModelIndex = INDEX_NONE;
 
-	FMyUsdPrimPreviewModelViewWeak Parent;
-	TArray<FMyUsdPrimPreviewModelViewRef> Children;
+	FUsdPrimPreviewModelViewWeak Parent;
+	TArray<FUsdPrimPreviewModelViewRef> Children;
 };
 
-class SMyUsdStagePreviewTree : public SMyUsdTreeView<FMyUsdPrimPreviewModelViewRef>
+class SMyUsdStagePreviewTree : public SMyUsdTreeView<FUsdPrimPreviewModelViewRef>
 {
 public:
 	SLATE_BEGIN_ARGS(SMyUsdStagePreviewTree)
@@ -53,7 +53,7 @@ public:
 	}
 	SLATE_END_ARGS()
 
-	UE_API void Construct(const FArguments& InArgs, const UE::FMyUsdStage& InStage);
+	UE_API void Construct(const FArguments& InArgs, const UE::FUsdStage& InStage);
 
 	UE_API TArray<FString> GetSelectedFullPrimPaths() const;
 
@@ -72,25 +72,25 @@ public:
 		return ItemModels[ModelIndex];
 	}
 
-	UE_API void CheckItemsRecursively(const TArray<FMyUsdPrimPreviewModelViewRef>& Items, bool bCheck);
-	UE_API void ExpandItemsRecursively(const TArray<FMyUsdPrimPreviewModelViewRef>& Items, bool bExpand);
+	UE_API void CheckItemsRecursively(const TArray<FUsdPrimPreviewModelViewRef>& Items, bool bCheck);
+	UE_API void ExpandItemsRecursively(const TArray<FUsdPrimPreviewModelViewRef>& Items, bool bExpand);
 
 private:
 	// Begin SMyUsdTreeView interface
-	UE_API virtual TSharedRef<ITableRow> OnGenerateRow(FMyUsdPrimPreviewModelViewRef InDisplayNode, const TSharedRef<STableViewBase>& OwnerTable) override;
+	UE_API virtual TSharedRef<ITableRow> OnGenerateRow(FUsdPrimPreviewModelViewRef InDisplayNode, const TSharedRef<STableViewBase>& OwnerTable) override;
 
-	UE_API virtual void OnGetChildren(FMyUsdPrimPreviewModelViewRef InParent, TArray<FMyUsdPrimPreviewModelViewRef>& OutChildren) const override;
+	UE_API virtual void OnGetChildren(FUsdPrimPreviewModelViewRef InParent, TArray<FUsdPrimPreviewModelViewRef>& OutChildren) const override;
 
 	UE_API virtual void SetupColumns() override;
 	// End SMyUsdTreeView interface
 
 	// Returns all selected model views, excluding child views of any other selected view.
 	// i.e. if both a child and an ancestor view are selected, the returned array will contain only the ancestor.
-	UE_API TArray<FMyUsdPrimPreviewModelViewRef> GetAncestorSelectedViews();
+	UE_API TArray<FUsdPrimPreviewModelViewRef> GetAncestorSelectedViews();
 
 	UE_API TSharedPtr<SWidget> ConstructPrimContextMenu();
 
-	// Rebuilds our RootItems array of FMyUsdPrimPreviewModelViewRefs based on CurrentFilterText and the ItemModels that
+	// Rebuilds our RootItems array of FUsdPrimPreviewModelViewRefs based on CurrentFilterText and the ItemModels that
 	// pass the filter
 	UE_API void RebuildModelViews();
 
@@ -98,11 +98,11 @@ private:
 	FText CurrentFilterText;
 
 	TArray<FMyUsdPrimPreviewModel> ItemModels;
-	TMap<int32, FMyUsdPrimPreviewModelViewRef> ItemModelsToViews;
+	TMap<int32, FUsdPrimPreviewModelViewRef> ItemModelsToViews;
 };
 
 // Custom row so that we can fetch the owning SMyUsdStagePreviewTree from the columns
-class SMyUsdStagePreviewTreeRow : public SMyUsdTreeRow<FMyUsdPrimPreviewModelViewRef>
+class SMyUsdStagePreviewTreeRow : public SMyUsdTreeRow<FUsdPrimPreviewModelViewRef>
 {
 public:
 	SLATE_BEGIN_ARGS(SMyUsdStagePreviewTreeRow)
@@ -112,7 +112,7 @@ public:
 
 	UE_API void Construct(
 		const FArguments& InArgs,
-		FMyUsdPrimPreviewModelViewRef InTreeItem,
+		FUsdPrimPreviewModelViewRef InTreeItem,
 		const TSharedRef<STableViewBase>& OwnerTable,
 		TSharedPtr<FSharedUsdTreeData> InSharedData
 	);

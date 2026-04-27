@@ -131,7 +131,7 @@ namespace UE::USDMaterialXTranslator::Private
 		const FString& MaterialXFilePath,
 		const FString& FileHash,
 		const pxr::UsdPrim& MaterialXReferencerPrim,
-		UMyUsdAssetCache3& AssetCache,
+		UUsdAssetCache3& AssetCache,
 		EObjectFlags ObjectFlags,
 		bool bShareAssetsForIdenticalPrims
 	)

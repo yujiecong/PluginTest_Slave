@@ -30,10 +30,10 @@
 namespace UsdGeomPrimitiveTranslatorImpl
 {
 	void LoadMeshDescriptions(
-		UE::FMyUsdPrim Prim,
+		UE::FUsdPrim Prim,
 		TArray<FMeshDescription>& OutLODIndexToMeshDescription,
-		TArray<UsdUtils::FMyUsdPrimMaterialAssignmentInfo>& OutLODIndexToMaterialInfo,
-		const UsdToUnreal::FMyUsdMeshConversionOptions& Options
+		TArray<UsdUtils::FUsdPrimMaterialAssignmentInfo>& OutLODIndexToMaterialInfo,
+		const UsdToUnreal::FUsdMeshConversionOptions& Options
 	)
 	{
 		if (!Prim)
@@ -42,7 +42,7 @@ namespace UsdGeomPrimitiveTranslatorImpl
 		}
 
 		FMeshDescription TempMeshDescription;
-		UsdUtils::FMyUsdPrimMaterialAssignmentInfo TempMaterialInfo;
+		UsdUtils::FUsdPrimMaterialAssignmentInfo TempMaterialInfo;
 
 		FStaticMeshAttributes StaticMeshAttributes(TempMeshDescription);
 		StaticMeshAttributes.Register();
@@ -59,7 +59,7 @@ namespace UsdGeomPrimitiveTranslatorImpl
 	{
 	public:
 		explicit FGeomPrimitiveCreateAssetsTaskChain(
-			const TSharedRef<FMyUsdSchemaTranslationContext>& InContext,
+			const TSharedRef<FUsdSchemaTranslationContext>& InContext,
 			const UE::FSdfPath& InPrimPath,
 			const TOptional<UE::FSdfPath>& AlternativePrimToLinkAssetsTo = {}
 		)
@@ -89,7 +89,7 @@ namespace UsdGeomPrimitiveTranslatorImpl
 					   MaterialPurposeToken = UnrealToUsd::ConvertToken(*Context->MaterialPurpose.ToString()).Get();
 				   }
 
-				   UsdToUnreal::FMyUsdMeshConversionOptions Options;
+				   UsdToUnreal::FUsdMeshConversionOptions Options;
 				   Options.TimeCode = Context->Time;
 				   Options.PurposesToLoad = Context->PurposesToLoad;
 				   Options.RenderContext = RenderContextToken;
@@ -120,8 +120,8 @@ void FMyUsdGeomPrimitiveTranslator::CreateAssets()
 	TRACE_CPUPROFILER_EVENT_SCOPE(FMyUsdGeomPrimitiveTranslator::CreateAssets);
 
 	// Don't bother generating assets if we're going to just draw some bounds for this prim instead
-	EMyUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(GetPrim());
-	if (DrawMode != EMyUsdDrawMode::Default)
+	EUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(GetPrim());
+	if (DrawMode != EUsdDrawMode::Default)
 	{
 		CreateAlternativeDrawModeAssets(DrawMode);
 		return;
@@ -137,8 +137,8 @@ USceneComponent* FMyUsdGeomPrimitiveTranslator::CreateComponents()
 {
 	USceneComponent* SceneComponent = nullptr;
 
-	EMyUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(GetPrim());
-	if (DrawMode == EMyUsdDrawMode::Default)
+	EUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(GetPrim());
+	if (DrawMode == EUsdDrawMode::Default)
 	{
 		SceneComponent = CreateComponentsEx({}, {});
 	}
@@ -188,8 +188,8 @@ bool FMyUsdGeomPrimitiveTranslator::CollapsesChildren(ECollapsingType Collapsing
 {
 	// If we have a custom draw mode, it means we should draw bounds/cards/etc. instead
 	// of our entire subtree, which is basically the same thing as collapsing
-	EMyUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(GetPrim());
-	if (DrawMode != EMyUsdDrawMode::Default)
+	EUsdDrawMode DrawMode = UsdUtils::GetAppliedDrawMode(GetPrim());
+	if (DrawMode != EUsdDrawMode::Default)
 	{
 		return true;
 	}

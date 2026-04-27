@@ -6,18 +6,18 @@
 
 #include "Modules/ModuleManager.h"
 
-#define LOCTEXT_NAMESPACE "MyUSDClassesEditorModule"
+#define LOCTEXT_NAMESPACE "USDClassesEditorModule"
 
-UMyUsdAssetCache2* IMyUsdClassesEditorModule::ShowMissingDefaultAssetCacheDialog()
+UUsdAssetCache2* IMyUsdClassesEditorModule::ShowMissingDefaultAssetCacheDialog()
 {
 	return nullptr;
 }
 
-void IMyUsdClassesEditorModule::ShowMissingDefaultAssetCacheDialog(UMyUsdAssetCache2*& OutCreatedCache, bool& bOutUserAccepted)
+void IMyUsdClassesEditorModule::ShowMissingDefaultAssetCacheDialog(UUsdAssetCache2*& OutCreatedCache, bool& bOutUserAccepted)
 {
 }
 
-EDefaultAssetCacheDialogOption IMyUsdClassesEditorModule::ShowMissingDefaultAssetCacheDialog(UMyUsdAssetCache2*& OutCreatedCache)
+EDefaultAssetCacheDialogOption IMyUsdClassesEditorModule::ShowMissingDefaultAssetCacheDialog(UUsdAssetCache2*& OutCreatedCache)
 {
 	return EDefaultAssetCacheDialogOption::Cancel;
 }

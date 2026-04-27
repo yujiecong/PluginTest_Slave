@@ -9,13 +9,13 @@
 
 #if USE_USD_SDK
 
-struct FMyUsdSchemaTranslationContext;
+struct FUsdSchemaTranslationContext;
 
 class FMyUsdGeomPointInstancerCreateAssetsTaskChain : public FBuildStaticMeshTaskChain
 {
 public:
 	explicit FMyUsdGeomPointInstancerCreateAssetsTaskChain(
-		const TSharedRef<FMyUsdSchemaTranslationContext>& InContext,
+		const TSharedRef<FUsdSchemaTranslationContext>& InContext,
 		const UE::FSdfPath& InPrimPath,
 		bool bIgnoreTopLevelTransform,
 		bool bIgnoreTopLevelVisibility,

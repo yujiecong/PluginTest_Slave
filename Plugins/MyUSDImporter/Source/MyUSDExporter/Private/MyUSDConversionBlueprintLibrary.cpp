@@ -376,7 +376,7 @@ FString UMyUsdConversionBlueprintLibrary::GenerateObjectVersionString(const UObj
 
 	FSHA1 SHA1;
 
-	if (!IMyUsdClassesModule::HashObjectPackage(ObjectToExport, SHA1))
+	if (!IUsdClassesModule::HashObjectPackage(ObjectToExport, SHA1))
 	{
 		return {};
 	}
@@ -455,13 +455,13 @@ void UMyUsdConversionBlueprintLibrary::AddReference(
 )
 {
 #if USE_USD_SDK
-	TArray<UE::FMyUsdStage> PreviouslyOpenedStages = UnrealUSDWrapper::GetAllStagesFromCache();
+	TArray<UE::FUsdStage> PreviouslyOpenedStages = UnrealUSDWrapper::GetAllStagesFromCache();
 
 	// Open using the stage cache as it's very likely this stage is already in there anyway
-	UE::FMyUsdStage ReferencingStage = UnrealUSDWrapper::OpenStage(*ReferencingStagePath, EMyUsdInitialLoadSet::LoadAll);
+	UE::FUsdStage ReferencingStage = UnrealUSDWrapper::OpenStage(*ReferencingStagePath, EUsdInitialLoadSet::LoadAll);
 	if (ReferencingStage)
 	{
-		if (UE::FMyUsdPrim ReferencingPrim = ReferencingStage.GetPrimAtPath(UE::FSdfPath(*ReferencingPrimPath)))
+		if (UE::FUsdPrim ReferencingPrim = ReferencingStage.GetPrimAtPath(UE::FSdfPath(*ReferencingPrimPath)))
 		{
 			UsdUtils::AddReference(
 				ReferencingPrim,
@@ -494,13 +494,13 @@ void UMyUsdConversionBlueprintLibrary::AddPayload(
 )
 {
 #if USE_USD_SDK
-	TArray<UE::FMyUsdStage> PreviouslyOpenedStages = UnrealUSDWrapper::GetAllStagesFromCache();
+	TArray<UE::FUsdStage> PreviouslyOpenedStages = UnrealUSDWrapper::GetAllStagesFromCache();
 
 	// Open using the stage cache as it's very likely this stage is already in there anyway
-	UE::FMyUsdStage ReferencingStage = UnrealUSDWrapper::OpenStage(*ReferencingStagePath, EMyUsdInitialLoadSet::LoadAll);
+	UE::FUsdStage ReferencingStage = UnrealUSDWrapper::OpenStage(*ReferencingStagePath, EUsdInitialLoadSet::LoadAll);
 	if (ReferencingStage)
 	{
-		if (UE::FMyUsdPrim ReferencingPrim = ReferencingStage.GetPrimAtPath(UE::FSdfPath(*ReferencingPrimPath)))
+		if (UE::FUsdPrim ReferencingPrim = ReferencingStage.GetPrimAtPath(UE::FSdfPath(*ReferencingPrimPath)))
 		{
 			UsdUtils::AddPayload(
 				ReferencingPrim,
@@ -672,17 +672,17 @@ void UMyUsdConversionBlueprintLibrary::SendAnalytics(
 		Converted.Emplace(Attr.Name, Attr.Value);
 	}
 
-	IMyUsdClassesModule::SendAnalytics(MoveTemp(Converted), EventName, bAutomated, ElapsedSeconds, NumberOfFrames, Extension);
+	IUsdClassesModule::SendAnalytics(MoveTemp(Converted), EventName, bAutomated, ElapsedSeconds, NumberOfFrames, Extension);
 }
 
 void UMyUsdConversionBlueprintLibrary::BlockAnalyticsEvents()
 {
-	IMyUsdClassesModule::BlockAnalyticsEvents();
+	IUsdClassesModule::BlockAnalyticsEvents();
 }
 
 void UMyUsdConversionBlueprintLibrary::ResumeAnalyticsEvents()
 {
-	IMyUsdClassesModule::ResumeAnalyticsEvents();
+	IUsdClassesModule::ResumeAnalyticsEvents();
 }
 
 void UMyUsdConversionBlueprintLibrary::BeginUniquePathScope()
@@ -704,7 +704,7 @@ void UMyUsdConversionBlueprintLibrary::RemoveAllPrimSpecs(const FString& StageRo
 {
 #if USE_USD_SDK
 	const bool bUseStageCache = true;
-	UE::FMyUsdStage Stage = UnrealUSDWrapper::OpenStage(*StageRootLayer, EMyUsdInitialLoadSet::LoadAll, bUseStageCache);
+	UE::FUsdStage Stage = UnrealUSDWrapper::OpenStage(*StageRootLayer, EUsdInitialLoadSet::LoadAll, bUseStageCache);
 	if (!Stage)
 	{
 		return;
@@ -718,13 +718,13 @@ bool UMyUsdConversionBlueprintLibrary::CutPrims(const FString& StageRootLayer, c
 {
 #if USE_USD_SDK
 	const bool bUseStageCache = true;
-	UE::FMyUsdStage Stage = UnrealUSDWrapper::OpenStage(*StageRootLayer, EMyUsdInitialLoadSet::LoadAll, bUseStageCache);
+	UE::FUsdStage Stage = UnrealUSDWrapper::OpenStage(*StageRootLayer, EUsdInitialLoadSet::LoadAll, bUseStageCache);
 	if (!Stage)
 	{
 		return false;
 	}
 
-	TArray<UE::FMyUsdPrim> Prims;
+	TArray<UE::FUsdPrim> Prims;
 	Prims.Reserve(PrimPaths.Num());
 
 	for (const FString& PrimPath : PrimPaths)
@@ -742,13 +742,13 @@ bool UMyUsdConversionBlueprintLibrary::CopyPrims(const FString& StageRootLayer, 
 {
 #if USE_USD_SDK
 	const bool bUseStageCache = true;
-	UE::FMyUsdStage Stage = UnrealUSDWrapper::OpenStage(*StageRootLayer, EMyUsdInitialLoadSet::LoadAll, bUseStageCache);
+	UE::FUsdStage Stage = UnrealUSDWrapper::OpenStage(*StageRootLayer, EUsdInitialLoadSet::LoadAll, bUseStageCache);
 	if (!Stage)
 	{
 		return false;
 	}
 
-	TArray<UE::FMyUsdPrim> Prims;
+	TArray<UE::FUsdPrim> Prims;
 	Prims.Reserve(PrimPaths.Num());
 
 	for (const FString& PrimPath : PrimPaths)
@@ -768,7 +768,7 @@ TArray<FString> UMyUsdConversionBlueprintLibrary::PastePrims(const FString& Stag
 
 #if USE_USD_SDK
 	const bool bUseStageCache = true;
-	UE::FMyUsdStage Stage = UnrealUSDWrapper::OpenStage(*StageRootLayer, EMyUsdInitialLoadSet::LoadAll, bUseStageCache);
+	UE::FUsdStage Stage = UnrealUSDWrapper::OpenStage(*StageRootLayer, EUsdInitialLoadSet::LoadAll, bUseStageCache);
 	if (!Stage)
 	{
 		return Result;
@@ -798,7 +798,7 @@ void UMyUsdConversionBlueprintLibrary::ClearPrimClipboard()
 TArray<FString> UMyUsdConversionBlueprintLibrary::DuplicatePrims(
 	const FString& StageRootLayer,
 	const TArray<FString>& PrimPaths,
-	EMyUsdDuplicateType DuplicateType,
+	EUsdDuplicateType DuplicateType,
 	const FString& TargetLayer
 )
 {
@@ -807,13 +807,13 @@ TArray<FString> UMyUsdConversionBlueprintLibrary::DuplicatePrims(
 
 #if USE_USD_SDK
 	const bool bUseStageCache = true;
-	UE::FMyUsdStage Stage = UnrealUSDWrapper::OpenStage(*StageRootLayer, EMyUsdInitialLoadSet::LoadAll, bUseStageCache);
+	UE::FUsdStage Stage = UnrealUSDWrapper::OpenStage(*StageRootLayer, EUsdInitialLoadSet::LoadAll, bUseStageCache);
 	if (!Stage)
 	{
 		return Result;
 	}
 
-	TArray<UE::FMyUsdPrim> Prims;
+	TArray<UE::FUsdPrim> Prims;
 	Prims.Reserve(PrimPaths.Num());
 
 	for (const FString& PrimPath : PrimPaths)
@@ -833,12 +833,12 @@ TArray<FString> UMyUsdConversionBlueprintLibrary::DuplicatePrims(
 	return Result;
 }
 
-UMyUsdAssetUserData* UMyUsdConversionBlueprintLibrary::GetUsdAssetUserData(UObject* Object)
+UUsdAssetUserData* UMyUsdConversionBlueprintLibrary::GetUsdAssetUserData(UObject* Object)
 {
 	return UsdUnreal::ObjectUtils::GetAssetUserData(Object);
 }
 
-bool UMyUsdConversionBlueprintLibrary::SetUsdAssetUserData(UObject* Object, UMyUsdAssetUserData* AssetUserData)
+bool UMyUsdConversionBlueprintLibrary::SetUsdAssetUserData(UObject* Object, UUsdAssetUserData* AssetUserData)
 {
 	return UsdUnreal::ObjectUtils::SetAssetUserData(Object, AssetUserData);
 }
@@ -851,19 +851,19 @@ namespace UE::UsdConversionBlueprintLibrary::Private
 
 		if (!Chain.IsSet())
 		{
-			FProperty* StageIdentifierProp = UMyUsdAssetUserData::StaticClass()->FindPropertyByName(
-				GET_MEMBER_NAME_CHECKED(UMyUsdAssetUserData, StageIdentifierToMetadata)
+			FProperty* StageIdentifierProp = UUsdAssetUserData::StaticClass()->FindPropertyByName(
+				GET_MEMBER_NAME_CHECKED(UUsdAssetUserData, StageIdentifierToMetadata)
 			);
-			FProperty* StringifiedValueProp = FMyUsdMetadataValue::StaticStruct()->FindPropertyByName(
-				GET_MEMBER_NAME_CHECKED(FMyUsdMetadataValue, StringifiedValue)
+			FProperty* StringifiedValueProp = FUsdMetadataValue::StaticStruct()->FindPropertyByName(
+				GET_MEMBER_NAME_CHECKED(FUsdMetadataValue, StringifiedValue)
 			);
 
 			Chain.Emplace();
 			Chain->AddHead(StageIdentifierProp);
 			Chain->AddTail(
-				FMyUsdCombinedPrimMetadata::StaticStruct()->FindPropertyByName(GET_MEMBER_NAME_CHECKED(FMyUsdCombinedPrimMetadata, PrimPathToMetadata))
+				FUsdCombinedPrimMetadata::StaticStruct()->FindPropertyByName(GET_MEMBER_NAME_CHECKED(FUsdCombinedPrimMetadata, PrimPathToMetadata))
 			);
-			Chain->AddTail(FMyUsdPrimMetadata::StaticStruct()->FindPropertyByName(GET_MEMBER_NAME_CHECKED(FMyUsdPrimMetadata, Metadata)));
+			Chain->AddTail(FUsdPrimMetadata::StaticStruct()->FindPropertyByName(GET_MEMBER_NAME_CHECKED(FUsdPrimMetadata, Metadata)));
 			Chain->AddTail(StringifiedValueProp);
 			Chain->SetActivePropertyNode(StringifiedValueProp);
 			Chain->SetActiveMemberPropertyNode(StageIdentifierProp);
@@ -875,12 +875,12 @@ namespace UE::UsdConversionBlueprintLibrary::Private
 	FPropertyChangedChainEvent GetPostChangeChainEvent(UObject* TopLevelObject, EPropertyChangeType::Type ChangeType)
 	{
 		FPropertyChangedEvent PostChangeEvent{
-			FMyUsdMetadataValue::StaticStruct()->FindPropertyByName(GET_MEMBER_NAME_CHECKED(FMyUsdMetadataValue, StringifiedValue)),
+			FUsdMetadataValue::StaticStruct()->FindPropertyByName(GET_MEMBER_NAME_CHECKED(FUsdMetadataValue, StringifiedValue)),
 			ChangeType,
 			{TopLevelObject}
 		};
-		PostChangeEvent.MemberProperty = UMyUsdAssetUserData::StaticClass()->FindPropertyByName(
-			GET_MEMBER_NAME_CHECKED(UMyUsdAssetUserData, StageIdentifierToMetadata)
+		PostChangeEvent.MemberProperty = UUsdAssetUserData::StaticClass()->FindPropertyByName(
+			GET_MEMBER_NAME_CHECKED(UUsdAssetUserData, StageIdentifierToMetadata)
 		);
 
 		FPropertyChangedChainEvent ChainEvent{GetMetadataPropertyChain(), PostChangeEvent};
@@ -890,7 +890,7 @@ namespace UE::UsdConversionBlueprintLibrary::Private
 }	 // namespace UE::UsdConversionBlueprintLibrary::Private
 
 bool UMyUsdConversionBlueprintLibrary::SetMetadataField(
-	UMyUsdAssetUserData* AssetUserData,
+	UUsdAssetUserData* AssetUserData,
 	const FString& Key,
 	const FString& Value,
 	const FString& ValueTypeName,
@@ -921,7 +921,7 @@ bool UMyUsdConversionBlueprintLibrary::SetMetadataField(
 
 	const FString& StageIdentifierToUse = !StageIdentifier.IsEmpty() ? StageIdentifier
 																	 : AssetUserData->StageIdentifierToMetadata.CreateIterator()->Key;
-	FMyUsdCombinedPrimMetadata& CombinedPrimMetadata = AssetUserData->StageIdentifierToMetadata.FindOrAdd(StageIdentifierToUse);
+	FUsdCombinedPrimMetadata& CombinedPrimMetadata = AssetUserData->StageIdentifierToMetadata.FindOrAdd(StageIdentifierToUse);
 
 	if (PrimPath.IsEmpty() && CombinedPrimMetadata.PrimPathToMetadata.Num() != 1)
 	{
@@ -937,14 +937,14 @@ bool UMyUsdConversionBlueprintLibrary::SetMetadataField(
 	}
 
 	const FString& PrimPathToUse = !PrimPath.IsEmpty() ? PrimPath : CombinedPrimMetadata.PrimPathToMetadata.CreateConstIterator()->Key;
-	FMyUsdPrimMetadata& PrimMetadata = CombinedPrimMetadata.PrimPathToMetadata.FindOrAdd(PrimPathToUse);
+	FUsdPrimMetadata& PrimMetadata = CombinedPrimMetadata.PrimPathToMetadata.FindOrAdd(PrimPathToUse);
 
 	if (bTriggerPropertyChangeEvents)
 	{
 		AssetUserData->PreEditChange(GetMetadataPropertyChain());
 	}
 
-	FMyUsdMetadataValue& MetadataValue = PrimMetadata.Metadata.FindOrAdd(Key);
+	FUsdMetadataValue& MetadataValue = PrimMetadata.Metadata.FindOrAdd(Key);
 	MetadataValue.StringifiedValue = Value;
 	MetadataValue.TypeName = ValueTypeName;
 
@@ -958,7 +958,7 @@ bool UMyUsdConversionBlueprintLibrary::SetMetadataField(
 }
 
 bool UMyUsdConversionBlueprintLibrary::ClearMetadataField(
-	UMyUsdAssetUserData* AssetUserData,
+	UUsdAssetUserData* AssetUserData,
 	const FString& Key,
 	const FString& StageIdentifier,
 	const FString& PrimPath,
@@ -987,7 +987,7 @@ bool UMyUsdConversionBlueprintLibrary::ClearMetadataField(
 
 	const FString& StageIdentifierToUse = !StageIdentifier.IsEmpty() ? StageIdentifier
 																	 : AssetUserData->StageIdentifierToMetadata.CreateIterator()->Key;
-	FMyUsdCombinedPrimMetadata& CombinedPrimMetadata = AssetUserData->StageIdentifierToMetadata.FindOrAdd(StageIdentifierToUse);
+	FUsdCombinedPrimMetadata& CombinedPrimMetadata = AssetUserData->StageIdentifierToMetadata.FindOrAdd(StageIdentifierToUse);
 
 	if (PrimPath.IsEmpty() && CombinedPrimMetadata.PrimPathToMetadata.Num() != 1)
 	{
@@ -1003,7 +1003,7 @@ bool UMyUsdConversionBlueprintLibrary::ClearMetadataField(
 	}
 
 	const FString& PrimPathToUse = !PrimPath.IsEmpty() ? PrimPath : CombinedPrimMetadata.PrimPathToMetadata.CreateConstIterator()->Key;
-	FMyUsdPrimMetadata& PrimMetadata = CombinedPrimMetadata.PrimPathToMetadata.FindOrAdd(PrimPathToUse);
+	FUsdPrimMetadata& PrimMetadata = CombinedPrimMetadata.PrimPathToMetadata.FindOrAdd(PrimPathToUse);
 
 	if (bTriggerPropertyChangeEvents)
 	{
@@ -1022,7 +1022,7 @@ bool UMyUsdConversionBlueprintLibrary::ClearMetadataField(
 }
 
 bool UMyUsdConversionBlueprintLibrary::HasMetadataField(
-	UMyUsdAssetUserData* AssetUserData,
+	UUsdAssetUserData* AssetUserData,
 	const FString& Key,
 	const FString& StageIdentifier,
 	const FString& PrimPath
@@ -1048,7 +1048,7 @@ bool UMyUsdConversionBlueprintLibrary::HasMetadataField(
 
 	const FString& StageIdentifierToUse = !StageIdentifier.IsEmpty() ? StageIdentifier
 																	 : AssetUserData->StageIdentifierToMetadata.CreateIterator()->Key;
-	const FMyUsdCombinedPrimMetadata* CombinedPrimMetadata = AssetUserData->StageIdentifierToMetadata.Find(StageIdentifierToUse);
+	const FUsdCombinedPrimMetadata* CombinedPrimMetadata = AssetUserData->StageIdentifierToMetadata.Find(StageIdentifierToUse);
 	if (!CombinedPrimMetadata)
 	{
 		return false;
@@ -1068,7 +1068,7 @@ bool UMyUsdConversionBlueprintLibrary::HasMetadataField(
 	}
 
 	const FString& PrimPathToUse = !PrimPath.IsEmpty() ? PrimPath : CombinedPrimMetadata->PrimPathToMetadata.CreateConstIterator()->Key;
-	const FMyUsdPrimMetadata* PrimMetadata = CombinedPrimMetadata->PrimPathToMetadata.Find(PrimPathToUse);
+	const FUsdPrimMetadata* PrimMetadata = CombinedPrimMetadata->PrimPathToMetadata.Find(PrimPathToUse);
 	if (!PrimMetadata)
 	{
 		return false;
@@ -1077,8 +1077,8 @@ bool UMyUsdConversionBlueprintLibrary::HasMetadataField(
 	return PrimMetadata->Metadata.Contains(Key);
 }
 
-FMyUsdMetadataValue UMyUsdConversionBlueprintLibrary::GetMetadataField(
-	UMyUsdAssetUserData* AssetUserData,
+FUsdMetadataValue UMyUsdConversionBlueprintLibrary::GetMetadataField(
+	UUsdAssetUserData* AssetUserData,
 	const FString& Key,
 	const FString& StageIdentifier,
 	const FString& PrimPath
@@ -1104,7 +1104,7 @@ FMyUsdMetadataValue UMyUsdConversionBlueprintLibrary::GetMetadataField(
 
 	const FString& StageIdentifierToUse = !StageIdentifier.IsEmpty() ? StageIdentifier
 																	 : AssetUserData->StageIdentifierToMetadata.CreateIterator()->Key;
-	const FMyUsdCombinedPrimMetadata* CombinedPrimMetadata = AssetUserData->StageIdentifierToMetadata.Find(StageIdentifierToUse);
+	const FUsdCombinedPrimMetadata* CombinedPrimMetadata = AssetUserData->StageIdentifierToMetadata.Find(StageIdentifierToUse);
 	if (!CombinedPrimMetadata)
 	{
 		return {};
@@ -1124,13 +1124,13 @@ FMyUsdMetadataValue UMyUsdConversionBlueprintLibrary::GetMetadataField(
 	}
 
 	const FString& PrimPathToUse = !PrimPath.IsEmpty() ? PrimPath : CombinedPrimMetadata->PrimPathToMetadata.CreateConstIterator()->Key;
-	const FMyUsdPrimMetadata* PrimMetadata = CombinedPrimMetadata->PrimPathToMetadata.Find(PrimPathToUse);
+	const FUsdPrimMetadata* PrimMetadata = CombinedPrimMetadata->PrimPathToMetadata.Find(PrimPathToUse);
 	if (!PrimMetadata)
 	{
 		return {};
 	}
 
-	if (const FMyUsdMetadataValue* FoundValue = PrimMetadata->Metadata.Find(Key))
+	if (const FUsdMetadataValue* FoundValue = PrimMetadata->Metadata.Find(Key))
 	{
 		return *FoundValue;
 	}

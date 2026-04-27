@@ -13,7 +13,7 @@
 
 #define UE_API MYUSDSTAGEIMPORTER_API
 
-enum class EMyUsdCollisionType : uint8;
+enum class EUsdCollisionType : uint8;
 struct FAnalyticsEventAttribute;
 
 UENUM(BlueprintType)
@@ -119,7 +119,7 @@ public:
 		config,
 		EditAnywhere,
 		Category = "USD options",
-		meta = (Bitmask, BitmaskEnum = "/Script/UnrealUSDWrapper.EMyUsdPurpose")
+		meta = (Bitmask, BitmaskEnum = "/Script/UnrealUSDWrapper.EUsdPurpose")
 	)
 	int32 PurposesToImport;
 
@@ -137,11 +137,11 @@ public:
 
 	// Describes what to add to the root bone animation within generated AnimSequences, if anything
 	UPROPERTY(BlueprintReadWrite, config, EditAnywhere, Category = "USD options", meta = (EditCondition = bImportSkeletalAnimations))
-	EMyUsdRootMotionHandling RootMotionHandling = EMyUsdRootMotionHandling::NoAdditionalRootMotion;
+	EUsdRootMotionHandling RootMotionHandling = EUsdRootMotionHandling::NoAdditionalRootMotion;
 
 	// What type of collision to use for static meshes generated from Prims that don't have physics schemas applied
 	UPROPERTY(BlueprintReadWrite, config, EditAnywhere, Category = "USD options")
-	EMyUsdCollisionType FallbackCollisionType;
+	EUsdCollisionType FallbackCollisionType;
 
 	/** Subdivision level to use for all subdivision meshes on the opened stage. 0 means "don't subdivide" */
 	UPROPERTY(BlueprintReadWrite, config, EditAnywhere, Category = "USD options")
@@ -149,7 +149,7 @@ public:
 
 	/* Describes if/how we should collect metadata from USD prims onto the assets and components we generate when importing */
 	UPROPERTY(BlueprintReadWrite, config, EditAnywhere, Category = "USD options")
-	FMyUsdMetadataImportOptions MetadataOptions;
+	FUsdMetadataImportOptions MetadataOptions;
 
 	/** Whether to use the specified StageOptions instead of the stage's own settings */
 	UPROPERTY(BlueprintReadWrite, config, EditAnywhere, Category = "USD options")
@@ -157,7 +157,7 @@ public:
 
 	/** Custom StageOptions to use for the stage */
 	UPROPERTY(EditAnywhere, config, BlueprintReadWrite, Category = "USD options", meta = (EditCondition = bOverrideStageOptions))
-	FMyUsdStageOptions StageOptions;
+	FUsdStageOptions StageOptions;
 
 	/**
 	 * When true the stage will be evaluated at ImportTimeCode for the import.
@@ -217,7 +217,7 @@ public:
 		config,
 		EditAnywhere,
 		Category = "Processing",
-		meta = (Bitmask, BitmaskEnum = "/Script/UnrealUSDWrapper.EMyUsdDefaultKind", EditCondition = bUsePrimKindsForCollapsing)
+		meta = (Bitmask, BitmaskEnum = "/Script/UnrealUSDWrapper.EUsdDefaultKind", EditCondition = bUsePrimKindsForCollapsing)
 	)
 	int32 KindsToCollapse;
 

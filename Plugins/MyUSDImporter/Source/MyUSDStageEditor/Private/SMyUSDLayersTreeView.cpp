@@ -30,7 +30,7 @@
 
 #if USE_USD_SDK
 
-#define LOCTEXT_NAMESPACE "SMyUSDLayersTreeView"
+#define LOCTEXT_NAMESPACE "SUSDLayersTreeView"
 
 namespace UE::USDLayersTreeViewImpl::Private
 {
@@ -68,7 +68,7 @@ namespace UE::USDLayersTreeViewImpl::Private
 		OutputLayer.Save(bForce);
 	}
 
-	void ToggleMuteOrShowWarning(FMyUsdLayerViewModelRef LayerItem)
+	void ToggleMuteOrShowWarning(FUsdLayerViewModelRef LayerItem)
 	{
 		if (!LayerItem->IsValid() || !LayerItem->CanMuteLayer())
 		{
@@ -83,7 +83,7 @@ namespace UE::USDLayersTreeViewImpl::Private
 		}
 
 		// Show a warning if the layer is dirty, as muting it will discard changes
-		const UMyUsdProjectSettings* Settings = GetDefault<UMyUsdProjectSettings>();
+		const UUsdProjectSettings* Settings = GetDefault<UUsdProjectSettings>();
 		if (!LayerItem->IsLayerMuted() && Settings && Settings->bShowConfirmationWhenMutingDirtyLayers)
 		{
 			static TWeakPtr<SNotificationItem> Notification;
@@ -115,7 +115,7 @@ namespace UE::USDLayersTreeViewImpl::Private
 							PinnedNotification->SetCompletionState(SNotificationItem::CS_Success);
 							PinnedNotification->ExpireAndFadeout();
 
-							UMyUsdProjectSettings* Settings = GetMutableDefault<UMyUsdProjectSettings>();
+							UUsdProjectSettings* Settings = GetMutableDefault<UUsdProjectSettings>();
 							Settings->bShowConfirmationWhenMutingDirtyLayers = false;
 							Settings->SaveConfig();
 
@@ -175,7 +175,7 @@ namespace UE::USDLayersTreeViewImpl::Private
 		}
 	}
 
-	void ReloadOrShowWarning(FMyUsdLayerViewModelRef LayerItem)
+	void ReloadOrShowWarning(FUsdLayerViewModelRef LayerItem)
 	{
 		if (!LayerItem->IsValid() || !LayerItem->CanReload())
 		{
@@ -190,7 +190,7 @@ namespace UE::USDLayersTreeViewImpl::Private
 		}
 
 		// Show a warning if the layer is dirty, as muting it will discard changes
-		const UMyUsdProjectSettings* Settings = GetDefault<UMyUsdProjectSettings>();
+		const UUsdProjectSettings* Settings = GetDefault<UUsdProjectSettings>();
 		if (!LayerItem->IsLayerMuted() && Settings && Settings->bShowConfirmationWhenReloadingDirtyLayers)
 		{
 			static TWeakPtr<SNotificationItem> Notification;
@@ -222,7 +222,7 @@ namespace UE::USDLayersTreeViewImpl::Private
 							PinnedNotification->SetCompletionState(SNotificationItem::CS_Success);
 							PinnedNotification->ExpireAndFadeout();
 
-							UMyUsdProjectSettings* Settings = GetMutableDefault<UMyUsdProjectSettings>();
+							UUsdProjectSettings* Settings = GetMutableDefault<UUsdProjectSettings>();
 							Settings->bShowConfirmationWhenReloadingDirtyLayers = false;
 							Settings->SaveConfig();
 
@@ -288,14 +288,14 @@ class FMyUsdLayerNameColumn
 	, public TSharedFromThis<FMyUsdLayerNameColumn>
 {
 public:
-	FSlateColor GetForegroundColor(const FMyUsdLayerViewModelRef TreeItem) const
+	FSlateColor GetForegroundColor(const FUsdLayerViewModelRef TreeItem) const
 	{
 		return TreeItem->IsInIsolatedStage() ? FSlateColor::UseForeground() : FSlateColor::UseSubduedForeground();
 	}
 
 	virtual TSharedRef<SWidget> GenerateWidget(const TSharedPtr<IMyUsdTreeViewItem> InTreeItem, const TSharedPtr<ITableRow> TableRow) override
 	{
-		FMyUsdLayerViewModelRef TreeItem = StaticCastSharedRef<FMyUsdLayerViewModel>(InTreeItem.ToSharedRef());
+		FUsdLayerViewModelRef TreeItem = StaticCastSharedRef<FMyUsdLayerViewModel>(InTreeItem.ToSharedRef());
 		TWeakPtr<FMyUsdLayerViewModel> TreeItemWeak = TreeItem;
 
 		// clang-format off
@@ -324,14 +324,14 @@ class FMyUsdLayerMutedColumn
 	, public TSharedFromThis<FMyUsdLayerMutedColumn>
 {
 public:
-	FReply OnClicked(const FMyUsdLayerViewModelRef TreeItem)
+	FReply OnClicked(const FUsdLayerViewModelRef TreeItem)
 	{
 		UE::USDLayersTreeViewImpl::Private::ToggleMuteOrShowWarning(TreeItem);
 
 		return FReply::Handled();
 	}
 
-	const FSlateBrush* GetBrush(const FMyUsdLayerViewModelRef TreeItem, const TSharedPtr<SButton> Button) const
+	const FSlateBrush* GetBrush(const FUsdLayerViewModelRef TreeItem, const TSharedPtr<SButton> Button) const
 	{
 		const bool bIsButtonHovered = Button.IsValid() && Button->IsHovered();
 
@@ -349,7 +349,7 @@ public:
 		}
 	}
 
-	FSlateColor GetForegroundColor(const FMyUsdLayerViewModelRef TreeItem, const TSharedPtr<ITableRow> TableRow, const TSharedPtr<SButton> Button) const
+	FSlateColor GetForegroundColor(const FUsdLayerViewModelRef TreeItem, const TSharedPtr<ITableRow> TableRow, const TSharedPtr<SButton> Button) const
 	{
 		if (!TableRow.IsValid() || !Button.IsValid())
 		{
@@ -380,8 +380,8 @@ public:
 			return SNullWidget::NullWidget;
 		}
 
-		FMyUsdLayerViewModelRef TreeItem = StaticCastSharedRef<FMyUsdLayerViewModel>(InTreeItem.ToSharedRef());
-		FMyUsdLayerViewModelWeak TreeItemWeak = TreeItem;
+		FUsdLayerViewModelRef TreeItem = StaticCastSharedRef<FMyUsdLayerViewModel>(InTreeItem.ToSharedRef());
+		FUsdLayerViewModelWeak TreeItemWeak = TreeItem;
 		const float ItemSize = FMyUsdStageEditorStyle::Get()->GetFloat("UsdStageEditor.ListItemHeight");
 
 		// clang-format off
@@ -432,12 +432,12 @@ class FMyUsdLayerEditColumn
 	, public TSharedFromThis<FMyUsdLayerEditColumn>
 {
 public:
-	FReply OnClicked(const FMyUsdLayerViewModelRef TreeItem)
+	FReply OnClicked(const FUsdLayerViewModelRef TreeItem)
 	{
 		return TreeItem->EditLayer() ? FReply::Handled() : FReply::Unhandled();
 	}
 
-	FSlateColor GetForegroundColor(const FMyUsdLayerViewModelRef TreeItem, const TSharedPtr<ITableRow> TableRow, const TSharedPtr<SButton> Button) const
+	FSlateColor GetForegroundColor(const FUsdLayerViewModelRef TreeItem, const TSharedPtr<ITableRow> TableRow, const TSharedPtr<SButton> Button) const
 	{
 		if (!TableRow.IsValid() || !Button.IsValid())
 		{
@@ -466,8 +466,8 @@ public:
 
 	virtual TSharedRef<SWidget> GenerateWidget(const TSharedPtr<IMyUsdTreeViewItem> InTreeItem, const TSharedPtr<ITableRow> TableRow) override
 	{
-		const FMyUsdLayerViewModelRef TreeItem = StaticCastSharedRef<FMyUsdLayerViewModel>(InTreeItem.ToSharedRef());
-		FMyUsdLayerViewModelWeak TreeItemWeak = TreeItem;
+		const FUsdLayerViewModelRef TreeItem = StaticCastSharedRef<FMyUsdLayerViewModel>(InTreeItem.ToSharedRef());
+		FUsdLayerViewModelWeak TreeItemWeak = TreeItem;
 
 		float ItemSize = FMyUsdStageEditorStyle::Get()->GetFloat("UsdStageEditor.ListItemHeight");
 
@@ -515,7 +515,7 @@ void SMyUsdLayersTreeView::Construct(const FArguments& InArgs)
 	OnContextMenuOpening = FOnContextMenuOpening::CreateSP(this, &SMyUsdLayersTreeView::ConstructLayerContextMenu);
 
 	OnExpansionChanged = FOnExpansionChanged::CreateLambda(
-		[this](const FMyUsdLayerViewModelRef& LayerViewModel, bool bIsExpanded)
+		[this](const FUsdLayerViewModelRef& LayerViewModel, bool bIsExpanded)
 		{
 			if (!LayerViewModel->IsValid())
 			{
@@ -527,7 +527,7 @@ void SMyUsdLayersTreeView::Construct(const FArguments& InArgs)
 	);
 }
 
-void SMyUsdLayersTreeView::Refresh(const UE::FMyUsdStageWeak& NewStage, const UE::FMyUsdStageWeak& InIsolatedStage, bool bResync)
+void SMyUsdLayersTreeView::Refresh(const UE::FUsdStageWeak& NewStage, const UE::FUsdStageWeak& InIsolatedStage, bool bResync)
 {
 	TRACE_CPUPROFILER_EVENT_SCOPE(SMyUsdLayersTreeView::Refresh);
 
@@ -536,8 +536,8 @@ void SMyUsdLayersTreeView::Refresh(const UE::FMyUsdStageWeak& NewStage, const UE
 		bool bShouldResetExpansionStates = false;
 		if (RootItems.Num() > 0)
 		{
-			const FMyUsdLayerViewModelRef& FirstRootItem = RootItems[0];
-			const UE::FMyUsdStageWeak& OldStage = FirstRootItem->UsdStage;
+			const FUsdLayerViewModelRef& FirstRootItem = RootItems[0];
+			const UE::FUsdStageWeak& OldStage = FirstRootItem->UsdStage;
 			bShouldResetExpansionStates = NewStage != OldStage;
 		}
 
@@ -555,7 +555,7 @@ void SMyUsdLayersTreeView::Refresh(const UE::FMyUsdStageWeak& NewStage, const UE
 	}
 	else
 	{
-		for (FMyUsdLayerViewModelRef TreeItem : RootItems)
+		for (FUsdLayerViewModelRef TreeItem : RootItems)
 		{
 			TreeItem->RefreshData();
 		}
@@ -566,12 +566,12 @@ void SMyUsdLayersTreeView::Refresh(const UE::FMyUsdStageWeak& NewStage, const UE
 
 FReply SMyUsdLayersTreeView::OnRowDragDetected(const FGeometry& Geometry, const FPointerEvent& PointerEvent)
 {
-	TArray<FMyUsdLayerViewModelRef> Items = GetSelectedItems();
+	TArray<FUsdLayerViewModelRef> Items = GetSelectedItems();
 
 	TSet<TSharedRef<IMyUsdTreeViewItem>> DraggedItems;
 	DraggedItems.Reserve(Items.Num());
 
-	for (const FMyUsdLayerViewModelRef& Item : Items)
+	for (const FUsdLayerViewModelRef& Item : Items)
 	{
 		// Don't let a drag operation begin if we're dragging the root or session layer
 		if (Item->ParentItem == nullptr)
@@ -616,7 +616,7 @@ namespace UE::USDLayersTreeViewImpl::Private
 	{
 		for (const TSharedRef<IMyUsdTreeViewItem>& Item : SubLayerItems)
 		{
-			const FMyUsdLayerViewModelRef& SubLayerItem = StaticCastSharedRef<FMyUsdLayerViewModel>(Item);
+			const FUsdLayerViewModelRef& SubLayerItem = StaticCastSharedRef<FMyUsdLayerViewModel>(Item);
 
 			UsdUtils::ECanInsertSublayerResult Result = UsdUtils::CanInsertSubLayer(Parent, *SubLayerItem->LayerIdentifier);
 
@@ -631,7 +631,7 @@ namespace UE::USDLayersTreeViewImpl::Private
 
 	// Checks if this operation would effectively do nothing
 	bool IsNoOp(
-		const TArray<FMyUsdLayerViewModelRef>& ExistingItems,
+		const TArray<FUsdLayerViewModelRef>& ExistingItems,
 		const TSet<TSharedRef<IMyUsdTreeViewItem>>& DraggedItems,
 		int32 TargetItemIndex,
 		EItemDropZone DropZone
@@ -655,10 +655,10 @@ namespace UE::USDLayersTreeViewImpl::Private
 
 				// See if all the items immediately before the target are the same as the ones we're
 				// dragging
-				TSet<FMyUsdLayerViewModelRef> UniqueItemsBeforeTarget;
+				TSet<FUsdLayerViewModelRef> UniqueItemsBeforeTarget;
 				for (int32 Index = TargetItemIndex - 1; Index >= 0; --Index)
 				{
-					const FMyUsdLayerViewModelRef& OtherItem = ExistingItems[Index];
+					const FUsdLayerViewModelRef& OtherItem = ExistingItems[Index];
 
 					if (DraggedItems.Contains(OtherItem))
 					{
@@ -696,10 +696,10 @@ namespace UE::USDLayersTreeViewImpl::Private
 
 				// See if all the items immediately after the target are the same as the ones we're
 				// dragging
-				TSet<FMyUsdLayerViewModelRef> UniqueItemsAfterTarget;
+				TSet<FUsdLayerViewModelRef> UniqueItemsAfterTarget;
 				for (int32 Index = TargetItemIndex + 1; Index < ExistingItems.Num(); ++Index)
 				{
-					const FMyUsdLayerViewModelRef& OtherItem = ExistingItems[Index];
+					const FUsdLayerViewModelRef& OtherItem = ExistingItems[Index];
 
 					if (DraggedItems.Contains(OtherItem))
 					{
@@ -732,10 +732,10 @@ namespace UE::USDLayersTreeViewImpl::Private
 				}
 
 				// See if the last ExistingItems are the same as the ones we're dragging
-				TSet<FMyUsdLayerViewModelRef> UniqueExistingItemsTail;
+				TSet<FUsdLayerViewModelRef> UniqueExistingItemsTail;
 				for (int32 Index = ExistingItems.Num() - 1; Index >= 0; --Index)
 				{
-					const FMyUsdLayerViewModelRef& OtherItem = ExistingItems[Index];
+					const FUsdLayerViewModelRef& OtherItem = ExistingItems[Index];
 
 					if (DraggedItems.Contains(OtherItem))
 					{
@@ -768,7 +768,7 @@ namespace UE::USDLayersTreeViewImpl::Private
 	}
 }	 // namespace UE::USDLayersTreeViewImpl::Private
 
-TOptional<EItemDropZone> SMyUsdLayersTreeView::OnRowCanAcceptDrop(const FDragDropEvent& Event, EItemDropZone Zone, FMyUsdLayerViewModelRef Item)
+TOptional<EItemDropZone> SMyUsdLayersTreeView::OnRowCanAcceptDrop(const FDragDropEvent& Event, EItemDropZone Zone, FUsdLayerViewModelRef Item)
 {
 	using namespace UE::USDLayersTreeViewImpl::Private;
 
@@ -842,7 +842,7 @@ TOptional<EItemDropZone> SMyUsdLayersTreeView::OnRowCanAcceptDrop(const FDragDro
 				{
 					for (int32 Index = 0; Index < ParentItem->Children.Num(); ++Index)
 					{
-						const FMyUsdLayerViewModelRef& SiblingItem = ParentItem->Children[Index];
+						const FUsdLayerViewModelRef& SiblingItem = ParentItem->Children[Index];
 						if (SiblingItem == Item)
 						{
 							ItemIndexInParent = Index;
@@ -863,12 +863,12 @@ TOptional<EItemDropZone> SMyUsdLayersTreeView::OnRowCanAcceptDrop(const FDragDro
 					DraggedItemIdentifiers.Reserve(Op->DraggedItems.Num());
 					for (const TSharedRef<IMyUsdTreeViewItem>& DraggedItem : Op->DraggedItems)
 					{
-						const FMyUsdLayerViewModelRef& DraggedLayerItem = StaticCastSharedRef<FMyUsdLayerViewModel>(DraggedItem);
+						const FUsdLayerViewModelRef& DraggedLayerItem = StaticCastSharedRef<FMyUsdLayerViewModel>(DraggedItem);
 
 						DraggedItemIdentifiers.Add(DraggedLayerItem->LayerIdentifier);
 					}
 
-					for (const FMyUsdLayerViewModelRef& SiblingItem : ParentItem->Children)
+					for (const FUsdLayerViewModelRef& SiblingItem : ParentItem->Children)
 					{
 						if (!Op->DraggedItems.Contains(StaticCastSharedRef<IMyUsdTreeViewItem>(SiblingItem))
 							&& DraggedItemIdentifiers.Contains(SiblingItem->LayerIdentifier))
@@ -954,7 +954,7 @@ TOptional<EItemDropZone> SMyUsdLayersTreeView::OnRowCanAcceptDrop(const FDragDro
 	return Result;
 }
 
-FReply SMyUsdLayersTreeView::OnRowAcceptDrop(const FDragDropEvent& Event, EItemDropZone Zone, FMyUsdLayerViewModelRef Item)
+FReply SMyUsdLayersTreeView::OnRowAcceptDrop(const FDragDropEvent& Event, EItemDropZone Zone, FUsdLayerViewModelRef Item)
 {
 	// This doesn't work very well USD-wise yet, and I don't know how we can possibly undo/redo layer reassignments
 	// like this. We do need a transaction though, as this may trigger the creation or deletion of UObjects
@@ -976,7 +976,7 @@ FReply SMyUsdLayersTreeView::OnRowAcceptDrop(const FDragDropEvent& Event, EItemD
 			// affect the target indices
 			for (const TSharedRef<IMyUsdTreeViewItem>& DraggedItem : Op->DraggedItems)
 			{
-				const FMyUsdLayerViewModelRef& LayerItem = StaticCastSharedRef<FMyUsdLayerViewModel>(DraggedItem);
+				const FUsdLayerViewModelRef& LayerItem = StaticCastSharedRef<FMyUsdLayerViewModel>(DraggedItem);
 				UE::FSdfLayer LayerPin = LayerItem->GetLayer();
 				LayerPins.Add(LayerPin);
 
@@ -1043,7 +1043,7 @@ FReply SMyUsdLayersTreeView::OnRowAcceptDrop(const FDragDropEvent& Event, EItemD
 
 			for (const TSharedRef<IMyUsdTreeViewItem>& DraggedItem : Op->DraggedItems)
 			{
-				const FMyUsdLayerViewModelRef& LayerItem = StaticCastSharedRef<FMyUsdLayerViewModel>(DraggedItem);
+				const FUsdLayerViewModelRef& LayerItem = StaticCastSharedRef<FMyUsdLayerViewModel>(DraggedItem);
 				UE::FSdfLayer LayerPin = LayerItem->GetLayer();
 
 				const bool bInserted = UsdUtils::InsertSubLayer(
@@ -1075,10 +1075,10 @@ FReply SMyUsdLayersTreeView::OnRowAcceptDrop(const FDragDropEvent& Event, EItemD
 TArray<UE::FSdfLayer> SMyUsdLayersTreeView::GetSelectedLayers() const
 {
 	TArray<UE::FSdfLayer> SelectedLayers;
-	TArray<FMyUsdLayerViewModelRef> SelectedViewModels = GetSelectedItems();
+	TArray<FUsdLayerViewModelRef> SelectedViewModels = GetSelectedItems();
 	SelectedLayers.Reserve(SelectedViewModels.Num());
 
-	for (const FMyUsdLayerViewModelRef& SelectedItem : SelectedViewModels)
+	for (const FUsdLayerViewModelRef& SelectedItem : SelectedViewModels)
 	{
 		SelectedLayers.AddUnique(SelectedItem->GetLayer());
 	}
@@ -1095,13 +1095,13 @@ void SMyUsdLayersTreeView::SetSelectedLayers(const TArray<UE::FSdfLayer>& NewSel
 		IdentifiersToSelect.Add(SelectedLayer.GetIdentifier());
 	}
 
-	TArray<FMyUsdLayerViewModelRef> ItemsToSelect;
+	TArray<FUsdLayerViewModelRef> ItemsToSelect;
 	ItemsToSelect.Reserve(NewSelection.Num());
 
-	TFunction<void(const TArray<FMyUsdLayerViewModelRef>&)> Traverse;
-	Traverse = [this, &IdentifiersToSelect, &ItemsToSelect, &Traverse](const TArray<FMyUsdLayerViewModelRef>& Items)
+	TFunction<void(const TArray<FUsdLayerViewModelRef>&)> Traverse;
+	Traverse = [this, &IdentifiersToSelect, &ItemsToSelect, &Traverse](const TArray<FUsdLayerViewModelRef>& Items)
 	{
-		for (const FMyUsdLayerViewModelRef& Item : Items)
+		for (const FUsdLayerViewModelRef& Item : Items)
 		{
 			if (IdentifiersToSelect.Contains(Item->LayerIdentifier))
 			{
@@ -1119,10 +1119,10 @@ void SMyUsdLayersTreeView::SetSelectedLayers(const TArray<UE::FSdfLayer>& NewSel
 	SetItemSelection(ItemsToSelect, bSelected);
 }
 
-TSharedRef<ITableRow> SMyUsdLayersTreeView::OnGenerateRow(FMyUsdLayerViewModelRef InDisplayNode, const TSharedRef<STableViewBase>& OwnerTable)
+TSharedRef<ITableRow> SMyUsdLayersTreeView::OnGenerateRow(FUsdLayerViewModelRef InDisplayNode, const TSharedRef<STableViewBase>& OwnerTable)
 {
 	// clang-format off
-	return SNew(SMyUsdTreeRow< FMyUsdLayerViewModelRef >, InDisplayNode, OwnerTable, SharedData)
+	return SNew(SMyUsdTreeRow< FUsdLayerViewModelRef >, InDisplayNode, OwnerTable, SharedData)
 		.OnDragDetected(this, &SMyUsdLayersTreeView::OnRowDragDetected)
 		.OnDragLeave(this, &SMyUsdLayersTreeView::OnRowDragLeave)
 		.OnCanAcceptDrop(this, &SMyUsdLayersTreeView::OnRowCanAcceptDrop)
@@ -1130,9 +1130,9 @@ TSharedRef<ITableRow> SMyUsdLayersTreeView::OnGenerateRow(FMyUsdLayerViewModelRe
 	// clang-format on
 }
 
-void SMyUsdLayersTreeView::OnGetChildren(FMyUsdLayerViewModelRef InParent, TArray<FMyUsdLayerViewModelRef>& OutChildren) const
+void SMyUsdLayersTreeView::OnGetChildren(FUsdLayerViewModelRef InParent, TArray<FUsdLayerViewModelRef>& OutChildren) const
 {
-	for (const FMyUsdLayerViewModelRef& Child : InParent->GetChildren())
+	for (const FUsdLayerViewModelRef& Child : InParent->GetChildren())
 	{
 		OutChildren.Add(Child);
 	}
@@ -1182,7 +1182,7 @@ TSharedPtr<SWidget> SMyUsdLayersTreeView::ConstructLayerContextMenu()
 				{
 					if (IsolatedStage)
 					{
-						TArray<FMyUsdLayerViewModelRef> MySelectedItems = GetSelectedItems();
+						TArray<FUsdLayerViewModelRef> MySelectedItems = GetSelectedItems();
 						if (MySelectedItems.Num() == 1)
 						{
 							const UE::FSdfLayerWeak& Layer = MySelectedItems[0]->GetLayer();
@@ -1201,7 +1201,7 @@ TSharedPtr<SWidget> SMyUsdLayersTreeView::ConstructLayerContextMenu()
 				{
 					if (IsolatedStage)
 					{
-						TArray<FMyUsdLayerViewModelRef> MySelectedItems = GetSelectedItems();
+						TArray<FUsdLayerViewModelRef> MySelectedItems = GetSelectedItems();
 						if (MySelectedItems.Num() == 1)
 						{
 							const UE::FSdfLayerWeak& Layer = MySelectedItems[0]->GetLayer();
@@ -1244,8 +1244,8 @@ TSharedPtr<SWidget> SMyUsdLayersTreeView::ConstructLayerContextMenu()
 				[this]()
 				{
 					bool bAnyIsMuted = false;
-					TArray<FMyUsdLayerViewModelRef> MySelectedItems = GetSelectedItems();
-					for (const FMyUsdLayerViewModelRef& SelectedItem : MySelectedItems)
+					TArray<FUsdLayerViewModelRef> MySelectedItems = GetSelectedItems();
+					for (const FUsdLayerViewModelRef& SelectedItem : MySelectedItems)
 					{
 						if (SelectedItem->IsLayerMuted())
 						{
@@ -1265,8 +1265,8 @@ TSharedPtr<SWidget> SMyUsdLayersTreeView::ConstructLayerContextMenu()
 					bool bAnyIsMuted = false;
 					if (bCanMute)
 					{
-						TArray<FMyUsdLayerViewModelRef> MySelectedItems = GetSelectedItems();
-						for (const FMyUsdLayerViewModelRef& SelectedItem : MySelectedItems)
+						TArray<FUsdLayerViewModelRef> MySelectedItems = GetSelectedItems();
+						for (const FUsdLayerViewModelRef& SelectedItem : MySelectedItems)
 						{
 							if (SelectedItem->IsLayerMuted())
 							{
@@ -1392,14 +1392,14 @@ TSharedPtr<SWidget> SMyUsdLayersTreeView::ConstructLayerContextMenu()
 
 bool SMyUsdLayersTreeView::CanIsolateSelectedLayer() const
 {
-	TArray<FMyUsdLayerViewModelRef> MySelectedItems = GetSelectedItems();
+	TArray<FUsdLayerViewModelRef> MySelectedItems = GetSelectedItems();
 
 	if (MySelectedItems.Num() != 1)
 	{
 		return false;
 	}
 
-	FMyUsdLayerViewModelRef SelectedItem = MySelectedItems[0];
+	FUsdLayerViewModelRef SelectedItem = MySelectedItems[0];
 	const UE::FSdfLayerWeak& Layer = SelectedItem->GetLayer();
 	const bool bLayerIsStageRoot = Layer == UsdStage.GetRootLayer();
 
@@ -1413,7 +1413,7 @@ void SMyUsdLayersTreeView::OnIsolateSelectedLayer()
 		return;
 	}
 
-	TArray<FMyUsdLayerViewModelRef> MySelectedItems = GetSelectedItems();
+	TArray<FUsdLayerViewModelRef> MySelectedItems = GetSelectedItems();
 
 	if (MySelectedItems.Num() != 1)
 	{
@@ -1422,7 +1422,7 @@ void SMyUsdLayersTreeView::OnIsolateSelectedLayer()
 
 	FScopedTransaction Transaction(LOCTEXT("IsolateTransaction", "Changed layer isolation"));
 
-	for (FMyUsdLayerViewModelRef SelectedItem : MySelectedItems)
+	for (FUsdLayerViewModelRef SelectedItem : MySelectedItems)
 	{
 		UE::FSdfLayer Layer = SelectedItem->GetLayer();
 
@@ -1443,9 +1443,9 @@ bool SMyUsdLayersTreeView::CanEditSelectedLayer() const
 {
 	bool bHasEditableLayer = false;
 
-	TArray<FMyUsdLayerViewModelRef> MySelectedItems = GetSelectedItems();
+	TArray<FUsdLayerViewModelRef> MySelectedItems = GetSelectedItems();
 
-	for (FMyUsdLayerViewModelRef SelectedItem : MySelectedItems)
+	for (FUsdLayerViewModelRef SelectedItem : MySelectedItems)
 	{
 		if (SelectedItem->CanEditLayer())
 		{
@@ -1459,9 +1459,9 @@ bool SMyUsdLayersTreeView::CanEditSelectedLayer() const
 
 void SMyUsdLayersTreeView::OnEditSelectedLayer()
 {
-	TArray<FMyUsdLayerViewModelRef> MySelectedItems = GetSelectedItems();
+	TArray<FUsdLayerViewModelRef> MySelectedItems = GetSelectedItems();
 
-	for (FMyUsdLayerViewModelRef SelectedItem : MySelectedItems)
+	for (FUsdLayerViewModelRef SelectedItem : MySelectedItems)
 	{
 		if (SelectedItem->EditLayer())
 		{
@@ -1472,14 +1472,14 @@ void SMyUsdLayersTreeView::OnEditSelectedLayer()
 
 bool SMyUsdLayersTreeView::CanMuteSelectedLayer() const
 {
-	TArray<FMyUsdLayerViewModelRef> MySelectedItems = GetSelectedItems();
+	TArray<FUsdLayerViewModelRef> MySelectedItems = GetSelectedItems();
 
 	if (MySelectedItems.Num() < 1)
 	{
 		return false;
 	}
 
-	for (FMyUsdLayerViewModelRef SelectedItem : MySelectedItems)
+	for (FUsdLayerViewModelRef SelectedItem : MySelectedItems)
 	{
 		if (!SelectedItem->CanMuteLayer())
 		{
@@ -1492,14 +1492,14 @@ bool SMyUsdLayersTreeView::CanMuteSelectedLayer() const
 
 void SMyUsdLayersTreeView::OnMuteSelectedLayer()
 {
-	TArray<FMyUsdLayerViewModelRef> MySelectedItems = GetSelectedItems();
+	TArray<FUsdLayerViewModelRef> MySelectedItems = GetSelectedItems();
 	if (MySelectedItems.Num() < 1)
 	{
 		return;
 	}
 
 	bool bAnyIsMuted = false;
-	for (FMyUsdLayerViewModelRef SelectedItem : MySelectedItems)
+	for (FUsdLayerViewModelRef SelectedItem : MySelectedItems)
 	{
 		if (SelectedItem->IsLayerMuted())
 		{
@@ -1508,7 +1508,7 @@ void SMyUsdLayersTreeView::OnMuteSelectedLayer()
 		}
 	}
 
-	for (FMyUsdLayerViewModelRef SelectedItem : MySelectedItems)
+	for (FUsdLayerViewModelRef SelectedItem : MySelectedItems)
 	{
 		if ((bAnyIsMuted && SelectedItem->IsLayerMuted()) || !bAnyIsMuted)
 		{
@@ -1521,7 +1521,7 @@ void SMyUsdLayersTreeView::OnMuteSelectedLayer()
 
 void SMyUsdLayersTreeView::OnClearSelectedLayers()
 {
-	TArray<FMyUsdLayerViewModelRef> MySelectedItems = GetSelectedItems();
+	TArray<FUsdLayerViewModelRef> MySelectedItems = GetSelectedItems();
 
 	// We'll show a confirmation toast, which is non-modal. So keep track of the original selected items so that
 	// if anything changes by the time we accept the dialog we'll still know which layers to clear
@@ -1530,7 +1530,7 @@ void SMyUsdLayersTreeView::OnClearSelectedLayers()
 
 	FString LayerNames;
 	const FString Separator = TEXT(", ");
-	for (FMyUsdLayerViewModelRef SelectedItem : MySelectedItems)
+	for (FUsdLayerViewModelRef SelectedItem : MySelectedItems)
 	{
 		if (UE::FSdfLayer Layer = SelectedItem->GetLayer())
 		{
@@ -1556,7 +1556,7 @@ void SMyUsdLayersTreeView::OnClearSelectedLayers()
 		}
 	};
 
-	const UMyUsdProjectSettings* Settings = GetDefault<UMyUsdProjectSettings>();
+	const UUsdProjectSettings* Settings = GetDefault<UUsdProjectSettings>();
 	if (Settings && Settings->bShowConfirmationWhenClearingLayers)
 	{
 		static TWeakPtr<SNotificationItem> Notification;
@@ -1589,7 +1589,7 @@ void SMyUsdLayersTreeView::OnClearSelectedLayers()
 						PinnedNotification->SetCompletionState(SNotificationItem::CS_Success);
 						PinnedNotification->ExpireAndFadeout();
 
-						UMyUsdProjectSettings* Settings = GetMutableDefault<UMyUsdProjectSettings>();
+						UUsdProjectSettings* Settings = GetMutableDefault<UUsdProjectSettings>();
 						Settings->bShowConfirmationWhenClearingLayers = false;
 						Settings->SaveConfig();
 
@@ -1651,9 +1651,9 @@ void SMyUsdLayersTreeView::OnClearSelectedLayers()
 
 bool SMyUsdLayersTreeView::CanClearSelectedLayers() const
 {
-	TArray<FMyUsdLayerViewModelRef> MySelectedItems = GetSelectedItems();
+	TArray<FUsdLayerViewModelRef> MySelectedItems = GetSelectedItems();
 
-	for (FMyUsdLayerViewModelRef SelectedItem : MySelectedItems)
+	for (FUsdLayerViewModelRef SelectedItem : MySelectedItems)
 	{
 		if (!SelectedItem->GetLayer().IsEmpty())
 		{
@@ -1668,8 +1668,8 @@ void SMyUsdLayersTreeView::OnReloadSelectedLayers()
 {
 	FScopedTransaction Transaction(LOCTEXT("ReloadLayersTransaction", "Reload selected layers"));
 
-	TArray<FMyUsdLayerViewModelRef> MySelectedItems = GetSelectedItems();
-	for (FMyUsdLayerViewModelRef SelectedItem : MySelectedItems)
+	TArray<FUsdLayerViewModelRef> MySelectedItems = GetSelectedItems();
+	for (FUsdLayerViewModelRef SelectedItem : MySelectedItems)
 	{
 		UE::USDLayersTreeViewImpl::Private::ReloadOrShowWarning(SelectedItem);
 	}
@@ -1677,8 +1677,8 @@ void SMyUsdLayersTreeView::OnReloadSelectedLayers()
 
 bool SMyUsdLayersTreeView::CanReloadSelectedLayers() const
 {
-	TArray<FMyUsdLayerViewModelRef> MySelectedItems = GetSelectedItems();
-	for (FMyUsdLayerViewModelRef SelectedItem : MySelectedItems)
+	TArray<FUsdLayerViewModelRef> MySelectedItems = GetSelectedItems();
+	for (FUsdLayerViewModelRef SelectedItem : MySelectedItems)
 	{
 		if (!SelectedItem->CanReload())
 		{
@@ -1691,9 +1691,9 @@ bool SMyUsdLayersTreeView::CanReloadSelectedLayers() const
 
 void SMyUsdLayersTreeView::OnSaveSelectedLayers()
 {
-	TArray<FMyUsdLayerViewModelRef> MySelectedItems = GetSelectedItems();
+	TArray<FUsdLayerViewModelRef> MySelectedItems = GetSelectedItems();
 
-	for (FMyUsdLayerViewModelRef SelectedItem : MySelectedItems)
+	for (FUsdLayerViewModelRef SelectedItem : MySelectedItems)
 	{
 		if (SelectedItem->IsLayerDirty())
 		{
@@ -1705,9 +1705,9 @@ void SMyUsdLayersTreeView::OnSaveSelectedLayers()
 
 bool SMyUsdLayersTreeView::CanSaveSelectedLayers() const
 {
-	TArray<FMyUsdLayerViewModelRef> MySelectedItems = GetSelectedItems();
+	TArray<FUsdLayerViewModelRef> MySelectedItems = GetSelectedItems();
 
-	for (FMyUsdLayerViewModelRef SelectedItem : MySelectedItems)
+	for (FUsdLayerViewModelRef SelectedItem : MySelectedItems)
 	{
 		if (SelectedItem->IsLayerDirty())
 		{
@@ -1720,12 +1720,12 @@ bool SMyUsdLayersTreeView::CanSaveSelectedLayers() const
 
 void SMyUsdLayersTreeView::ExportSelectedLayers(const FString& OutputLayerOrDirectory) const
 {
-	TArray<FMyUsdLayerViewModelRef> MySelectedItems = GetSelectedItems();
+	TArray<FUsdLayerViewModelRef> MySelectedItems = GetSelectedItems();
 
 	TArray<UE::FSdfLayer> LayersToExport;
 	LayersToExport.Reserve(MySelectedItems.Num());
 
-	for (FMyUsdLayerViewModelRef SelectedItem : MySelectedItems)
+	for (FUsdLayerViewModelRef SelectedItem : MySelectedItems)
 	{
 		UE::FSdfLayer SelectedLayer = SelectedItem->GetLayer();
 		if (!SelectedLayer)
@@ -1815,7 +1815,7 @@ void SMyUsdLayersTreeView::ExportSelectedLayers(const FString& OutputLayerOrDire
 
 		bool bAutomated = false;
 		double ElapsedSeconds = FPlatformTime::ToSeconds64(FPlatformTime::Cycles64() - StartTime);
-		IMyUsdClassesModule::SendAnalytics(
+		IUsdClassesModule::SendAnalytics(
 			MoveTemp(EventAttributes),
 			TEXT("ExportSelectedLayers"),
 			bAutomated,
@@ -1842,10 +1842,10 @@ void SMyUsdLayersTreeView::OnAddSubLayer()
 
 	FScopedTransaction Transaction(LOCTEXT("AddExistingSublayerTransaction", "Add existing sublayer"));
 
-	TArray<FMyUsdLayerViewModelRef> MySelectedItems = GetSelectedItems();
+	TArray<FUsdLayerViewModelRef> MySelectedItems = GetSelectedItems();
 	if (MySelectedItems.Num() > 0)
 	{
-		FMyUsdLayerViewModelRef SelectedItem = MySelectedItems[0];
+		FUsdLayerViewModelRef SelectedItem = MySelectedItems[0];
 		SelectedItem->AddSubLayer(*SubLayerFile.GetValue());
 	}
 
@@ -1863,17 +1863,17 @@ void SMyUsdLayersTreeView::OnNewSubLayer()
 
 	FScopedTransaction Transaction(LOCTEXT("AddNewSublayerTransaction", "Add new sublayer"));
 
-	TArray<FMyUsdLayerViewModelRef> MySelectedItems = GetSelectedItems();
+	TArray<FUsdLayerViewModelRef> MySelectedItems = GetSelectedItems();
 	if (MySelectedItems.Num() > 0)
 	{
-		FMyUsdLayerViewModelRef SelectedItem = MySelectedItems[0];
+		FUsdLayerViewModelRef SelectedItem = MySelectedItems[0];
 		SelectedItem->NewSubLayer(*SubLayerFile.GetValue());
 	}
 
 	RequestTreeRefresh();
 }
 
-bool SMyUsdLayersTreeView::CanRemoveLayer(FMyUsdLayerViewModelRef LayerItem) const
+bool SMyUsdLayersTreeView::CanRemoveLayer(FUsdLayerViewModelRef LayerItem) const
 {
 	// We can't remove root layers
 	return (LayerItem->IsValid() && LayerItem->ParentItem && LayerItem->ParentItem->IsValid());
@@ -1883,9 +1883,9 @@ bool SMyUsdLayersTreeView::CanRemoveSelectedLayers() const
 {
 	bool bHasRemovableLayer = false;
 
-	TArray<FMyUsdLayerViewModelRef> SelectedLayers = GetSelectedItems();
+	TArray<FUsdLayerViewModelRef> SelectedLayers = GetSelectedItems();
 
-	for (FMyUsdLayerViewModelRef SelectedLayer : SelectedLayers)
+	for (FUsdLayerViewModelRef SelectedLayer : SelectedLayers)
 	{
 		// We can't remove root layers
 		if (CanRemoveLayer(SelectedLayer))
@@ -1902,11 +1902,11 @@ void SMyUsdLayersTreeView::OnRemoveSelectedLayers()
 {
 	bool bLayerRemoved = false;
 
-	TArray<FMyUsdLayerViewModelRef> SelectedLayers = GetSelectedItems();
+	TArray<FUsdLayerViewModelRef> SelectedLayers = GetSelectedItems();
 
 	FScopedTransaction Transaction(LOCTEXT("RemoveSublayerTransaction", "Remove sublayers"));
 
-	for (FMyUsdLayerViewModelRef SelectedLayer : SelectedLayers)
+	for (FUsdLayerViewModelRef SelectedLayer : SelectedLayers)
 	{
 		if (!CanRemoveLayer(SelectedLayer))
 		{
@@ -1914,7 +1914,7 @@ void SMyUsdLayersTreeView::OnRemoveSelectedLayers()
 		}
 
 		int32 SubLayerIndex = 0;
-		for (FMyUsdLayerViewModelRef Child : SelectedLayer->ParentItem->Children)
+		for (FUsdLayerViewModelRef Child : SelectedLayer->ParentItem->Children)
 		{
 			if (Child->LayerIdentifier == SelectedLayer->LayerIdentifier)
 			{
@@ -1937,7 +1937,7 @@ void SMyUsdLayersTreeView::OnRemoveSelectedLayers()
 
 void SMyUsdLayersTreeView::RestoreExpansionStates()
 {
-	TFunction<void(const FMyUsdLayerViewModelRef&)> SetExpansionRecursive = [&](const FMyUsdLayerViewModelRef& Item)
+	TFunction<void(const FUsdLayerViewModelRef&)> SetExpansionRecursive = [&](const FUsdLayerViewModelRef& Item)
 	{
 		if (Item->IsValid())
 		{
@@ -1953,13 +1953,13 @@ void SMyUsdLayersTreeView::RestoreExpansionStates()
 			}
 		}
 
-		for (const FMyUsdLayerViewModelRef& Child : Item->Children)
+		for (const FUsdLayerViewModelRef& Child : Item->Children)
 		{
 			SetExpansionRecursive(Child);
 		}
 	};
 
-	for (const FMyUsdLayerViewModelRef& RootItem : RootItems)
+	for (const FUsdLayerViewModelRef& RootItem : RootItems)
 	{
 		SetExpansionRecursive(RootItem);
 	}

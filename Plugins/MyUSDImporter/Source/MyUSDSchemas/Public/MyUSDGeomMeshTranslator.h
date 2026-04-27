@@ -19,21 +19,21 @@ class FStaticMeshComponentRecreateRenderStateContext;
 
 namespace UsdUtils
 {
-	struct FMyUsdPrimMaterialAssignmentInfo;
+	struct FUsdPrimMaterialAssignmentInfo;
 }
 
-class FBaseBuildStaticMeshTaskChain : public FMyUsdSchemaTranslatorTaskChain
+class FBaseBuildStaticMeshTaskChain : public FUsdSchemaTranslatorTaskChain
 {
 public:
 	explicit FBaseBuildStaticMeshTaskChain(
-		const TSharedRef<FMyUsdSchemaTranslationContext>& InContext,
+		const TSharedRef<FUsdSchemaTranslationContext>& InContext,
 		const UE::FSdfPath& InPrimPath
 	);
 
 protected:
 	// Inputs
 	UE::FSdfPath PrimPath;
-	TSharedRef<FMyUsdSchemaTranslationContext> Context;
+	TSharedRef<FUsdSchemaTranslationContext> Context;
 	TArray<FMeshDescription> LODIndexToMeshDescription;
 
 	// Outputs
@@ -43,7 +43,7 @@ protected:
 	TSharedPtr<FStaticMeshComponentRecreateRenderStateContext> RecreateRenderStateContextPtr;
 
 protected:
-	UE::FMyUsdPrim GetPrim() const
+	UE::FUsdPrim GetPrim() const
 	{
 		return Context->Stage.GetPrimAtPath(PrimPath);
 	}
@@ -55,17 +55,17 @@ class FBuildStaticMeshTaskChain : public FBaseBuildStaticMeshTaskChain
 {
 public:
 	explicit FBuildStaticMeshTaskChain(
-		const TSharedRef<FMyUsdSchemaTranslationContext>& InContext,
+		const TSharedRef<FUsdSchemaTranslationContext>& InContext,
 		const UE::FSdfPath& InPrimPath,
 		const TOptional<UE::FSdfPath>& AlternativePrimToLinkAssetsTo = {}
 	);
 
 protected:
 	// Inputs
-	TArray<UsdUtils::FMyUsdPrimMaterialAssignmentInfo> LODIndexToMaterialInfo;
+	TArray<UsdUtils::FUsdPrimMaterialAssignmentInfo> LODIndexToMaterialInfo;
 	// We collect metadata early (during LOD parsing) so that we don't have to flip through
 	// LODs multiple times
-	FMyUsdCombinedPrimMetadata LODMetadata;
+	FUsdCombinedPrimMetadata LODMetadata;
 
 	// Outputs
 	TOptional<UE::FSdfPath> AlternativePrimToLinkAssetsTo;
@@ -79,7 +79,7 @@ class FGeomMeshCreateAssetsTaskChain : public FBuildStaticMeshTaskChain
 {
 public:
 	explicit FGeomMeshCreateAssetsTaskChain(
-		const TSharedRef<FMyUsdSchemaTranslationContext>& InContext,
+		const TSharedRef<FUsdSchemaTranslationContext>& InContext,
 		const UE::FSdfPath& PrimPath,
 		const TOptional<UE::FSdfPath>& AlternativePrimToLinkAssetsTo = {},
 		const FTransform& AdditionalTransform = FTransform::Identity

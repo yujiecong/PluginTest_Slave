@@ -52,7 +52,7 @@ namespace UE::MeshTranslationImplInternal::Private
 	UMaterialInterface* GetOrCreateTwoSidedVersionOfMaterial(
 		UMaterialInterface* OneSidedMat,
 		const FString& PrefixedTwoSidedHash,
-		UMyUsdAssetCache3& AssetCache
+		UUsdAssetCache3& AssetCache
 	)
 	{
 		if (!OneSidedMat)
@@ -172,16 +172,16 @@ namespace UE::MeshTranslationImplInternal::Private
 	UMaterialInterface* CreatePrimvarCompatibleVersionOfMaterial(
 		UMaterialInterface& Material,
 		const TMap<FString, int32>& MeshPrimvarToUVIndex,
-		UMyUsdAssetCache3* AssetCache,
-		FMyUsdPrimLinkCache* PrimLinkCache,
+		UUsdAssetCache3* AssetCache,
+		FUsdPrimLinkCache* PrimLinkCache,
 		const FString& MaterialHashPrefix,
 		bool bShareAssetsForIdenticalPrims
 	)
 	{
-		UMyUsdMaterialAssetUserData* MaterialAssetUserData = Material.GetAssetUserData<UMyUsdMaterialAssetUserData>();
+		UUsdMaterialAssetUserData* MaterialAssetUserData = Material.GetAssetUserData<UUsdMaterialAssetUserData>();
 		if (!ensureMsgf(
 				MaterialAssetUserData,
-				TEXT("Expected material '%s' to have an UMyUsdMaterialAssetUserData at this point!"),
+				TEXT("Expected material '%s' to have an UUsdMaterialAssetUserData at this point!"),
 				*Material.GetPathName()
 			))
 		{
@@ -361,7 +361,7 @@ namespace UE::MeshTranslationImplInternal::Private
 
 		// Update the AssetUserData whether we created a new material instance or reused one from the asset cache.
 		// The compatible AssetUserData should always match the original except for the different PrimvarToUVIndex
-		UMyUsdMaterialAssetUserData* CompatibleUserData = nullptr;
+		UUsdMaterialAssetUserData* CompatibleUserData = nullptr;
 		if (CompatibleMaterial)
 		{
 			CompatibleUserData = DuplicateObject(MaterialAssetUserData, CompatibleMaterial);
@@ -415,11 +415,11 @@ namespace UE::MeshTranslationImplInternal::Private
 	}
 };	  // namespace UE::MeshTranslationImplInternal::Private
 
-TMap<const UsdUtils::FMyUsdPrimMaterialSlot*, UMaterialInterface*> MeshTranslationImpl::ResolveMaterialAssignmentInfo(
+TMap<const UsdUtils::FUsdPrimMaterialSlot*, UMaterialInterface*> MeshTranslationImpl::ResolveMaterialAssignmentInfo(
 	const pxr::UsdPrim& UsdPrim,
-	const TArray<UsdUtils::FMyUsdPrimMaterialAssignmentInfo>& AssignmentInfo,
-	UMyUsdAssetCache3& AssetCache,
-	FMyUsdPrimLinkCache& PrimLinkCache,
+	const TArray<UsdUtils::FUsdPrimMaterialAssignmentInfo>& AssignmentInfo,
+	UUsdAssetCache3& AssetCache,
+	FUsdPrimLinkCache& PrimLinkCache,
 	EObjectFlags Flags,
 	bool bShareAssetsForIdenticalPrims
 )
@@ -428,7 +428,7 @@ TMap<const UsdUtils::FMyUsdPrimMaterialSlot*, UMaterialInterface*> MeshTranslati
 
 	FScopedUnrealAllocs Allocs;
 
-	TMap<const UsdUtils::FMyUsdPrimMaterialSlot*, UMaterialInterface*> ResolvedMaterials;
+	TMap<const UsdUtils::FUsdPrimMaterialSlot*, UMaterialInterface*> ResolvedMaterials;
 	if (AssignmentInfo.Num() == 0)
 	{
 		return ResolvedMaterials;
@@ -443,11 +443,11 @@ TMap<const UsdUtils::FMyUsdPrimMaterialSlot*, UMaterialInterface*> MeshTranslati
 	uint32 GlobalResolvedMaterialIndex = 0;
 	for (int32 InfoIndex = 0; InfoIndex < AssignmentInfo.Num(); ++InfoIndex)
 	{
-		const TArray<UsdUtils::FMyUsdPrimMaterialSlot>& Slots = AssignmentInfo[InfoIndex].Slots;
+		const TArray<UsdUtils::FUsdPrimMaterialSlot>& Slots = AssignmentInfo[InfoIndex].Slots;
 
 		for (int32 SlotIndex = 0; SlotIndex < Slots.Num(); ++SlotIndex, ++GlobalResolvedMaterialIndex)
 		{
-			const UsdUtils::FMyUsdPrimMaterialSlot& Slot = Slots[SlotIndex];
+			const UsdUtils::FUsdPrimMaterialSlot& Slot = Slots[SlotIndex];
 			UMaterialInterface* Material = nullptr;
 
 			switch (Slot.AssignmentType)
@@ -625,13 +625,13 @@ TMap<const UsdUtils::FMyUsdPrimMaterialSlot*, UMaterialInterface*> MeshTranslati
 						{
 							// Update AssetUserData whether we generated a new material or reused one from the asset cache
 							{
-								UMyUsdMaterialAssetUserData* OneSidedUserData = UsdUnreal::ObjectUtils::GetAssetUserData<UMyUsdMaterialAssetUserData>(
+								UUsdMaterialAssetUserData* OneSidedUserData = UsdUnreal::ObjectUtils::GetAssetUserData<UUsdMaterialAssetUserData>(
 									Material
 								);
 								ensure(OneSidedUserData);
 
-								UMyUsdMaterialAssetUserData*
-									TwoSidedUserData = UsdUnreal::ObjectUtils::GetOrCreateAssetUserData<UMyUsdMaterialAssetUserData>(TwoSidedMat);
+								UUsdMaterialAssetUserData*
+									TwoSidedUserData = UsdUnreal::ObjectUtils::GetOrCreateAssetUserData<UUsdMaterialAssetUserData>(TwoSidedMat);
 
 								// Copy stuff from OneSidedMat when it makes sense, as it may have been regenerated
 								if (OneSidedUserData && TwoSidedUserData)
@@ -756,7 +756,7 @@ void MeshTranslationImpl::SetMaterialOverrides(
 	const pxr::UsdPrim& Prim,
 	const TArray<UMaterialInterface*>& ExistingAssignments,
 	UMeshComponent& MeshComponent,
-	FMyUsdSchemaTranslationContext& Context
+	FUsdSchemaTranslationContext& Context
 )
 {
 	FScopedUsdAllocs Allocs;
@@ -776,15 +776,15 @@ void MeshTranslationImpl::SetMaterialOverrides(
 		MaterialPurposeToken = UnrealToUsd::ConvertToken(*Context.MaterialPurpose.ToString()).Get();
 	}
 
-	TArray<UsdUtils::FMyUsdPrimMaterialAssignmentInfo> LODIndexToAssignments;
+	TArray<UsdUtils::FUsdPrimMaterialAssignmentInfo> LODIndexToAssignments;
 	const bool bProvideMaterialIndices = false;	   // We have no use for material indices and it can be slow to retrieve, as it will iterate all faces
 
 	// Extract material assignment info from prim if it is a LOD mesh
 	bool bInterpretedLODs = false;
 	if (Context.bAllowInterpretingLODs && UsdUtils::IsGeomMeshALOD(Prim))
 	{
-		TMap<int32, UsdUtils::FMyUsdPrimMaterialAssignmentInfo> LODIndexToMaterialInfoMap;
-		TMap<int32, TSet<UsdUtils::FMyUsdPrimMaterialSlot>> CombinedSlotsForLODIndex;
+		TMap<int32, UsdUtils::FUsdPrimMaterialAssignmentInfo> LODIndexToMaterialInfoMap;
+		TMap<int32, TSet<UsdUtils::FUsdPrimMaterialSlot>> CombinedSlotsForLODIndex;
 
 		TFunction<bool(const pxr::UsdGeomMesh&, int32)> IterateLODs = [&Context,
 																	   &RenderContextToken,
@@ -797,7 +797,7 @@ void MeshTranslationImpl::SetMaterialOverrides(
 			// LOD variant set setups as that involves actively toggling variants.
 			// TODO: Make the cache rebuild collect this info. Right now is not a good time for this as that would
 			// break the parallel-for setup that that function has
-			UsdUtils::FMyUsdPrimMaterialAssignmentInfo LocalInfo = UsdUtils::GetPrimMaterialAssignments(
+			UsdUtils::FUsdPrimMaterialAssignmentInfo LocalInfo = UsdUtils::GetPrimMaterialAssignments(
 				LODMesh.GetPrim(),
 				pxr::UsdTimeCode(Context.Time),
 				bProvideMaterialIndices,
@@ -807,10 +807,10 @@ void MeshTranslationImpl::SetMaterialOverrides(
 
 			// When merging slots, we share the same material info across all LODs
 			int32 LODIndexToUse = Context.bMergeIdenticalMaterialSlots ? 0 : LODIndex;
-			TArray<UsdUtils::FMyUsdPrimMaterialSlot>& LODSlots = LODIndexToMaterialInfoMap.FindOrAdd(LODIndexToUse).Slots;
-			TSet<UsdUtils::FMyUsdPrimMaterialSlot>& CombinedLODSlotsSet = CombinedSlotsForLODIndex.FindOrAdd(LODIndexToUse);
+			TArray<UsdUtils::FUsdPrimMaterialSlot>& LODSlots = LODIndexToMaterialInfoMap.FindOrAdd(LODIndexToUse).Slots;
+			TSet<UsdUtils::FUsdPrimMaterialSlot>& CombinedLODSlotsSet = CombinedSlotsForLODIndex.FindOrAdd(LODIndexToUse);
 
-			for (UsdUtils::FMyUsdPrimMaterialSlot& LocalSlot : LocalInfo.Slots)
+			for (UsdUtils::FUsdPrimMaterialSlot& LocalSlot : LocalInfo.Slots)
 			{
 				if (Context.bMergeIdenticalMaterialSlots)
 				{
@@ -833,7 +833,7 @@ void MeshTranslationImpl::SetMaterialOverrides(
 		if (bInterpretedLODs)
 		{
 			LODIndexToMaterialInfoMap.KeySort(TLess<int32>());
-			for (TPair<int32, UsdUtils::FMyUsdPrimMaterialAssignmentInfo>& Entry : LODIndexToMaterialInfoMap)
+			for (TPair<int32, UsdUtils::FUsdPrimMaterialAssignmentInfo>& Entry : LODIndexToMaterialInfoMap)
 			{
 				LODIndexToAssignments.Add(MoveTemp(Entry.Value));
 			}
@@ -851,10 +851,10 @@ void MeshTranslationImpl::SetMaterialOverrides(
 		// likely just some root Xform prim.
 		// Note: This only works because we'll rebuild the cache when our material purpose/render context changes,
 		// and because in USD relationships (and so material bindings) can't vary with time
-		TOptional<TArray<UsdUtils::FMyUsdPrimMaterialSlot>> SubtreeSlots = Context.UsdInfoCache->GetSubtreeMaterialSlots(UE::FSdfPath{PrimPath});
+		TOptional<TArray<UsdUtils::FUsdPrimMaterialSlot>> SubtreeSlots = Context.UsdInfoCache->GetSubtreeMaterialSlots(UE::FSdfPath{PrimPath});
 		if (SubtreeSlots.IsSet())
 		{
-			UsdUtils::FMyUsdPrimMaterialAssignmentInfo& NewInfo = LODIndexToAssignments.Emplace_GetRef();
+			UsdUtils::FUsdPrimMaterialAssignmentInfo& NewInfo = LODIndexToAssignments.Emplace_GetRef();
 			NewInfo.Slots = MoveTemp(SubtreeSlots.GetValue());
 		}
 		else
@@ -869,28 +869,28 @@ void MeshTranslationImpl::SetMaterialOverrides(
 		}
 	}
 
-	TMap<const UsdUtils::FMyUsdPrimMaterialSlot*, UMaterialInterface*> ResolvedMaterials;
+	TMap<const UsdUtils::FUsdPrimMaterialSlot*, UMaterialInterface*> ResolvedMaterials;
 
-	UMyUsdMeshAssetUserData* UserData = nullptr;
+	UUsdMeshAssetUserData* UserData = nullptr;
 	if (UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(&MeshComponent))
 	{
 		if (UStaticMesh* Mesh = StaticMeshComponent->GetStaticMesh())
 		{
-			UserData = Mesh->GetAssetUserData<UMyUsdMeshAssetUserData>();
+			UserData = Mesh->GetAssetUserData<UUsdMeshAssetUserData>();
 		}
 	}
 	else if (USkeletalMeshComponent* SkeletalMeshComponent = Cast<USkeletalMeshComponent>(&MeshComponent))
 	{
 		if (USkeletalMesh* Mesh = SkeletalMeshComponent->GetSkeletalMeshAsset())
 		{
-			UserData = Mesh->GetAssetUserData<UMyUsdMeshAssetUserData>();
+			UserData = Mesh->GetAssetUserData<UUsdMeshAssetUserData>();
 		}
 	}
 	else if (UGeometryCacheComponent* GeometryCacheComponent = Cast<UGeometryCacheComponent>(&MeshComponent))
 	{
 		if (UGeometryCache* Mesh = GeometryCacheComponent->GetGeometryCache())
 		{
-			UserData = Mesh->GetAssetUserData<UMyUsdMeshAssetUserData>();
+			UserData = Mesh->GetAssetUserData<UUsdMeshAssetUserData>();
 		}
 	}
 	else
@@ -905,7 +905,7 @@ void MeshTranslationImpl::SetMaterialOverrides(
 
 	ensureMsgf(
 		UserData,
-		TEXT("Mesh assigned to component '%s' generated for prim '%s' should have an UMyUsdMeshAssetUserData at this point!"),
+		TEXT("Mesh assigned to component '%s' generated for prim '%s' should have an UUsdMeshAssetUserData at this point!"),
 		*MeshComponent.GetPathName(),
 		*UsdToUnreal::ConvertPath(Prim.GetPrimPath())
 	);
@@ -929,7 +929,7 @@ void MeshTranslationImpl::SetMaterialOverrides(
 	uint32 StaticMeshSlotIndex = 0;
 	for (int32 LODIndex = 0; LODIndex < LODIndexToAssignments.Num(); ++LODIndex)
 	{
-		const TArray<UsdUtils::FMyUsdPrimMaterialSlot>& LODSlots = LODIndexToAssignments[LODIndex].Slots;
+		const TArray<UsdUtils::FUsdPrimMaterialSlot>& LODSlots = LODIndexToAssignments[LODIndex].Slots;
 		for (int32 LODSlotIndex = 0; LODSlotIndex < LODSlots.Num(); ++LODSlotIndex, ++StaticMeshSlotIndex)
 		{
 			// If we don't even have as many existing assignments as we have overrides just stop here.
@@ -943,7 +943,7 @@ void MeshTranslationImpl::SetMaterialOverrides(
 				break;
 			}
 
-			const UsdUtils::FMyUsdPrimMaterialSlot& Slot = LODSlots[LODSlotIndex];
+			const UsdUtils::FUsdPrimMaterialSlot& Slot = LODSlots[LODSlotIndex];
 
 			UMaterialInterface* Material = nullptr;
 			if (UMaterialInterface** FoundMaterial = ResolvedMaterials.Find(&Slot))
@@ -975,8 +975,8 @@ void MeshTranslationImpl::SetMaterialOverrides(
 }
 
 void MeshTranslationImpl::RecordSourcePrimsForMaterialSlots(
-	const TArray<UsdUtils::FMyUsdPrimMaterialAssignmentInfo>& LODIndexToMaterialInfo,
-	UMyUsdMeshAssetUserData* UserData
+	const TArray<UsdUtils::FUsdPrimMaterialAssignmentInfo>& LODIndexToMaterialInfo,
+	UUsdMeshAssetUserData* UserData
 )
 {
 	if (!UserData)
@@ -987,13 +987,13 @@ void MeshTranslationImpl::RecordSourcePrimsForMaterialSlots(
 	uint32 SlotIndex = 0;
 	for (int32 LODIndex = 0; LODIndex < LODIndexToMaterialInfo.Num(); ++LODIndex)
 	{
-		const TArray<UsdUtils::FMyUsdPrimMaterialSlot>& LODSlots = LODIndexToMaterialInfo[LODIndex].Slots;
+		const TArray<UsdUtils::FUsdPrimMaterialSlot>& LODSlots = LODIndexToMaterialInfo[LODIndex].Slots;
 
 		for (int32 LODSlotIndex = 0; LODSlotIndex < LODSlots.Num(); ++LODSlotIndex, ++SlotIndex)
 		{
 			TArray<FString>& PrimPaths = UserData->MaterialSlotToPrimPaths.FindOrAdd(SlotIndex).PrimPaths;
 
-			const UsdUtils::FMyUsdPrimMaterialSlot& Slot = LODSlots[LODSlotIndex];
+			const UsdUtils::FUsdPrimMaterialSlot& Slot = LODSlots[LODSlotIndex];
 
 			PrimPaths.Reserve(PrimPaths.Num() + Slot.PrimPaths.Num());
 			for (const FString& SlotPrimPath : Slot.PrimPaths)
