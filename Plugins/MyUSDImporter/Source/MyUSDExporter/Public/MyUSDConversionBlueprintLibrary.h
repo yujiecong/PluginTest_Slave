@@ -9,7 +9,7 @@
 #include "Engine/EngineTypes.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 
-#include "USDConversionBlueprintLibrary.generated.h"
+#include "MyUSDConversionBlueprintLibrary.generated.h"
 
 #define UE_API MYUSDEXPORTER_API
 

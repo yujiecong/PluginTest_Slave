@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Templates/PimplPtr.h"
 
-#include "USDInfoCacheObject.generated.h"
+#include "MyUSDInfoCacheObject.generated.h"
 
 #define UE_API MYUSDSTAGE_API
 

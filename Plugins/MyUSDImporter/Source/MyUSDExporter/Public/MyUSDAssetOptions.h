@@ -6,7 +6,7 @@
 
 #include "RHIDefinitions.h"
 
-#include "USDAssetOptions.generated.h"
+#include "MyUSDAssetOptions.generated.h"
 
 struct FAnalyticsEventAttribute;
 

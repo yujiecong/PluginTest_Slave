@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "USDMetadataExportOptions.generated.h"
+#include "MyUSDMetadataExportOptions.generated.h"
 
 struct FAnalyticsEventAttribute;
 

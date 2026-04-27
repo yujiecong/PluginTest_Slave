@@ -7,7 +7,7 @@
 #include "Delegates/DelegateCombinations.h"
 #include "UObject/WeakObjectPtr.h"
 
-#include "USDPrimTwin.generated.h"
+#include "MyUSDPrimTwin.generated.h"
 
 /** The Unreal equivalent (twin) of a USD prim */
 UCLASS(Transient, MinimalAPI)

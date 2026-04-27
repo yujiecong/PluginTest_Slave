@@ -6,7 +6,7 @@
 
 #include "Factories/SceneImportFactory.h"
 
-#include "USDStageImportFactory.generated.h"
+#include "MyUSDStageImportFactory.generated.h"
 
 /** Factory to import USD files that gets called when we hit File -> Import into level... */
 UCLASS(Transient)

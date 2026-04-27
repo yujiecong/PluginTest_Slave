@@ -9,7 +9,7 @@
 #include "CoreMinimal.h"
 #include "GroomAssetInterpolation.h"
 
-#include "USDStageImportOptions.generated.h"
+#include "MyUSDStageImportOptions.generated.h"
 
 #define UE_API MYUSDSTAGEIMPORTER_API
 

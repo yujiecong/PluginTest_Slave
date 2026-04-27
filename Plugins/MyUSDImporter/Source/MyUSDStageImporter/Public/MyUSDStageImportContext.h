@@ -10,7 +10,7 @@
 
 #include "CoreMinimal.h"
 
-#include "USDStageImportContext.generated.h"
+#include "MyUSDStageImportContext.generated.h"
 
 #define UE_API MYUSDSTAGEIMPORTER_API
 

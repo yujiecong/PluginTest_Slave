@@ -7,7 +7,7 @@
 #include "EditorReimportHandler.h"
 #include "Factories/Factory.h"
 
-#include "USDStageAssetImportFactory.generated.h"
+#include "MyUSDStageAssetImportFactory.generated.h"
 
 /** Factory to import USD files that gets called when we hit Import in the Content Browser, as well as during reimport */
 UCLASS(hidecategories = Object)

@@ -12,7 +12,7 @@
 #include "Engine/EngineTypes.h"
 #include "MaterialOptions.h"
 
-#include "USDConversionBlueprintContext.generated.h"
+#include "MyUSDConversionBlueprintContext.generated.h"
 
 #define UE_API MYUSDEXPORTER_API
 

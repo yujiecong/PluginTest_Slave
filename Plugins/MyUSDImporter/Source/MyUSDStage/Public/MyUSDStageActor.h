@@ -15,7 +15,7 @@
 #include "GameFramework/Actor.h"
 #include "Misc/ITransaction.h"
 
-#include "USDStageActor.generated.h"
+#include "MyUSDStageActor.generated.h"
 
 #define UE_API MYUSDSTAGE_API
 

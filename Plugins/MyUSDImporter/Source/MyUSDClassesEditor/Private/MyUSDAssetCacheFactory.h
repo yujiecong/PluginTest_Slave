@@ -6,7 +6,7 @@
 #include "Factories/Factory.h"
 #include "UObject/ObjectMacros.h"
 
-#include "USDAssetCacheFactory.generated.h"
+#include "MyUSDAssetCacheFactory.generated.h"
 
 UCLASS(hidecategories = Object)
 class UMyUsdAssetCacheFactory : public UFactory
