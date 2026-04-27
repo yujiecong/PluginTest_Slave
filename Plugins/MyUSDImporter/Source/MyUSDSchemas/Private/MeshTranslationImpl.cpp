@@ -2,9 +2,13 @@
 
 #include "MeshTranslationImpl.h"
 
+#define private public
 #include "Objects/USDInfoCache.h"
+#undef private
 #include "Objects/USDPrimLinkCache.h"
+#define private public
 #include "Objects/USDSchemaTranslator.h"
+#undef private
 #include "UnrealUSDWrapper.h"
 #include "USDAssetCache3.h"
 #include "USDAssetUserData.h"

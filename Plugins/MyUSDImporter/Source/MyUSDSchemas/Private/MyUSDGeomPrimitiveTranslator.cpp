@@ -4,7 +4,9 @@
 
 #if USE_USD_SDK
 
+#define private public
 #include "Objects/USDInfoCache.h"
+#undef private
 #include "Objects/USDPrimLinkCache.h"
 #include "UnrealUSDWrapper.h"
 #include "USDConversionUtils.h"

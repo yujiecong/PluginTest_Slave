@@ -6,7 +6,9 @@
 // The GeometryCacheStreamer module is editor-only, so is the translator
 
 #include "MeshTranslationImpl.h"
+#define private public
 #include "Objects/USDInfoCache.h"
+#undef private
 #include "Objects/USDPrimLinkCache.h"
 #include "USDAssetCache3.h"
 #include "USDAssetUserData.h"

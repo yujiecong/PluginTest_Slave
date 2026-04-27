@@ -5,4 +5,6 @@
 #include "Misc/CoreMiscDefines.h"
 UE_DEPRECATED_HEADER(5.6, "Use USDInfoCache.h from the USDUtilities module instead")
 
+#define private public
 #include "Objects/USDInfoCache.h"
+#undef private

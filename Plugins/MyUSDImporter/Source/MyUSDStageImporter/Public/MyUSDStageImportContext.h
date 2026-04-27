@@ -2,7 +2,9 @@
 
 #pragma once
 
+#define private public
 #include "Objects/USDInfoCache.h"
+#undef private
 #include "MyUSDLevelSequenceHelper.h"
 #include "USDStageOptions.h"
 

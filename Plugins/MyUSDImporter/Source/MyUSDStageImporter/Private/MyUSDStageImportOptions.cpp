@@ -2,7 +2,9 @@
 
 #include "MyUSDStageImportOptions.h"
 
+#define private public
 #include "Objects/USDSchemaTranslator.h"
+#undef private
 #include "MyUSDSchemasModule.h"
 
 #include "AnalyticsEventAttribute.h"

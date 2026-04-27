@@ -2,7 +2,9 @@
 
 #include "MyUSDSchemasModule.h"
 
+#define private public
 #include "Objects/USDSchemaTranslator.h"
+#undef private
 #include "USDMemory.h"
 #include "USDTypesConversion.h"
 

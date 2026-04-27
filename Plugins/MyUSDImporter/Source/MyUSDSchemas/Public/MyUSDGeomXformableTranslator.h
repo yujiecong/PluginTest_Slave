@@ -2,7 +2,9 @@
 
 #pragma once
 
+#define private public
 #include "Objects/USDSchemaTranslator.h"
+#undef private
 
 #include "Misc/Optional.h"
 
