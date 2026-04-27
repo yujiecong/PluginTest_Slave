@@ -2,6 +2,18 @@
 
 #include "MyUSDGeomXformableTranslator.h"
 
+#include "Objects/USDInfoCache.h"
+
+class FUsdGeomXformableTranslator
+{
+public:
+    static TOptional<bool> CallCanXformableSubtreeBeCollapsed(const FUsdInfoCache* Cache, const UE::FSdfPath& RootPath, FUsdSchemaTranslationContext& Context)
+    {
+        return Cache->CanXformableSubtreeBeCollapsed(RootPath, Context);
+    }
+};
+
+
 #include "MeshTranslationImpl.h"
 #include "Objects/USDPrimLinkCache.h"
 #include "UnrealUSDWrapper.h"
@@ -1131,7 +1143,7 @@ bool FMyUsdGeomXformableTranslator::CollapsesChildren(ECollapsingType Collapsing
 		if (bCollapsesChildren)
 		{
 			// This indicates whether the subtree *can* be collapsed
-			TOptional<bool> bSubtreeCanBeCollapsed = Context->UsdInfoCache->CanXformableSubtreeBeCollapsed(PrimPath, *Context);
+			TOptional<bool> bSubtreeCanBeCollapsed = FUsdGeomXformableTranslator::CallCanXformableSubtreeBeCollapsed(Context->UsdInfoCache.Get(), PrimPath, *Context);
 			if (bSubtreeCanBeCollapsed.IsSet())
 			{
 				return bSubtreeCanBeCollapsed.GetValue();

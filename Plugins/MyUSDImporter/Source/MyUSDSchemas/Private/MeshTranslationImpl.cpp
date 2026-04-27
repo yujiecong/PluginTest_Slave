@@ -2,13 +2,9 @@
 
 #include "MeshTranslationImpl.h"
 
-#define private public
 #include "Objects/USDInfoCache.h"
-#undef private
 #include "Objects/USDPrimLinkCache.h"
-#define private public
 #include "Objects/USDSchemaTranslator.h"
-#undef private
 #include "UnrealUSDWrapper.h"
 #include "USDAssetCache3.h"
 #include "USDAssetUserData.h"
@@ -803,7 +799,7 @@ void MeshTranslationImpl::SetMaterialOverrides(
 			// break the parallel-for setup that that function has
 			UsdUtils::FUsdPrimMaterialAssignmentInfo LocalInfo = UsdUtils::GetPrimMaterialAssignments(
 				LODMesh.GetPrim(),
-				pxr::UsdTimeCode(Context.Time),
+				Context.Time,
 				bProvideMaterialIndices,
 				RenderContextToken,
 				MaterialPurposeToken
@@ -865,7 +861,7 @@ void MeshTranslationImpl::SetMaterialOverrides(
 		{
 			LODIndexToAssignments = {UsdUtils::GetPrimMaterialAssignments(
 				ValidPrim,
-				pxr::UsdTimeCode(Context.Time),
+				Context.Time,
 				bProvideMaterialIndices,
 				RenderContextToken,
 				MaterialPurposeToken

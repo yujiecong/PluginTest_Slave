@@ -5,6 +5,4 @@
 #include "Misc/CoreMiscDefines.h"
 UE_DEPRECATED_HEADER(5.6, "Use Objects/USDSchemaTranslator.h from the USDUtilities module instead")
 
-#define private public
 #include "Objects/USDSchemaTranslator.h"
-#undef private

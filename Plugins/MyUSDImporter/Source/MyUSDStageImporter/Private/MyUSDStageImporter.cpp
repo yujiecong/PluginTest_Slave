@@ -2,9 +2,7 @@
 
 #include "MyUSDStageImporter.h"
 
-#define private public
 #include "Objects/USDSchemaTranslator.h"
-#undef private
 #include "USDAssetCache3.h"
 #include "USDAssetImportData.h"
 #include "USDAssetUserData.h"

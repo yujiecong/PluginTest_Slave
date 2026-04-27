@@ -2,9 +2,7 @@
 
 #pragma once
 
-#define private public
 #include "Objects/USDSchemaTranslator.h"
-#undef private
 
 #define UE_API MYUSDSCHEMAS_API
 

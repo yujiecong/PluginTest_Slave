@@ -2,13 +2,9 @@
 
 #include "MyUSDStageActor.h"
 
-#define private public
 #include "Objects/USDInfoCache.h"
-#undef private
 #include "Objects/USDPrimLinkCache.h"
-#define private public
 #include "Objects/USDSchemaTranslator.h"
-#undef private
 #include "UnrealUSDWrapper.h"
 #include "UObject/Package.h"
 #include "USDAssetCache2.h"

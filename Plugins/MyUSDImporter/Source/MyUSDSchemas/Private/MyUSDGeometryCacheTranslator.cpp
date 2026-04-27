@@ -2,13 +2,23 @@
 
 #include "MyUSDGeometryCacheTranslator.h"
 
+#include "Objects/USDInfoCache.h"
+
+class FUsdGeometryCacheTranslator
+{
+public:
+    static bool CallIsPotentialGeometryCacheRoot(const FUsdInfoCache* Cache, const UE::FUsdPrim& Prim)
+    {
+        return Cache->IsPotentialGeometryCacheRoot(Prim);
+    }
+};
+
+
 #if USE_USD_SDK && WITH_EDITOR
 // The GeometryCacheStreamer module is editor-only, so is the translator
 
 #include "MeshTranslationImpl.h"
-#define private public
 #include "Objects/USDInfoCache.h"
-#undef private
 #include "Objects/USDPrimLinkCache.h"
 #include "USDAssetCache3.h"
 #include "USDAssetUserData.h"
@@ -1225,7 +1235,7 @@ TSet<UE::FSdfPath> FMyUsdGeometryCacheTranslator::CollectAuxiliaryPrims() const
 bool FMyUsdGeometryCacheTranslator::IsPotentialGeometryCacheRoot() const
 {
 	// The logic to check for GeometryCache is completely in the UsdInfoCache
-	return Context->UsdInfoCache->IsPotentialGeometryCacheRoot(GetPrim());
+	return FUsdGeometryCacheTranslator::CallIsPotentialGeometryCacheRoot(Context->UsdInfoCache.Get(), GetPrim());
 }
 
 #endif	  // #if USE_USD_SDK

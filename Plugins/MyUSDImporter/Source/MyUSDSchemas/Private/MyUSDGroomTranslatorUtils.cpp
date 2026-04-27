@@ -4,9 +4,7 @@
 
 #if USE_USD_SDK && WITH_EDITOR
 
-#define private public
 #include "Objects/USDInfoCache.h"
-#undef private
 #include "Objects/USDPrimLinkCache.h"
 #include "UnrealUSDWrapper.h"
 #include "USDAssetCache3.h"

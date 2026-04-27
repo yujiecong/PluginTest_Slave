@@ -2,9 +2,19 @@
 
 #include "MyUSDSchemasModule.h"
 
-#define private public
 #include "Objects/USDSchemaTranslator.h"
-#undef private
+
+class FUsdSchemasModule
+{
+public:
+    static void CallResetExternalTranslatorCount(FUsdSchemaTranslatorRegistry& Registry)
+    {
+        FUsdSchemasModule::CallResetExternalTranslatorCount(Registry);
+    }
+};
+
+
+#include "Objects/USDSchemaTranslator.h"
 #include "USDMemory.h"
 #include "USDTypesConversion.h"
 
@@ -81,7 +91,7 @@ public:
 		}
 #endif	  // WITH_EDITOR
 
-		Registry.ResetExternalTranslatorCount();
+		FUsdSchemasModule::CallResetExternalTranslatorCount(Registry);
 
 #endif	  // #if USE_USD_SDK
 	}

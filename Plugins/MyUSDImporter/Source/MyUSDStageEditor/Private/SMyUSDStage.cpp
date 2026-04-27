@@ -2,9 +2,7 @@
 
 #include "SMyUSDStage.h"
 
-#define private public
 #include "Objects/USDSchemaTranslator.h"
-#undef private
 #include "SMyUSDLayersTreeView.h"
 #include "SMyUSDPrimInfo.h"
 #include "SMyUSDStageEditorStyle.h"

@@ -354,7 +354,7 @@ void FMaterialXUsdShadeMaterialTranslator::CreateAssets()
 	// We check for the mtlx surface output directly, because ComputeSurfaceSource will return a valid SurfaceShader
 	// in case the material just has a regular universal render context output.
 	// This is just for checking though: We will defer back to USD to let it ComputeSurfaceSource with whatever logic it has
-	const static pxr::TfToken RenderContextToken = UnrealToUsd::ConvertToken(*UnrealIdentifiers::MaterialXRenderContext.ToString()).Get();
+	const pxr::TfToken RenderContextToken = UnrealToUsd::ConvertToken(*UnrealIdentifiers::MaterialXRenderContext.ToString()).Get();
 	pxr::UsdShadeOutput MtlxOutput = ShadeMaterial.GetSurfaceOutput(RenderContextToken);
 	if (!MtlxOutput)
 	{
