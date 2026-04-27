@@ -1,9 +1,0 @@
-{
-	"RemapUnityFiles": 
-	{
-		"Module.PluginSimple.cpp.obj": [
-			"PerModuleInline.gen.cpp.obj",
-			"PluginSimple.cpp.obj"
-		]
-	}
-}

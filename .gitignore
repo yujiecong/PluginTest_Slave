@@ -74,6 +74,10 @@ Intermediate/*
 # Cache files for the editor to use
 DerivedDataCache/*
 
+# Plugin Binaries and Intermediate folders
+Plugins/**/Binaries/*
+Plugins/**/Intermediate/*
+
 # Ignore Visual Studio Code workspace and settings
 *.code-workspace
 .vscode/
