@@ -6,7 +6,7 @@
 #include "Widgets/Text/STextBlock.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Layout/SBox.h"
-#include "Widgets/SVerticalBox.h"
+#include "Widgets/SBoxPanel.h"
 #include "Widgets/SWindow.h"
 #include "Framework/Application/SlateApplication.h"
 #include "Modules/ModuleManager.h"
