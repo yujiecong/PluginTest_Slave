@@ -42,6 +42,11 @@ bool UPyManimScene::IsInitialized() const
 UPyManimMobject* UPyManimScene::CreateSphere(float Radius)
 {
 	if (!bInitialized || !SceneActor) return nullptr;
+	if (Radius <= 0.0f)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("PyManimScene::CreateSphere: Invalid radius %.2f, clamping to 1.0"), Radius);
+		Radius = 1.0f;
+	}
 
 	UPyManimMobject* Obj = NewObject<UPyManimMobject>(this);
 	if (Obj)
@@ -55,6 +60,11 @@ UPyManimMobject* UPyManimScene::CreateSphere(float Radius)
 UPyManimMobject* UPyManimScene::CreateCube(float Size)
 {
 	if (!bInitialized || !SceneActor) return nullptr;
+	if (Size <= 0.0f)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("PyManimScene::CreateCube: Invalid size %.2f, clamping to 1.0"), Size);
+		Size = 1.0f;
+	}
 
 	UPyManimMobject* Obj = NewObject<UPyManimMobject>(this);
 	if (Obj)
@@ -69,6 +79,8 @@ UPyManimMobject* UPyManimScene::CreateCube(float Size)
 UPyManimMobject* UPyManimScene::CreateCylinder(float Radius, float Height)
 {
 	if (!bInitialized || !SceneActor) return nullptr;
+	if (Radius <= 0.0f) Radius = 1.0f;
+	if (Height <= 0.0f) Height = 1.0f;
 
 	UPyManimMobject* Obj = NewObject<UPyManimMobject>(this);
 	if (Obj)
@@ -83,6 +95,8 @@ UPyManimMobject* UPyManimScene::CreateCylinder(float Radius, float Height)
 UPyManimMobject* UPyManimScene::CreateCone(float Radius, float Height)
 {
 	if (!bInitialized || !SceneActor) return nullptr;
+	if (Radius <= 0.0f) Radius = 1.0f;
+	if (Height <= 0.0f) Height = 1.0f;
 
 	UPyManimMobject* Obj = NewObject<UPyManimMobject>(this);
 	if (Obj)
@@ -97,6 +111,8 @@ UPyManimMobject* UPyManimScene::CreateCone(float Radius, float Height)
 UPyManimMobject* UPyManimScene::CreatePlane(float Width, float Height)
 {
 	if (!bInitialized || !SceneActor) return nullptr;
+	if (Width <= 0.0f) Width = 1.0f;
+	if (Height <= 0.0f) Height = 1.0f;
 
 	UPyManimMobject* Obj = NewObject<UPyManimMobject>(this);
 	if (Obj)
@@ -111,6 +127,8 @@ UPyManimMobject* UPyManimScene::CreatePlane(float Width, float Height)
 UPyManimMobject* UPyManimScene::CreateTorus(float OuterRadius, float InnerRadius)
 {
 	if (!bInitialized || !SceneActor) return nullptr;
+	if (OuterRadius <= 0.0f) OuterRadius = 1.0f;
+	if (InnerRadius <= 0.0f) InnerRadius = 1.0f;
 
 	UPyManimMobject* Obj = NewObject<UPyManimMobject>(this);
 	if (Obj)
@@ -175,6 +193,11 @@ TArray<UPyManimMobject*> UPyManimScene::GetAllMobjects() const
 void UPyManimScene::Play(UPyManimAnimation* Animation)
 {
 	if (!Animation || !bInitialized) return;
+	if (Animation->GetDuration() <= 0.0f)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("PyManimScene::Play: Animation duration <= 0, skipping"));
+		return;
+	}
 	ActiveAnimations.Add(Animation);
 	Animation->Reset();
 }
@@ -182,6 +205,7 @@ void UPyManimScene::Play(UPyManimAnimation* Animation)
 void UPyManimScene::Tick(float DeltaTime)
 {
 	if (!bInitialized) return;
+	if (DeltaTime <= 0.0f) return;
 
 	for (int32 i = ActiveAnimations.Num() - 1; i >= 0; --i)
 	{
@@ -208,6 +232,21 @@ bool UPyManimScene::HasActiveAnimations() const
 void UPyManimScene::RenderFrames(const FString& OutputDirectory, float Duration, float FPS)
 {
 	if (!bInitialized || !SceneActor) return;
+	if (OutputDirectory.IsEmpty())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("PyManimScene::RenderFrames: Output directory is empty"));
+		return;
+	}
+	if (Duration <= 0.0f)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("PyManimScene::RenderFrames: Invalid duration %.2f"), Duration);
+		return;
+	}
+	if (FPS <= 0.0f)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("PyManimScene::RenderFrames: Invalid FPS %.2f"), FPS);
+		return;
+	}
 
 	if (!Renderer)
 	{
@@ -225,6 +264,11 @@ void UPyManimScene::RenderFrames(const FString& OutputDirectory, float Duration,
 void UPyManimScene::RenderSingleFrame(const FString& FilePath)
 {
 	if (!bInitialized || !SceneActor) return;
+	if (FilePath.IsEmpty())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("PyManimScene::RenderSingleFrame: File path is empty"));
+		return;
+	}
 
 	if (!Renderer)
 	{
