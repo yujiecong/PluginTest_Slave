@@ -3,7 +3,7 @@ setlocal
 
 set UE_EDITOR="C:/Program Files/Epic Games/UE_5.7/Engine/Binaries/Win64/UnrealEditor.exe"
 set PROJECT_DIR=c:/Users/42458/Documents/Unreal Projects/PluginTest
-set PROJECT=%PROJECT_DIR%/PluginTest.uproject
+set PROJECT="%PROJECT_DIR%/PluginTest.uproject"
 set TEST_SCRIPT=%PROJECT_DIR%/Scripts/tests/run_all_tests.py
 
 echo ========================================
@@ -20,7 +20,10 @@ if not exist %UE_EDITOR% (
 echo [1/1] Running tests via UE5 Editor...
 echo.
 
-%UE_EDITOR% %PROJECT% -ExecCmds="py '%TEST_SCRIPT%'" -TestExit -NoSound -Unattended -NoSplash
+set UE_CMD=%UE_EDITOR% %PROJECT% -ExecCmds="py %TEST_SCRIPT%" -TestExit -NoSound -Unattended -NoSplash
+echo %UE_CMD%
+echo.
+%UE_CMD%
 
 if %ERRORLEVEL% EQU 0 (
     echo.
