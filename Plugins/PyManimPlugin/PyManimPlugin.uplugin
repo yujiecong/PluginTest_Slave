@@ -1,0 +1,33 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "0.1.0",
+	"FriendlyName": "PyManim Plugin",
+	"Description": "Python-driven 3D rendering framework for UE5 (Manim-like)",
+	"Category": "Rendering",
+	"CreatedBy": "",
+	"CanContainContent": true,
+	"EnabledByDefault": false,
+	"Installed": false,
+	"Plugins": [
+		{
+			"Name": "PythonScriptPlugin",
+			"Enabled": true
+		},
+		{
+			"Name": "ProceduralMeshComponent",
+			"Enabled": true
+		},
+		{
+			"Name": "MovieRenderPipeline",
+			"Enabled": true
+		}
+	],
+	"Modules": [
+		{
+			"Name": "PyManimPlugin",
+			"Type": "Editor",
+			"LoadingPhase": "Default"
+		}
+	]
+}
