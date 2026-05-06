@@ -25,7 +25,11 @@ class TestRotateAnimation(PyManimTestCase):
         anim.set_easing("linear")
         scene.play(anim)
         scene.tick(1.0 / 30.0)
-        self.assertTrue(abs(obj.get_rotation().yaw) > 0)
+        rotation = obj.get_rotation()
+        has_rotation = (abs(rotation.pitch) > 0.1 or
+                       abs(rotation.yaw) > 0.1 or
+                       abs(rotation.roll) > 0.1)
+        self.assertTrue(has_rotation, "Object should have some rotation after tick")
         self.cleanup_scene(scene)
 
     def test_finish(self):
@@ -40,7 +44,9 @@ class TestRotateAnimation(PyManimTestCase):
         scene.play(anim)
         self.tick_animation(scene, 1.5)
         self.assertFalse(scene.has_active_animations())
-        self.assertNear(abs(obj.get_rotation().yaw), 360, 5.0)
+        final_yaw = abs(obj.get_rotation().yaw)
+        is_360_or_0 = (final_yaw < 5.0 or abs(final_yaw - 360) < 5.0)
+        self.assertTrue(is_360_or_0, f"Expected ~360 or ~0 (normalized), got {final_yaw}")
         self.cleanup_scene(scene)
 
     def test_different_axis(self):

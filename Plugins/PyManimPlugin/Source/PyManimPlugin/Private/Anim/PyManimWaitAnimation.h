@@ -1,11 +1,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Anim/PyManimAnimation.h"
-#include "PyManimWaitAnimation.generated.h"
+#include "Anim/UEMotionAnimation.h"
+#include "UEMotionWaitAnimation.generated.h"
 
 UCLASS(BlueprintType)
-class UPyManimWaitAnimation : public UPyManimAnimation
+class UUEMotionWaitAnimation : public UUEMotionAnimation
 {
 	GENERATED_BODY()
 

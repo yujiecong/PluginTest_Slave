@@ -4,7 +4,15 @@ import os
 import time
 import sys
 
-TESTS_DIR = os.path.dirname(os.path.abspath(__file__))
+try:
+    TESTS_DIR = os.path.dirname(os.path.abspath(__file__))
+except NameError:
+    import inspect
+    try:
+        TESTS_DIR = os.path.dirname(os.path.abspath(inspect.currentframe().f_code.co_filename))
+    except (NameError, AttributeError):
+        TESTS_DIR = os.getcwd()
+
 REPORT_DIR = os.path.join(TESTS_DIR, "test_report")
 
 

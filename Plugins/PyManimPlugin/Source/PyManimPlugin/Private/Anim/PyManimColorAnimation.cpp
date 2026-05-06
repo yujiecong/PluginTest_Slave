@@ -1,7 +1,7 @@
-#include "PyManimColorAnimation.h"
-#include "Core/PyManimMobject.h"
+#include "UEMotionColorAnimation.h"
+#include "Core/UEMotionMobject.h"
 
-void UPyManimColorAnimation::SetTargetMobject(UPyManimMobject* InTarget)
+void UUEMotionColorAnimation::SetTargetMobject(UUEMotionMobject* InTarget)
 {
 	TargetMobject = InTarget;
 	if (TargetMobject && !bStartSet)
@@ -10,7 +10,7 @@ void UPyManimColorAnimation::SetTargetMobject(UPyManimMobject* InTarget)
 	}
 }
 
-void UPyManimColorAnimation::TickAnimation(float DeltaTime, float EasedProgress)
+void UUEMotionColorAnimation::TickAnimation(float DeltaTime, float EasedProgress)
 {
 	if (!TargetMobject) return;
 	FLinearColor Current = FLinearColor::LerpUsingHSV(StartColor, EndColor, EasedProgress);

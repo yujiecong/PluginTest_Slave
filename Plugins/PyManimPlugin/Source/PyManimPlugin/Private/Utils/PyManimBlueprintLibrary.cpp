@@ -1,43 +1,43 @@
-#include "PyManimBlueprintLibrary.h"
+#include "UEMotionBlueprintLibrary.h"
 
-float UPyManimBlueprintLibrary::EaseLinear(float T)
+float UUEMotionBlueprintLibrary::EaseLinear(float T)
 {
 	return FMath::Clamp(T, 0.0f, 1.0f);
 }
 
-float UPyManimBlueprintLibrary::EaseInQuad(float T)
+float UUEMotionBlueprintLibrary::EaseInQuad(float T)
 {
 	T = FMath::Clamp(T, 0.0f, 1.0f);
 	return T * T;
 }
 
-float UPyManimBlueprintLibrary::EaseOutQuad(float T)
+float UUEMotionBlueprintLibrary::EaseOutQuad(float T)
 {
 	T = FMath::Clamp(T, 0.0f, 1.0f);
 	return T * (2.0f - T);
 }
 
-float UPyManimBlueprintLibrary::EaseInOutQuad(float T)
+float UUEMotionBlueprintLibrary::EaseInOutQuad(float T)
 {
 	T = FMath::Clamp(T, 0.0f, 1.0f);
 	if (T < 0.5f) return 2.0f * T * T;
 	return -1.0f + (4.0f - 2.0f * T) * T;
 }
 
-float UPyManimBlueprintLibrary::EaseInCubic(float T)
+float UUEMotionBlueprintLibrary::EaseInCubic(float T)
 {
 	T = FMath::Clamp(T, 0.0f, 1.0f);
 	return T * T * T;
 }
 
-float UPyManimBlueprintLibrary::EaseOutCubic(float T)
+float UUEMotionBlueprintLibrary::EaseOutCubic(float T)
 {
 	T = FMath::Clamp(T, 0.0f, 1.0f);
 	float T1 = T - 1.0f;
 	return T1 * T1 * T1 + 1.0f;
 }
 
-float UPyManimBlueprintLibrary::EaseInOutCubic(float T)
+float UUEMotionBlueprintLibrary::EaseInOutCubic(float T)
 {
 	T = FMath::Clamp(T, 0.0f, 1.0f);
 	if (T < 0.5f) return 4.0f * T * T * T;
@@ -45,20 +45,20 @@ float UPyManimBlueprintLibrary::EaseInOutCubic(float T)
 	return 0.5f * T1 * T1 * T1 + 1.0f;
 }
 
-float UPyManimBlueprintLibrary::EaseInQuart(float T)
+float UUEMotionBlueprintLibrary::EaseInQuart(float T)
 {
 	T = FMath::Clamp(T, 0.0f, 1.0f);
 	return T * T * T * T;
 }
 
-float UPyManimBlueprintLibrary::EaseOutQuart(float T)
+float UUEMotionBlueprintLibrary::EaseOutQuart(float T)
 {
 	T = FMath::Clamp(T, 0.0f, 1.0f);
 	float T1 = T - 1.0f;
 	return 1.0f - T1 * T1 * T1 * T1;
 }
 
-float UPyManimBlueprintLibrary::EaseInOutQuart(float T)
+float UUEMotionBlueprintLibrary::EaseInOutQuart(float T)
 {
 	T = FMath::Clamp(T, 0.0f, 1.0f);
 	if (T < 0.5f) return 8.0f * T * T * T * T;
@@ -66,20 +66,20 @@ float UPyManimBlueprintLibrary::EaseInOutQuart(float T)
 	return 1.0f - 8.0f * T1 * T1 * T1 * T1;
 }
 
-float UPyManimBlueprintLibrary::EaseInQuint(float T)
+float UUEMotionBlueprintLibrary::EaseInQuint(float T)
 {
 	T = FMath::Clamp(T, 0.0f, 1.0f);
 	return T * T * T * T * T;
 }
 
-float UPyManimBlueprintLibrary::EaseOutQuint(float T)
+float UUEMotionBlueprintLibrary::EaseOutQuint(float T)
 {
 	T = FMath::Clamp(T, 0.0f, 1.0f);
 	float T1 = T - 1.0f;
 	return 1.0f + T1 * T1 * T1 * T1 * T1;
 }
 
-float UPyManimBlueprintLibrary::EaseInOutQuint(float T)
+float UUEMotionBlueprintLibrary::EaseInOutQuint(float T)
 {
 	T = FMath::Clamp(T, 0.0f, 1.0f);
 	if (T < 0.5f) return 16.0f * T * T * T * T * T;
@@ -87,21 +87,21 @@ float UPyManimBlueprintLibrary::EaseInOutQuint(float T)
 	return 1.0f + 0.5f * T1 * T1 * T1 * T1 * T1;
 }
 
-float UPyManimBlueprintLibrary::EaseInExpo(float T)
+float UUEMotionBlueprintLibrary::EaseInExpo(float T)
 {
 	T = FMath::Clamp(T, 0.0f, 1.0f);
 	if (T <= 0.0f) return 0.0f;
 	return FMath::Pow(2.0f, 10.0f * (T - 1.0f));
 }
 
-float UPyManimBlueprintLibrary::EaseOutExpo(float T)
+float UUEMotionBlueprintLibrary::EaseOutExpo(float T)
 {
 	T = FMath::Clamp(T, 0.0f, 1.0f);
 	if (T >= 1.0f) return 1.0f;
 	return 1.0f - FMath::Pow(2.0f, -10.0f * T);
 }
 
-float UPyManimBlueprintLibrary::EaseInOutExpo(float T)
+float UUEMotionBlueprintLibrary::EaseInOutExpo(float T)
 {
 	T = FMath::Clamp(T, 0.0f, 1.0f);
 	if (T <= 0.0f) return 0.0f;
@@ -110,20 +110,20 @@ float UPyManimBlueprintLibrary::EaseInOutExpo(float T)
 	return (2.0f - FMath::Pow(2.0f, -20.0f * T + 10.0f)) * 0.5f;
 }
 
-float UPyManimBlueprintLibrary::EaseInCirc(float T)
+float UUEMotionBlueprintLibrary::EaseInCirc(float T)
 {
 	T = FMath::Clamp(T, 0.0f, 1.0f);
 	return 1.0f - FMath::Sqrt(1.0f - T * T);
 }
 
-float UPyManimBlueprintLibrary::EaseOutCirc(float T)
+float UUEMotionBlueprintLibrary::EaseOutCirc(float T)
 {
 	T = FMath::Clamp(T, 0.0f, 1.0f);
 	float T1 = T - 1.0f;
 	return FMath::Sqrt(1.0f - T1 * T1);
 }
 
-float UPyManimBlueprintLibrary::EaseInOutCirc(float T)
+float UUEMotionBlueprintLibrary::EaseInOutCirc(float T)
 {
 	T = FMath::Clamp(T, 0.0f, 1.0f);
 	if (T < 0.5f) return (1.0f - FMath::Sqrt(1.0f - 4.0f * T * T)) * 0.5f;
@@ -131,14 +131,14 @@ float UPyManimBlueprintLibrary::EaseInOutCirc(float T)
 	return (FMath::Sqrt(1.0f - T1 * T1) + 1.0f) * 0.5f;
 }
 
-float UPyManimBlueprintLibrary::EaseInBack(float T)
+float UUEMotionBlueprintLibrary::EaseInBack(float T)
 {
 	T = FMath::Clamp(T, 0.0f, 1.0f);
 	constexpr float S = 1.70158f;
 	return T * T * ((S + 1.0f) * T - S);
 }
 
-float UPyManimBlueprintLibrary::EaseOutBack(float T)
+float UUEMotionBlueprintLibrary::EaseOutBack(float T)
 {
 	T = FMath::Clamp(T, 0.0f, 1.0f);
 	constexpr float S = 1.70158f;
@@ -146,7 +146,7 @@ float UPyManimBlueprintLibrary::EaseOutBack(float T)
 	return T1 * T1 * ((S + 1.0f) * T1 + S) + 1.0f;
 }
 
-float UPyManimBlueprintLibrary::EaseInOutBack(float T)
+float UUEMotionBlueprintLibrary::EaseInOutBack(float T)
 {
 	T = FMath::Clamp(T, 0.0f, 1.0f);
 	constexpr float S = 1.70158f * 1.525f;
@@ -159,7 +159,7 @@ float UPyManimBlueprintLibrary::EaseInOutBack(float T)
 	return 0.5f * (T1 * T1 * ((S + 1.0f) * T1 + S) + 2.0f);
 }
 
-float UPyManimBlueprintLibrary::EaseOutBounce(float T)
+float UUEMotionBlueprintLibrary::EaseOutBounce(float T)
 {
 	T = FMath::Clamp(T, 0.0f, 1.0f);
 	if (T < 1.0f / 2.75f) return 7.5625f * T * T;
@@ -177,20 +177,20 @@ float UPyManimBlueprintLibrary::EaseOutBounce(float T)
 	return 7.5625f * T * T + 0.984375f;
 }
 
-float UPyManimBlueprintLibrary::EaseInBounce(float T)
+float UUEMotionBlueprintLibrary::EaseInBounce(float T)
 {
 	T = FMath::Clamp(T, 0.0f, 1.0f);
 	return 1.0f - EaseOutBounce(1.0f - T);
 }
 
-float UPyManimBlueprintLibrary::EaseInOutBounce(float T)
+float UUEMotionBlueprintLibrary::EaseInOutBounce(float T)
 {
 	T = FMath::Clamp(T, 0.0f, 1.0f);
 	if (T < 0.5f) return 0.5f * EaseInBounce(T * 2.0f);
 	return 0.5f * EaseOutBounce(T * 2.0f - 1.0f) + 0.5f;
 }
 
-float UPyManimBlueprintLibrary::EaseInElastic(float T)
+float UUEMotionBlueprintLibrary::EaseInElastic(float T)
 {
 	T = FMath::Clamp(T, 0.0f, 1.0f);
 	if (T <= 0.0f) return 0.0f;
@@ -198,7 +198,7 @@ float UPyManimBlueprintLibrary::EaseInElastic(float T)
 	return -FMath::Pow(2.0f, 10.0f * T - 10.0f) * FMath::Sin((T * 10.0f - 10.75f) * (2.0f * PI) / 3.0f);
 }
 
-float UPyManimBlueprintLibrary::EaseOutElastic(float T)
+float UUEMotionBlueprintLibrary::EaseOutElastic(float T)
 {
 	T = FMath::Clamp(T, 0.0f, 1.0f);
 	if (T <= 0.0f) return 0.0f;
@@ -206,7 +206,7 @@ float UPyManimBlueprintLibrary::EaseOutElastic(float T)
 	return FMath::Pow(2.0f, -10.0f * T) * FMath::Sin((T * 10.0f - 0.75f) * (2.0f * PI) / 3.0f) + 1.0f;
 }
 
-float UPyManimBlueprintLibrary::EaseInOutElastic(float T)
+float UUEMotionBlueprintLibrary::EaseInOutElastic(float T)
 {
 	T = FMath::Clamp(T, 0.0f, 1.0f);
 	if (T <= 0.0f) return 0.0f;
@@ -218,7 +218,7 @@ float UPyManimBlueprintLibrary::EaseInOutElastic(float T)
 	return FMath::Pow(2.0f, -20.0f * T + 10.0f) * FMath::Sin((20.0f * T - 11.125f) * (2.0f * PI) / 4.5f) * 0.5f + 1.0f;
 }
 
-float UPyManimBlueprintLibrary::ApplyEasingByName(const FString& EasingName, float T)
+float UUEMotionBlueprintLibrary::ApplyEasingByName(const FString& EasingName, float T)
 {
 	T = FMath::Clamp(T, 0.0f, 1.0f);
 
@@ -254,7 +254,7 @@ float UPyManimBlueprintLibrary::ApplyEasingByName(const FString& EasingName, flo
 	return EaseLinear(T);
 }
 
-TArray<FString> UPyManimBlueprintLibrary::GetAllEasingNames()
+TArray<FString> UUEMotionBlueprintLibrary::GetAllEasingNames()
 {
 	return {
 		TEXT("linear"),

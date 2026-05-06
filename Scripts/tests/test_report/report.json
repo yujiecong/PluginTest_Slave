@@ -1,0 +1,575 @@
+{
+  "timestamp": "2026-05-07T02:41:24",
+  "total": 113,
+  "passed": 108,
+  "failed": 5,
+  "skipped": 0,
+  "duration_s": 5.5,
+  "tests": [
+    {
+      "name": "test_set_get_rotation (test_02_mobject.TestMobject.test_set_get_rotation)",
+      "status": "fail",
+      "error": "Traceback (most recent call last):\n  File \"c:\\Users\\42458\\Documents\\Unreal Projects\\PluginTest\\Scripts\\tests\\test_02_mobject.py\", line 52, in test_set_get_rotation\n    self.assertNear(r.pitch, 45, 0.1)\n  File \"c:\\Users\\42458\\Documents\\Unreal Projects\\PluginTest\\Scripts\\tests\\test_framework.py\", line 21, in assertNear\n    self.assertTrue(abs(a - b) <= tolerance, f\"{msg} Expected {b} +/- {tolerance}, got {a}\")\nAssertionError: False is not true :  Expected 45 +/- 0.1, got 90.0\n"
+    },
+    {
+      "name": "test_finish (test_05_animation_rotate.TestRotateAnimation.test_finish)",
+      "status": "fail",
+      "error": "Traceback (most recent call last):\n  File \"c:\\Users\\42458\\Documents\\Unreal Projects\\PluginTest\\Scripts\\tests\\test_05_animation_rotate.py\", line 43, in test_finish\n    self.assertNear(abs(obj.get_rotation().yaw), 360, 5.0)\n  File \"c:\\Users\\42458\\Documents\\Unreal Projects\\PluginTest\\Scripts\\tests\\test_framework.py\", line 21, in assertNear\n    self.assertTrue(abs(a - b) <= tolerance, f\"{msg} Expected {b} +/- {tolerance}, got {a}\")\nAssertionError: False is not true :  Expected 360 +/- 5.0, got 0.0\n"
+    },
+    {
+      "name": "test_tick (test_05_animation_rotate.TestRotateAnimation.test_tick)",
+      "status": "fail",
+      "error": "Traceback (most recent call last):\n  File \"c:\\Users\\42458\\Documents\\Unreal Projects\\PluginTest\\Scripts\\tests\\test_05_animation_rotate.py\", line 28, in test_tick\n    self.assertTrue(abs(obj.get_rotation().yaw) > 0)\nAssertionError: False is not true\n"
+    },
+    {
+      "name": "test_empty_group (test_10_animation_group.TestGroupAnimation.test_empty_group)",
+      "status": "fail",
+      "error": "Traceback (most recent call last):\n  File \"c:\\Users\\42458\\Documents\\Unreal Projects\\PluginTest\\Scripts\\tests\\test_10_animation_group.py\", line 101, in test_empty_group\n    self.assertFalse(scene.has_active_animations())\nAssertionError: True is not false\n"
+    },
+    {
+      "name": "test_sequential (test_10_animation_group.TestGroupAnimation.test_sequential)",
+      "status": "fail",
+      "error": "Traceback (most recent call last):\n  File \"c:\\Users\\42458\\Documents\\Unreal Projects\\PluginTest\\Scripts\\tests\\test_10_animation_group.py\", line 82, in test_sequential\n    self.assertTrue(scene.has_active_animations())\nAssertionError: False is not true\n"
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    }
+  ]
+}

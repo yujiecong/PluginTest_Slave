@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
-#include "PyManimRenderer.generated.h"
+#include "UEMotionRenderer.generated.h"
 
 class UWorld;
 class ACineCameraActor;
@@ -11,33 +11,33 @@ class UMoviePipelineQueue;
 class UMoviePipelineExecutorBase;
 
 UCLASS(BlueprintType)
-class UPyManimRenderer : public UObject
+class UUEMotionRenderer : public UObject
 {
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintCallable, Category = "PyManim|Renderer")
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Renderer")
 	void Initialize(UWorld* World, int32 Width = 1920, int32 Height = 1080);
 
-	UFUNCTION(BlueprintCallable, Category = "PyManim|Renderer")
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Renderer")
 	void BindCamera(AActor* CameraActor);
 
-	UFUNCTION(BlueprintCallable, Category = "PyManim|Renderer")
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Renderer")
 	void SetAntiAliasing(int32 AAMode);
 
-	UFUNCTION(BlueprintCallable, Category = "PyManim|Renderer")
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Renderer")
 	void SetOutputFormat(const FString& Format);
 
-	UFUNCTION(BlueprintCallable, Category = "PyManim|Renderer")
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Renderer")
 	void RenderSequence(const FString& OutputDirectory, float Duration, float FPS = 30.0f);
 
-	UFUNCTION(BlueprintCallable, Category = "PyManim|Renderer")
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Renderer")
 	void RenderSingleFrame(const FString& FilePath);
 
-	UFUNCTION(BlueprintCallable, Category = "PyManim|Renderer")
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Renderer")
 	bool IsRendering() const;
 
-	UFUNCTION(BlueprintCallable, Category = "PyManim|Renderer")
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Renderer")
 	float GetProgress() const;
 
 private:

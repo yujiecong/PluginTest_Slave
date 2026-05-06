@@ -1,8 +1,8 @@
-#include "PyManimSceneActor.h"
+#include "UEMotionSceneActor.h"
 #include "Components/SceneComponent.h"
 #include "Camera/CameraComponent.h"
 
-APyManimSceneActor::APyManimSceneActor()
+AUEMotionSceneActor::AUEMotionSceneActor()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -13,17 +13,17 @@ APyManimSceneActor::APyManimSceneActor()
 	CameraComp->SetupAttachment(RootComp);
 }
 
-void APyManimSceneActor::BeginPlay()
+void AUEMotionSceneActor::BeginPlay()
 {
 	Super::BeginPlay();
 }
 
-void APyManimSceneActor::Tick(float DeltaTime)
+void AUEMotionSceneActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 }
 
-UCameraComponent* APyManimSceneActor::GetCameraComponent() const
+UCameraComponent* AUEMotionSceneActor::GetCameraComponent() const
 {
 	return CameraComp;
 }

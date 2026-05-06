@@ -1,38 +1,38 @@
-#include "PyManimCamera.h"
-#include "Actors/PyManimSceneActor.h"
+#include "UEMotionCamera.h"
+#include "Actors/UEMotionSceneActor.h"
 #include "Camera/CameraComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 
-void UPyManimCamera::Init(APyManimSceneActor* InSceneActor)
+void UUEMotionCamera::Init(AUEMotionSceneActor* InSceneActor)
 {
 	SceneActor = InSceneActor;
 }
 
-void UPyManimCamera::SetPosition(float X, float Y, float Z)
+void UUEMotionCamera::SetPosition(float X, float Y, float Z)
 {
 	if (!SceneActor.IsValid()) return;
 	SceneActor->SetActorLocation(FVector(X, Y, Z));
 }
 
-FVector UPyManimCamera::GetPosition() const
+FVector UUEMotionCamera::GetPosition() const
 {
 	if (!SceneActor.IsValid()) return FVector::ZeroVector;
 	return SceneActor->GetActorLocation();
 }
 
-void UPyManimCamera::SetRotation(float Pitch, float Yaw, float Roll)
+void UUEMotionCamera::SetRotation(float Pitch, float Yaw, float Roll)
 {
 	if (!SceneActor.IsValid()) return;
 	SceneActor->SetActorRotation(FRotator(Pitch, Yaw, Roll));
 }
 
-FRotator UPyManimCamera::GetRotation() const
+FRotator UUEMotionCamera::GetRotation() const
 {
 	if (!SceneActor.IsValid()) return FRotator::ZeroRotator;
 	return SceneActor->GetActorRotation();
 }
 
-void UPyManimCamera::SetFOV(float FOV)
+void UUEMotionCamera::SetFOV(float FOV)
 {
 	if (!SceneActor.IsValid()) return;
 	UCameraComponent* CamComp = SceneActor->GetCameraComponent();
@@ -42,7 +42,7 @@ void UPyManimCamera::SetFOV(float FOV)
 	}
 }
 
-float UPyManimCamera::GetFOV() const
+float UUEMotionCamera::GetFOV() const
 {
 	if (!SceneActor.IsValid()) return 90.0f;
 	UCameraComponent* CamComp = SceneActor->GetCameraComponent();
@@ -53,7 +53,7 @@ float UPyManimCamera::GetFOV() const
 	return 90.0f;
 }
 
-void UPyManimCamera::LookAt(const FVector& Target)
+void UUEMotionCamera::LookAt(const FVector& Target)
 {
 	if (!SceneActor.IsValid()) return;
 	FVector Source = SceneActor->GetActorLocation();
@@ -61,7 +61,7 @@ void UPyManimCamera::LookAt(const FVector& Target)
 	SceneActor->SetActorRotation(LookAtRot);
 }
 
-void UPyManimCamera::OrbitAround(const FVector& Center, float Radius, float AngleDegrees, float Height)
+void UUEMotionCamera::OrbitAround(const FVector& Center, float Radius, float AngleDegrees, float Height)
 {
 	float AngleRad = FMath::DegreesToRadians(AngleDegrees);
 	float X = Center.X + Radius * FMath::Cos(AngleRad);

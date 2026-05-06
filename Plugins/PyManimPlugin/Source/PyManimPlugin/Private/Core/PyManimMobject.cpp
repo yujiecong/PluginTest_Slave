@@ -1,23 +1,23 @@
-#include "PyManimMobject.h"
-#include "Actors/PyManimSceneActor.h"
+#include "UEMotionMobject.h"
+#include "Actors/UEMotionSceneActor.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "UObject/ConstructorHelpers.h"
 
-void UPyManimMobject::InitializeAsSphere(APyManimSceneActor* Owner, float Radius)
+void UUEMotionMobject::InitializeAsSphere(AUEMotionSceneActor* Owner, float Radius)
 {
 	CreateStaticMeshActor(Owner, TEXT("/Engine/BasicShapes/Sphere.Sphere"), Radius / 50.0f);
 	MobjectName = TEXT("Sphere");
 }
 
-void UPyManimMobject::InitializeAsMesh(APyManimSceneActor* Owner, const FString& MeshPath, float Scale)
+void UUEMotionMobject::InitializeAsMesh(AUEMotionSceneActor* Owner, const FString& MeshPath, float Scale)
 {
 	CreateStaticMeshActor(Owner, MeshPath, Scale / 50.0f);
 }
 
-void UPyManimMobject::CreateStaticMeshActor(APyManimSceneActor* Owner, const FString& MeshPath, float InScale)
+void UUEMotionMobject::CreateStaticMeshActor(AUEMotionSceneActor* Owner, const FString& MeshPath, float InScale)
 {
 	if (!Owner) return;
 
@@ -58,7 +58,7 @@ void UPyManimMobject::CreateStaticMeshActor(APyManimSceneActor* Owner, const FSt
 	}
 }
 
-void UPyManimMobject::SetLocation(const FVector& Location)
+void UUEMotionMobject::SetLocation(const FVector& Location)
 {
 	if (InternalActor.IsValid())
 	{
@@ -66,14 +66,14 @@ void UPyManimMobject::SetLocation(const FVector& Location)
 	}
 }
 
-FVector UPyManimMobject::GetLocation() const
+FVector UUEMotionMobject::GetLocation() const
 {
 	if (InternalActor.IsValid())
 		return InternalActor->GetActorLocation();
 	return FVector::ZeroVector;
 }
 
-void UPyManimMobject::SetColor(const FLinearColor& Color)
+void UUEMotionMobject::SetColor(const FLinearColor& Color)
 {
 	CurrentColor = Color;
 	if (MaterialInstance.IsValid())
@@ -82,12 +82,12 @@ void UPyManimMobject::SetColor(const FLinearColor& Color)
 	}
 }
 
-FLinearColor UPyManimMobject::GetColor() const
+FLinearColor UUEMotionMobject::GetColor() const
 {
 	return CurrentColor;
 }
 
-void UPyManimMobject::SetVisibility(bool bInVisible)
+void UUEMotionMobject::SetVisibility(bool bInVisible)
 {
 	bVisible = bInVisible;
 	if (MeshComponent.IsValid())
@@ -96,12 +96,12 @@ void UPyManimMobject::SetVisibility(bool bInVisible)
 	}
 }
 
-bool UPyManimMobject::GetVisibility() const
+bool UUEMotionMobject::GetVisibility() const
 {
 	return bVisible;
 }
 
-void UPyManimMobject::SetScale(const FVector& Scale)
+void UUEMotionMobject::SetScale(const FVector& Scale)
 {
 	if (InternalActor.IsValid())
 	{
@@ -109,14 +109,14 @@ void UPyManimMobject::SetScale(const FVector& Scale)
 	}
 }
 
-FVector UPyManimMobject::GetScale() const
+FVector UUEMotionMobject::GetScale() const
 {
 	if (InternalActor.IsValid())
 		return InternalActor->GetActorScale3D();
 	return FVector::OneVector;
 }
 
-void UPyManimMobject::SetRotation(const FRotator& Rotation)
+void UUEMotionMobject::SetRotation(const FRotator& Rotation)
 {
 	if (InternalActor.IsValid())
 	{
@@ -124,14 +124,14 @@ void UPyManimMobject::SetRotation(const FRotator& Rotation)
 	}
 }
 
-FRotator UPyManimMobject::GetRotation() const
+FRotator UUEMotionMobject::GetRotation() const
 {
 	if (InternalActor.IsValid())
 		return InternalActor->GetActorRotation();
 	return FRotator::ZeroRotator;
 }
 
-void UPyManimMobject::Destroy()
+void UUEMotionMobject::Destroy()
 {
 	if (InternalActor.IsValid())
 	{
@@ -142,7 +142,7 @@ void UPyManimMobject::Destroy()
 	MaterialInstance = nullptr;
 }
 
-FString UPyManimMobject::GetName() const
+FString UUEMotionMobject::GetName() const
 {
 	return MobjectName;
 }

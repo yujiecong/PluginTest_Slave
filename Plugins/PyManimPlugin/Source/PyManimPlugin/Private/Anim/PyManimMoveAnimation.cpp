@@ -1,7 +1,7 @@
-#include "PyManimMoveAnimation.h"
-#include "Core/PyManimMobject.h"
+#include "UEMotionMoveAnimation.h"
+#include "Core/UEMotionMobject.h"
 
-void UPyManimMoveAnimation::SetTargetMobject(UPyManimMobject* InTarget)
+void UUEMotionMoveAnimation::SetTargetMobject(UUEMotionMobject* InTarget)
 {
 	TargetMobject = InTarget;
 	if (TargetMobject && !bStartSet)
@@ -10,7 +10,7 @@ void UPyManimMoveAnimation::SetTargetMobject(UPyManimMobject* InTarget)
 	}
 }
 
-void UPyManimMoveAnimation::TickAnimation(float DeltaTime, float EasedProgress)
+void UUEMotionMoveAnimation::TickAnimation(float DeltaTime, float EasedProgress)
 {
 	if (!TargetMobject) return;
 	FVector Current = FMath::Lerp(Start, End, EasedProgress);

@@ -2,7 +2,15 @@ import unittest
 import sys
 import os
 
-TESTS_DIR = os.path.dirname(os.path.abspath(__file__))
+try:
+    TESTS_DIR = os.path.dirname(os.path.abspath(__file__))
+except NameError:
+    import inspect
+    try:
+        TESTS_DIR = os.path.dirname(os.path.abspath(inspect.currentframe().f_code.co_filename))
+    except (NameError, AttributeError):
+        TESTS_DIR = os.getcwd()
+
 sys.path.insert(0, TESTS_DIR)
 sys.path.insert(0, os.path.join(TESTS_DIR, '..'))
 
@@ -36,5 +44,4 @@ def main():
     sys.exit(0 if result.wasSuccessful() else 1)
 
 
-if __name__ == "__main__":
-    main()
+main()

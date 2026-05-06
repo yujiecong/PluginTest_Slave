@@ -1,12 +1,12 @@
-#include "PyManimFadeAnimation.h"
-#include "Core/PyManimMobject.h"
+#include "UEMotionFadeAnimation.h"
+#include "Core/UEMotionMobject.h"
 
-void UPyManimFadeAnimation::SetTargetMobject(UPyManimMobject* InTarget)
+void UUEMotionFadeAnimation::SetTargetMobject(UUEMotionMobject* InTarget)
 {
 	TargetMobject = InTarget;
 }
 
-void UPyManimFadeAnimation::TickAnimation(float DeltaTime, float EasedProgress)
+void UUEMotionFadeAnimation::TickAnimation(float DeltaTime, float EasedProgress)
 {
 	if (!TargetMobject) return;
 

@@ -1,32 +1,32 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Anim/PyManimAnimation.h"
-#include "PyManimColorAnimation.generated.h"
+#include "Anim/UEMotionAnimation.h"
+#include "UEMotionColorAnimation.generated.h"
 
-class UPyManimMobject;
+class UUEMotionMobject;
 
 UCLASS(BlueprintType)
-class UPyManimColorAnimation : public UPyManimAnimation
+class UUEMotionColorAnimation : public UUEMotionAnimation
 {
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintCallable, Category = "PyManim|Animation")
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
 	void SetStartColor(const FLinearColor& Color) { StartColor = Color; bStartSet = true; }
 
-	UFUNCTION(BlueprintCallable, Category = "PyManim|Animation")
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
 	void SetEndColor(const FLinearColor& Color) { EndColor = Color; }
 
-	UFUNCTION(BlueprintCallable, Category = "PyManim|Animation")
-	void SetTargetMobject(UPyManimMobject* InTarget);
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
+	void SetTargetMobject(UUEMotionMobject* InTarget);
 
 protected:
 	virtual void TickAnimation(float DeltaTime, float EasedProgress) override;
 
 private:
 	UPROPERTY()
-	UPyManimMobject* TargetMobject = nullptr;
+	UUEMotionMobject* TargetMobject = nullptr;
 
 	FLinearColor StartColor = FLinearColor::White;
 	FLinearColor EndColor = FLinearColor::Blue;

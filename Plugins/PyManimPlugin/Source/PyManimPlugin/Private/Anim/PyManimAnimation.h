@@ -2,33 +2,33 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
-#include "PyManimAnimation.generated.h"
+#include "UEMotionAnimation.generated.h"
 
 UCLASS(BlueprintType, Abstract)
-class UPyManimAnimation : public UObject
+class UUEMotionAnimation : public UObject
 {
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintCallable, Category = "PyManim|Animation")
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
 	void SetDuration(float InDuration) { Duration = InDuration; }
 
-	UFUNCTION(BlueprintCallable, Category = "PyManim|Animation")
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
 	float GetDuration() const { return Duration; }
 
-	UFUNCTION(BlueprintCallable, Category = "PyManim|Animation")
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
 	void SetEasing(const FString& Type) { EasingType = Type; }
 
-	UFUNCTION(BlueprintCallable, Category = "PyManim|Animation")
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
 	FString GetEasing() const { return EasingType; }
 
-	UFUNCTION(BlueprintCallable, Category = "PyManim|Animation")
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
 	bool IsFinished() const { return Elapsed >= Duration; }
 
-	UFUNCTION(BlueprintCallable, Category = "PyManim|Animation")
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
 	float GetProgress() const { return FMath::Clamp(Elapsed / FMath::Max(Duration, 0.001f), 0.0f, 1.0f); }
 
-	UFUNCTION(BlueprintCallable, Category = "PyManim|Animation")
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
 	void Reset() { Elapsed = 0.0f; }
 
 	void Advance(float DeltaTime)

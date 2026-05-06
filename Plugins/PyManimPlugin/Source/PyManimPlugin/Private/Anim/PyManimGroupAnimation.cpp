@@ -1,6 +1,37 @@
-#include "PyManimGroupAnimation.h"
+#include "UEMotionGroupAnimation.h"
 
-void UPyManimGroupAnimation::AddAnimation(UPyManimAnimation* Animation)
+bool UUEMotionGroupAnimation::IsFinished() const
+{
+	if (Animations.Num() == 0)
+	{
+		return true;
+	}
+
+	if (bIsSequential)
+	{
+		for (const UUEMotionAnimation* Anim : Animations)
+		{
+			if (Anim && !Anim->IsFinished())
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+	else
+	{
+		for (const UUEMotionAnimation* Anim : Animations)
+		{
+			if (Anim && !Anim->IsFinished())
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+}
+
+void UUEMotionGroupAnimation::AddAnimation(UUEMotionAnimation* Animation)
 {
 	if (!Animation) return;
 	Animations.Add(Animation);
@@ -8,7 +39,7 @@ void UPyManimGroupAnimation::AddAnimation(UPyManimAnimation* Animation)
 	if (bIsSequential)
 	{
 		float TotalDuration = 0.0f;
-		for (UPyManimAnimation* Anim : Animations)
+		for (UUEMotionAnimation* Anim : Animations)
 		{
 			TotalDuration += Anim->GetDuration();
 		}
@@ -17,7 +48,7 @@ void UPyManimGroupAnimation::AddAnimation(UPyManimAnimation* Animation)
 	else
 	{
 		float MaxDuration = 0.0f;
-		for (UPyManimAnimation* Anim : Animations)
+		for (UUEMotionAnimation* Anim : Animations)
 		{
 			MaxDuration = FMath::Max(MaxDuration, Anim->GetDuration());
 		}
@@ -25,7 +56,7 @@ void UPyManimGroupAnimation::AddAnimation(UPyManimAnimation* Animation)
 	}
 }
 
-void UPyManimGroupAnimation::TickAnimation(float DeltaTime, float EasedProgress)
+void UUEMotionGroupAnimation::TickAnimation(float DeltaTime, float EasedProgress)
 {
 	if (bIsSequential)
 	{
@@ -33,7 +64,7 @@ void UPyManimGroupAnimation::TickAnimation(float DeltaTime, float EasedProgress)
 		float Accumulated = 0.0f;
 		for (int32 i = 0; i < Animations.Num(); ++i)
 		{
-			UPyManimAnimation* Anim = Animations[i];
+			UUEMotionAnimation* Anim = Animations[i];
 			if (!Anim) continue;
 
 			float AnimDuration = Anim->GetDuration();
@@ -58,7 +89,7 @@ void UPyManimGroupAnimation::TickAnimation(float DeltaTime, float EasedProgress)
 	}
 	else
 	{
-		for (UPyManimAnimation* Anim : Animations)
+		for (UUEMotionAnimation* Anim : Animations)
 		{
 			if (Anim && !Anim->IsFinished())
 			{

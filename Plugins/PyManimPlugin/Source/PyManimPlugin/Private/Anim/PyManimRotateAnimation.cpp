@@ -1,7 +1,7 @@
-#include "PyManimRotateAnimation.h"
-#include "Core/PyManimMobject.h"
+#include "UEMotionRotateAnimation.h"
+#include "Core/UEMotionMobject.h"
 
-void UPyManimRotateAnimation::SetTargetMobject(UPyManimMobject* InTarget)
+void UUEMotionRotateAnimation::SetTargetMobject(UUEMotionMobject* InTarget)
 {
 	TargetMobject = InTarget;
 	if (TargetMobject)
@@ -10,7 +10,7 @@ void UPyManimRotateAnimation::SetTargetMobject(UPyManimMobject* InTarget)
 	}
 }
 
-void UPyManimRotateAnimation::TickAnimation(float DeltaTime, float EasedProgress)
+void UUEMotionRotateAnimation::TickAnimation(float DeltaTime, float EasedProgress)
 {
 	if (!TargetMobject) return;
 

@@ -1,29 +1,29 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Anim/PyManimAnimation.h"
-#include "PyManimFadeAnimation.generated.h"
+#include "Anim/UEMotionAnimation.h"
+#include "UEMotionFadeAnimation.generated.h"
 
-class UPyManimMobject;
+class UUEMotionMobject;
 
 UCLASS(BlueprintType)
-class UPyManimFadeAnimation : public UPyManimAnimation
+class UUEMotionFadeAnimation : public UUEMotionAnimation
 {
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintCallable, Category = "PyManim|Animation")
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
 	void SetFadeOut(bool bOut) { bFadeOut = bOut; }
 
-	UFUNCTION(BlueprintCallable, Category = "PyManim|Animation")
-	void SetTargetMobject(UPyManimMobject* InTarget);
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
+	void SetTargetMobject(UUEMotionMobject* InTarget);
 
 protected:
 	virtual void TickAnimation(float DeltaTime, float EasedProgress) override;
 
 private:
 	UPROPERTY()
-	UPyManimMobject* TargetMobject = nullptr;
+	UUEMotionMobject* TargetMobject = nullptr;
 
 	bool bFadeOut = false;
 };

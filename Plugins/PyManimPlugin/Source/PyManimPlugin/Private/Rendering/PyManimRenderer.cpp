@@ -1,4 +1,4 @@
-#include "PyManimRenderer.h"
+#include "UEMotionRenderer.h"
 #include "Engine/World.h"
 #include "Engine/Engine.h"
 #include "LevelSequence.h"
@@ -18,29 +18,29 @@
 #include "Misc/FileHelper.h"
 #include "HAL/PlatformFileManager.h"
 
-void UPyManimRenderer::Initialize(UWorld* World, int32 Width, int32 Height)
+void UUEMotionRenderer::Initialize(UWorld* World, int32 Width, int32 Height)
 {
 	TargetWorld = World;
 	ResolutionWidth = Width;
 	ResolutionHeight = Height;
 }
 
-void UPyManimRenderer::BindCamera(AActor* CameraActor)
+void UUEMotionRenderer::BindCamera(AActor* CameraActor)
 {
 	BoundCamera = CameraActor;
 }
 
-void UPyManimRenderer::SetAntiAliasing(int32 AAMode)
+void UUEMotionRenderer::SetAntiAliasing(int32 AAMode)
 {
 	AntiAliasingMode = AAMode;
 }
 
-void UPyManimRenderer::SetOutputFormat(const FString& Format)
+void UUEMotionRenderer::SetOutputFormat(const FString& Format)
 {
 	OutputFileFormat = Format;
 }
 
-void UPyManimRenderer::RenderSequence(const FString& OutputDirectory, float Duration, float FPS)
+void UUEMotionRenderer::RenderSequence(const FString& OutputDirectory, float Duration, float FPS)
 {
 	if (!TargetWorld || bIsRendering) return;
 
@@ -61,7 +61,7 @@ void UPyManimRenderer::RenderSequence(const FString& OutputDirectory, float Dura
 		return;
 	}
 
-	Job->JobName = TEXT("PyManimRender");
+	Job->JobName = TEXT("UEMotionRender");
 	Job->Sequence = Sequence;
 
 	UMoviePipelinePrimaryConfig* Config = NewObject<UMoviePipelinePrimaryConfig>(this);
@@ -93,13 +93,13 @@ void UPyManimRenderer::RenderSequence(const FString& OutputDirectory, float Dura
 	UMoviePipelineInProcessExecutor* Executor = NewObject<UMoviePipelineInProcessExecutor>(this);
 	Executor->bUseCurrentLevel = true;
 
-	Executor->OnExecutorFinished().AddUObject(this, &UPyManimRenderer::OnRenderFinished);
+	Executor->OnExecutorFinished().AddUObject(this, &UUEMotionRenderer::OnRenderFinished);
 
 	ActiveExecutor = Executor;
 	Executor->Execute(PipelineQueue);
 }
 
-void UPyManimRenderer::RenderSingleFrame(const FString& FilePath)
+void UUEMotionRenderer::RenderSingleFrame(const FString& FilePath)
 {
 	if (!TargetWorld) return;
 
@@ -120,18 +120,18 @@ void UPyManimRenderer::RenderSingleFrame(const FString& FilePath)
 	RenderSequence(Directory, 1.0f / 30.0f, 30.0f);
 }
 
-bool UPyManimRenderer::IsRendering() const
+bool UUEMotionRenderer::IsRendering() const
 {
 	return bIsRendering;
 }
 
-float UPyManimRenderer::GetProgress() const
+float UUEMotionRenderer::GetProgress() const
 {
 	if (!ActiveExecutor) return 0.0f;
 	return 0.5f;
 }
 
-ULevelSequence* UPyManimRenderer::CreateTempSequence(float Duration, float FPS)
+ULevelSequence* UUEMotionRenderer::CreateTempSequence(float Duration, float FPS)
 {
 	if (!TargetWorld) return nullptr;
 
@@ -149,17 +149,17 @@ ULevelSequence* UPyManimRenderer::CreateTempSequence(float Duration, float FPS)
 	return Sequence;
 }
 
-void UPyManimRenderer::OnRenderFinished(UMoviePipelineExecutorBase* InExecutor, bool bSuccess)
+void UUEMotionRenderer::OnRenderFinished(UMoviePipelineExecutorBase* InExecutor, bool bSuccess)
 {
 	bIsRendering = false;
 	ActiveExecutor = nullptr;
 
 	if (bSuccess)
 	{
-		UE_LOG(LogTemp, Log, TEXT("PyManimRenderer: Render completed successfully"));
+		UE_LOG(LogTemp, Log, TEXT("UEMotionRenderer: Render completed successfully"));
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("PyManimRenderer: Render failed"));
+		UE_LOG(LogTemp, Warning, TEXT("UEMotionRenderer: Render failed"));
 	}
 }

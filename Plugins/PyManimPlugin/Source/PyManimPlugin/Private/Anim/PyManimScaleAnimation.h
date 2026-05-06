@@ -1,32 +1,32 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Anim/PyManimAnimation.h"
-#include "PyManimScaleAnimation.generated.h"
+#include "Anim/UEMotionAnimation.h"
+#include "UEMotionScaleAnimation.generated.h"
 
-class UPyManimMobject;
+class UUEMotionMobject;
 
 UCLASS(BlueprintType)
-class UPyManimScaleAnimation : public UPyManimAnimation
+class UUEMotionScaleAnimation : public UUEMotionAnimation
 {
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintCallable, Category = "PyManim|Animation")
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
 	void SetStartScale(const FVector& Scale) { StartScale = Scale; bStartSet = true; }
 
-	UFUNCTION(BlueprintCallable, Category = "PyManim|Animation")
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
 	void SetEndScale(const FVector& Scale) { EndScale = Scale; }
 
-	UFUNCTION(BlueprintCallable, Category = "PyManim|Animation")
-	void SetTargetMobject(UPyManimMobject* InTarget);
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
+	void SetTargetMobject(UUEMotionMobject* InTarget);
 
 protected:
 	virtual void TickAnimation(float DeltaTime, float EasedProgress) override;
 
 private:
 	UPROPERTY()
-	UPyManimMobject* TargetMobject = nullptr;
+	UUEMotionMobject* TargetMobject = nullptr;
 
 	FVector StartScale = FVector(0.5f);
 	FVector EndScale = FVector(2.0f);

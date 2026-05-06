@@ -1,9 +1,9 @@
-#include "PyManimScene.h"
-#include "PyManimCamera.h"
-#include "PyManimMobject.h"
-#include "Anim/PyManimAnimation.h"
-#include "Rendering/PyManimRenderer.h"
-#include "Actors/PyManimSceneActor.h"
+#include "UEMotionScene.h"
+#include "UEMotionCamera.h"
+#include "UEMotionMobject.h"
+#include "Anim/UEMotionAnimation.h"
+#include "Rendering/UEMotionRenderer.h"
+#include "Actors/UEMotionSceneActor.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "Engine/DirectionalLight.h"
@@ -11,7 +11,7 @@
 #include "Components/DirectionalLightComponent.h"
 #include "Components/PointLightComponent.h"
 
-void UPyManimScene::Initialize(int32 Width, int32 Height)
+void UUEMotionScene::Initialize(int32 Width, int32 Height)
 {
 	if (bInitialized) return;
 
@@ -23,32 +23,32 @@ void UPyManimScene::Initialize(int32 Width, int32 Height)
 
 	FVector Location(-500, -500, 300);
 	FRotator Rotation = FRotator::ZeroRotator;
-	SceneActor = World->SpawnActor<APyManimSceneActor>(APyManimSceneActor::StaticClass(), Location, Rotation);
+	SceneActor = World->SpawnActor<AUEMotionSceneActor>(AUEMotionSceneActor::StaticClass(), Location, Rotation);
 
 	if (SceneActor)
 	{
-		Camera = NewObject<UPyManimCamera>(this);
+		Camera = NewObject<UUEMotionCamera>(this);
 		Camera->Init(SceneActor);
 		Camera->LookAt(FVector(0, 0, 0));
 		bInitialized = true;
 	}
 }
 
-bool UPyManimScene::IsInitialized() const
+bool UUEMotionScene::IsInitialized() const
 {
 	return bInitialized;
 }
 
-UPyManimMobject* UPyManimScene::CreateSphere(float Radius)
+UUEMotionMobject* UUEMotionScene::CreateSphere(float Radius)
 {
 	if (!bInitialized || !SceneActor) return nullptr;
 	if (Radius <= 0.0f)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("PyManimScene::CreateSphere: Invalid radius %.2f, clamping to 1.0"), Radius);
+		UE_LOG(LogTemp, Warning, TEXT("UEMotionScene::CreateSphere: Invalid radius %.2f, clamping to 1.0"), Radius);
 		Radius = 1.0f;
 	}
 
-	UPyManimMobject* Obj = NewObject<UPyManimMobject>(this);
+	UUEMotionMobject* Obj = NewObject<UUEMotionMobject>(this);
 	if (Obj)
 	{
 		Obj->InitializeAsSphere(SceneActor, Radius);
@@ -57,16 +57,16 @@ UPyManimMobject* UPyManimScene::CreateSphere(float Radius)
 	return Obj;
 }
 
-UPyManimMobject* UPyManimScene::CreateCube(float Size)
+UUEMotionMobject* UUEMotionScene::CreateCube(float Size)
 {
 	if (!bInitialized || !SceneActor) return nullptr;
 	if (Size <= 0.0f)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("PyManimScene::CreateCube: Invalid size %.2f, clamping to 1.0"), Size);
+		UE_LOG(LogTemp, Warning, TEXT("UEMotionScene::CreateCube: Invalid size %.2f, clamping to 1.0"), Size);
 		Size = 1.0f;
 	}
 
-	UPyManimMobject* Obj = NewObject<UPyManimMobject>(this);
+	UUEMotionMobject* Obj = NewObject<UUEMotionMobject>(this);
 	if (Obj)
 	{
 		Obj->InitializeAsMesh(SceneActor, TEXT("/Engine/BasicShapes/Cube.Cube"), Size);
@@ -76,13 +76,13 @@ UPyManimMobject* UPyManimScene::CreateCube(float Size)
 	return Obj;
 }
 
-UPyManimMobject* UPyManimScene::CreateCylinder(float Radius, float Height)
+UUEMotionMobject* UUEMotionScene::CreateCylinder(float Radius, float Height)
 {
 	if (!bInitialized || !SceneActor) return nullptr;
 	if (Radius <= 0.0f) Radius = 1.0f;
 	if (Height <= 0.0f) Height = 1.0f;
 
-	UPyManimMobject* Obj = NewObject<UPyManimMobject>(this);
+	UUEMotionMobject* Obj = NewObject<UUEMotionMobject>(this);
 	if (Obj)
 	{
 		Obj->InitializeAsMesh(SceneActor, TEXT("/Engine/BasicShapes/Cylinder.Cylinder"), Radius);
@@ -92,13 +92,13 @@ UPyManimMobject* UPyManimScene::CreateCylinder(float Radius, float Height)
 	return Obj;
 }
 
-UPyManimMobject* UPyManimScene::CreateCone(float Radius, float Height)
+UUEMotionMobject* UUEMotionScene::CreateCone(float Radius, float Height)
 {
 	if (!bInitialized || !SceneActor) return nullptr;
 	if (Radius <= 0.0f) Radius = 1.0f;
 	if (Height <= 0.0f) Height = 1.0f;
 
-	UPyManimMobject* Obj = NewObject<UPyManimMobject>(this);
+	UUEMotionMobject* Obj = NewObject<UUEMotionMobject>(this);
 	if (Obj)
 	{
 		Obj->InitializeAsMesh(SceneActor, TEXT("/Engine/BasicShapes/Cone.Cone"), Radius);
@@ -108,13 +108,13 @@ UPyManimMobject* UPyManimScene::CreateCone(float Radius, float Height)
 	return Obj;
 }
 
-UPyManimMobject* UPyManimScene::CreatePlane(float Width, float Height)
+UUEMotionMobject* UUEMotionScene::CreatePlane(float Width, float Height)
 {
 	if (!bInitialized || !SceneActor) return nullptr;
 	if (Width <= 0.0f) Width = 1.0f;
 	if (Height <= 0.0f) Height = 1.0f;
 
-	UPyManimMobject* Obj = NewObject<UPyManimMobject>(this);
+	UUEMotionMobject* Obj = NewObject<UUEMotionMobject>(this);
 	if (Obj)
 	{
 		Obj->InitializeAsMesh(SceneActor, TEXT("/Engine/BasicShapes/Plane.Plane"), Width);
@@ -124,13 +124,13 @@ UPyManimMobject* UPyManimScene::CreatePlane(float Width, float Height)
 	return Obj;
 }
 
-UPyManimMobject* UPyManimScene::CreateTorus(float OuterRadius, float InnerRadius)
+UUEMotionMobject* UUEMotionScene::CreateTorus(float OuterRadius, float InnerRadius)
 {
 	if (!bInitialized || !SceneActor) return nullptr;
 	if (OuterRadius <= 0.0f) OuterRadius = 1.0f;
 	if (InnerRadius <= 0.0f) InnerRadius = 1.0f;
 
-	UPyManimMobject* Obj = NewObject<UPyManimMobject>(this);
+	UUEMotionMobject* Obj = NewObject<UUEMotionMobject>(this);
 	if (Obj)
 	{
 		Obj->InitializeAsMesh(SceneActor, TEXT("/Engine/BasicShapes/Torus.Torus"), OuterRadius);
@@ -140,12 +140,12 @@ UPyManimMobject* UPyManimScene::CreateTorus(float OuterRadius, float InnerRadius
 	return Obj;
 }
 
-UPyManimCamera* UPyManimScene::GetCamera()
+UUEMotionCamera* UUEMotionScene::GetCamera()
 {
 	return Camera;
 }
 
-void UPyManimScene::AddDirectionalLight(const FVector& Direction, const FLinearColor& Color, float Intensity)
+void UUEMotionScene::AddDirectionalLight(const FVector& Direction, const FLinearColor& Color, float Intensity)
 {
 	if (!bInitialized || !SceneActor) return;
 
@@ -165,7 +165,7 @@ void UPyManimScene::AddDirectionalLight(const FVector& Direction, const FLinearC
 	}
 }
 
-void UPyManimScene::AddPointLight(const FVector& Location, const FLinearColor& Color, float Intensity)
+void UUEMotionScene::AddPointLight(const FVector& Location, const FLinearColor& Color, float Intensity)
 {
 	if (!bInitialized || !SceneActor) return;
 
@@ -185,31 +185,31 @@ void UPyManimScene::AddPointLight(const FVector& Location, const FLinearColor& C
 	}
 }
 
-TArray<UPyManimMobject*> UPyManimScene::GetAllMobjects() const
+TArray<UUEMotionMobject*> UUEMotionScene::GetAllMobjects() const
 {
 	return Mobjects;
 }
 
-void UPyManimScene::Play(UPyManimAnimation* Animation)
+void UUEMotionScene::Play(UUEMotionAnimation* Animation)
 {
 	if (!Animation || !bInitialized) return;
 	if (Animation->GetDuration() <= 0.0f)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("PyManimScene::Play: Animation duration <= 0, skipping"));
+		UE_LOG(LogTemp, Warning, TEXT("UEMotionScene::Play: Animation duration <= 0, skipping"));
 		return;
 	}
 	ActiveAnimations.Add(Animation);
 	Animation->Reset();
 }
 
-void UPyManimScene::Tick(float DeltaTime)
+void UUEMotionScene::Tick(float DeltaTime)
 {
 	if (!bInitialized) return;
 	if (DeltaTime <= 0.0f) return;
 
 	for (int32 i = ActiveAnimations.Num() - 1; i >= 0; --i)
 	{
-		UPyManimAnimation* Anim = ActiveAnimations[i];
+		UUEMotionAnimation* Anim = ActiveAnimations[i];
 		if (!Anim) continue;
 		Anim->Advance(DeltaTime);
 		if (Anim->IsFinished())
@@ -219,38 +219,38 @@ void UPyManimScene::Tick(float DeltaTime)
 	}
 }
 
-void UPyManimScene::StopAll()
+void UUEMotionScene::StopAll()
 {
 	ActiveAnimations.Empty();
 }
 
-bool UPyManimScene::HasActiveAnimations() const
+bool UUEMotionScene::HasActiveAnimations() const
 {
 	return ActiveAnimations.Num() > 0;
 }
 
-void UPyManimScene::RenderFrames(const FString& OutputDirectory, float Duration, float FPS)
+void UUEMotionScene::RenderFrames(const FString& OutputDirectory, float Duration, float FPS)
 {
 	if (!bInitialized || !SceneActor) return;
 	if (OutputDirectory.IsEmpty())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("PyManimScene::RenderFrames: Output directory is empty"));
+		UE_LOG(LogTemp, Warning, TEXT("UEMotionScene::RenderFrames: Output directory is empty"));
 		return;
 	}
 	if (Duration <= 0.0f)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("PyManimScene::RenderFrames: Invalid duration %.2f"), Duration);
+		UE_LOG(LogTemp, Warning, TEXT("UEMotionScene::RenderFrames: Invalid duration %.2f"), Duration);
 		return;
 	}
 	if (FPS <= 0.0f)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("PyManimScene::RenderFrames: Invalid FPS %.2f"), FPS);
+		UE_LOG(LogTemp, Warning, TEXT("UEMotionScene::RenderFrames: Invalid FPS %.2f"), FPS);
 		return;
 	}
 
 	if (!Renderer)
 	{
-		Renderer = NewObject<UPyManimRenderer>(this);
+		Renderer = NewObject<UUEMotionRenderer>(this);
 	}
 
 	UWorld* World = SceneActor->GetWorld();
@@ -261,18 +261,18 @@ void UPyManimScene::RenderFrames(const FString& OutputDirectory, float Duration,
 	Renderer->RenderSequence(OutputDirectory, Duration, FPS);
 }
 
-void UPyManimScene::RenderSingleFrame(const FString& FilePath)
+void UUEMotionScene::RenderSingleFrame(const FString& FilePath)
 {
 	if (!bInitialized || !SceneActor) return;
 	if (FilePath.IsEmpty())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("PyManimScene::RenderSingleFrame: File path is empty"));
+		UE_LOG(LogTemp, Warning, TEXT("UEMotionScene::RenderSingleFrame: File path is empty"));
 		return;
 	}
 
 	if (!Renderer)
 	{
-		Renderer = NewObject<UPyManimRenderer>(this);
+		Renderer = NewObject<UUEMotionRenderer>(this);
 	}
 
 	UWorld* World = SceneActor->GetWorld();
@@ -281,9 +281,9 @@ void UPyManimScene::RenderSingleFrame(const FString& FilePath)
 	Renderer->RenderSingleFrame(FilePath);
 }
 
-void UPyManimScene::ClearScene()
+void UUEMotionScene::ClearScene()
 {
-	for (UPyManimMobject* Obj : Mobjects)
+	for (UUEMotionMobject* Obj : Mobjects)
 	{
 		if (Obj)
 		{
@@ -293,7 +293,7 @@ void UPyManimScene::ClearScene()
 	Mobjects.Empty();
 }
 
-void UPyManimScene::Destroy()
+void UUEMotionScene::Destroy()
 {
 	ClearScene();
 

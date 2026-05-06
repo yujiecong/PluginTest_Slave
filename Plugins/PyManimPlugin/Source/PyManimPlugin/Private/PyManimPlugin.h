@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
 
-class FPyManimPluginModule : public IModuleInterface
+class FUEMotionPluginModule : public IModuleInterface
 {
 public:
 	virtual void StartupModule() override;

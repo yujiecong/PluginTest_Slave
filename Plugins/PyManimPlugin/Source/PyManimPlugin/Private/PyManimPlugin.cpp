@@ -1,11 +1,11 @@
-#include "PyManimPlugin.h"
+#include "UEMotionPlugin.h"
 
-IMPLEMENT_MODULE(FPyManimPluginModule, PyManimPlugin)
+IMPLEMENT_MODULE(FUEMotionPluginModule, UEMotionPlugin)
 
-void FPyManimPluginModule::StartupModule()
+void FUEMotionPluginModule::StartupModule()
 {
 }
 
-void FPyManimPluginModule::ShutdownModule()
+void FUEMotionPluginModule::ShutdownModule()
 {
 }

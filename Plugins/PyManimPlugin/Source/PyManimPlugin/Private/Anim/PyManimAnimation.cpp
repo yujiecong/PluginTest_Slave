@@ -1,7 +1,7 @@
-#include "PyManimAnimation.h"
-#include "Utils/PyManimBlueprintLibrary.h"
+#include "UEMotionAnimation.h"
+#include "Utils/UEMotionBlueprintLibrary.h"
 
-float UPyManimAnimation::ApplyEasing(const FString& Type, float t)
+float UUEMotionAnimation::ApplyEasing(const FString& Type, float t)
 {
-	return UPyManimBlueprintLibrary::ApplyEasingByName(Type, t);
+	return UUEMotionBlueprintLibrary::ApplyEasingByName(Type, t);
 }

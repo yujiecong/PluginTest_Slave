@@ -2,21 +2,21 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "PyManimSceneActor.generated.h"
+#include "UEMotionSceneActor.generated.h"
 
 class UCameraComponent;
 
 UCLASS()
-class APyManimSceneActor : public AActor
+class AUEMotionSceneActor : public AActor
 {
 	GENERATED_BODY()
 
 public:
-	APyManimSceneActor();
+	AUEMotionSceneActor();
 
 	virtual void Tick(float DeltaTime) override;
 
-	UFUNCTION(BlueprintCallable, Category = "PyManim")
+	UFUNCTION(BlueprintCallable, Category = "UEMotion")
 	UCameraComponent* GetCameraComponent() const;
 
 protected:
