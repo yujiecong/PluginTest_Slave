@@ -6,9 +6,20 @@
 	"Description": "Python-driven animation framework for Unreal Engine 5",
 	"Category": "Rendering",
 	"CreatedBy": "",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"EngineVersion": "5.7.0",
 	"CanContainContent": true,
-	"EnabledByDefault": false,
-	"Installed": false,
+	"Installed": true,
+	"Modules": [
+		{
+			"Name": "UEMotionPlugin",
+			"Type": "Editor",
+			"LoadingPhase": "Default"
+		}
+	],
 	"Plugins": [
 		{
 			"Name": "PythonScriptPlugin",
@@ -21,13 +32,6 @@
 		{
 			"Name": "MovieRenderPipeline",
 			"Enabled": true
-		}
-	],
-	"Modules": [
-		{
-			"Name": "UEMotionPlugin",
-			"Type": "Editor",
-			"LoadingPhase": "Default"
 		}
 	]
 }

@@ -23,7 +23,7 @@ public:
 	FString GetEasing() const { return EasingType; }
 
 	UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
-	bool IsFinished() const { return Elapsed >= Duration; }
+	virtual bool IsFinished() const { return Elapsed >= Duration; }
 
 	UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
 	float GetProgress() const { return FMath::Clamp(Elapsed / FMath::Max(Duration, 0.001f), 0.0f, 1.0f); }
