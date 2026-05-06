@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-05-07T03:54:24",
+  "timestamp": "2026-05-07T03:59:41",
   "total": 99,
   "passed": 97,
   "failed": 2,
   "skipped": 0,
-  "duration_s": 3.76,
+  "duration_s": 5.17,
   "tests": [
     {
       "name": "test_empty_group (test_10_animation_group.TestGroupAnimation.test_empty_group)",
