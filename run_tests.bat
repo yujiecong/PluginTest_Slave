@@ -7,7 +7,7 @@ set PROJECT=%PROJECT_DIR%/PluginTest.uproject
 set TEST_SCRIPT=%PROJECT_DIR%/Scripts/tests/run_all_tests.py
 
 echo ========================================
-echo  PyManim Test Runner
+echo  UEMotion Test Runner
 echo ========================================
 echo.
 

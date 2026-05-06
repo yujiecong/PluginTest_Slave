@@ -59,7 +59,7 @@ class Mobject:
         self._ue.set_visibility(bool(value))
 
     def move_to(self, target, duration=1.0, easing="ease_in_out"):
-        anim = unreal.PyManimMoveAnimation()
+        anim = unreal.UEMotionMoveAnimation()
         anim.set_target_mobject(self._ue)
         from .colors import vec
         anim.set_target(vec(*target) if isinstance(target, (list, tuple)) else target)
@@ -69,7 +69,7 @@ class Mobject:
         return self
 
     def rotate(self, angle=360, axis=(0, 0, 1), duration=1.0, easing="ease_in_out"):
-        anim = unreal.PyManimRotateAnimation()
+        anim = unreal.UEMotionRotateAnimation()
         anim.set_target_mobject(self._ue)
         anim.set_rotation_angle(angle)
         from .colors import vec
@@ -80,7 +80,7 @@ class Mobject:
         return self
 
     def scale_to(self, target_scale, duration=1.0, easing="ease_in_out"):
-        anim = unreal.PyManimScaleAnimation()
+        anim = unreal.UEMotionScaleAnimation()
         anim.set_target_mobject(self._ue)
         if isinstance(target_scale, (int, float)):
             anim.set_start_scale(self._ue.get_scale())
@@ -95,7 +95,7 @@ class Mobject:
         return self
 
     def fade_in(self, duration=1.0, easing="ease_in_out"):
-        anim = unreal.PyManimFadeAnimation()
+        anim = unreal.UEMotionFadeAnimation()
         anim.set_target_mobject(self._ue)
         anim.set_fade_out(False)
         anim.set_duration(duration)
@@ -105,7 +105,7 @@ class Mobject:
         return self
 
     def fade_out(self, duration=1.0, easing="ease_in_out"):
-        anim = unreal.PyManimFadeAnimation()
+        anim = unreal.UEMotionFadeAnimation()
         anim.set_target_mobject(self._ue)
         anim.set_fade_out(True)
         anim.set_duration(duration)
@@ -114,7 +114,7 @@ class Mobject:
         return self
 
     def change_color(self, target_color, duration=1.0, easing="ease_in_out"):
-        anim = unreal.PyManimColorAnimation()
+        anim = unreal.UEMotionColorAnimation()
         anim.set_target_mobject(self._ue)
         anim.set_start_color(self._ue.get_color())
         anim.set_end_color(resolve_color(target_color))

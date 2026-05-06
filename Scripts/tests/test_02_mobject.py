@@ -1,9 +1,9 @@
 import unittest
 import unreal
-from test_framework import PyManimTestCase
+from test_framework import UEMotionTestCase
 
 
-class TestMobject(PyManimTestCase):
+class TestMobject(UEMotionTestCase):
     def test_set_get_location(self):
         scene = self.make_scene()
         obj = scene.create_sphere(50)

@@ -1,9 +1,9 @@
 import unittest
 import unreal
-from test_framework import PyManimTestCase
+from test_framework import UEMotionTestCase
 
 
-class TestLight(PyManimTestCase):
+class TestLight(UEMotionTestCase):
     def test_directional_light_create(self):
         scene = self.make_scene()
         self.assertNoCrash(lambda: scene.add_directional_light(

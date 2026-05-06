@@ -1,17 +1,17 @@
 import unittest
 import unreal
-from test_framework import PyManimTestCase
+from test_framework import UEMotionTestCase
 
 
-class TestWaitAnimation(PyManimTestCase):
+class TestWaitAnimation(UEMotionTestCase):
     def test_create(self):
-        self.assertIsNotNone(unreal.PyManimWaitAnimation())
+        self.assertIsNotNone(unreal.UEMotionWaitAnimation())
 
     def test_duration_no_move(self):
         scene = self.make_scene()
         obj = scene.create_sphere(50)
         start_loc = obj.get_location()
-        anim = unreal.PyManimWaitAnimation()
+        anim = unreal.UEMotionWaitAnimation()
         anim.set_duration(2.0)
         scene.play(anim)
         self.tick_animation(scene, 2.5)
@@ -23,7 +23,7 @@ class TestWaitAnimation(PyManimTestCase):
         self.cleanup_scene(scene)
 
     def test_base_api(self):
-        anim = unreal.PyManimWaitAnimation()
+        anim = unreal.UEMotionWaitAnimation()
         anim.set_duration(3.0)
         self.assertNear(anim.get_duration(), 3.0, 0.01)
         anim.set_easing("linear")

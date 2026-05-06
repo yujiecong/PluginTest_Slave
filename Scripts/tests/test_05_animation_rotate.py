@@ -1,14 +1,14 @@
 import unittest
 import unreal
-from test_framework import PyManimTestCase
+from test_framework import UEMotionTestCase
 
 
-class TestRotateAnimation(PyManimTestCase):
+class TestRotateAnimation(UEMotionTestCase):
     def test_create(self):
-        self.assertIsNotNone(unreal.PyManimRotateAnimation())
+        self.assertIsNotNone(unreal.UEMotionRotateAnimation())
 
     def test_base_api(self):
-        anim = unreal.PyManimRotateAnimation()
+        anim = unreal.UEMotionRotateAnimation()
         anim.set_duration(2.0)
         self.assertNear(anim.get_duration(), 2.0, 0.01)
         anim.set_easing("ease_out_cubic")
@@ -17,7 +17,7 @@ class TestRotateAnimation(PyManimTestCase):
     def test_tick(self):
         scene = self.make_scene()
         obj = scene.create_cube(50)
-        anim = unreal.PyManimRotateAnimation()
+        anim = unreal.UEMotionRotateAnimation()
         anim.set_target_mobject(obj)
         anim.set_rotation_angle(90)
         anim.set_axis(unreal.Vector(0, 0, 1))
@@ -35,7 +35,7 @@ class TestRotateAnimation(PyManimTestCase):
     def test_finish(self):
         scene = self.make_scene()
         obj = scene.create_cube(50)
-        anim = unreal.PyManimRotateAnimation()
+        anim = unreal.UEMotionRotateAnimation()
         anim.set_target_mobject(obj)
         anim.set_rotation_angle(360)
         anim.set_axis(unreal.Vector(0, 0, 1))
@@ -52,7 +52,7 @@ class TestRotateAnimation(PyManimTestCase):
     def test_different_axis(self):
         scene = self.make_scene()
         obj = scene.create_cube(50)
-        anim = unreal.PyManimRotateAnimation()
+        anim = unreal.UEMotionRotateAnimation()
         anim.set_target_mobject(obj)
         anim.set_rotation_angle(90)
         anim.set_axis(unreal.Vector(1, 0, 0))

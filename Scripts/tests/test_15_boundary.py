@@ -1,10 +1,10 @@
 import unittest
 import time
 import unreal
-from test_framework import PyManimTestCase
+from test_framework import UEMotionTestCase
 
 
-class TestBoundary(PyManimTestCase):
+class TestBoundary(UEMotionTestCase):
     def test_negative_radius(self):
         scene = self.make_scene()
         obj = scene.create_sphere(-1)
@@ -24,7 +24,7 @@ class TestBoundary(PyManimTestCase):
         self.cleanup_scene(scene)
 
     def test_uninitialized_scene(self):
-        scene = unreal.PyManimScene()
+        scene = unreal.UEMotionScene()
         obj = scene.create_sphere(50)
         self.assertIsNone(obj, "Uninitialized scene should return None")
         self.assertNoCrash(lambda: scene.render_frames("D:/nonexistent", 1.0, 30))
@@ -33,7 +33,7 @@ class TestBoundary(PyManimTestCase):
     def test_zero_duration_animation(self):
         scene = self.make_scene()
         obj = scene.create_sphere(50)
-        anim = unreal.PyManimMoveAnimation()
+        anim = unreal.UEMotionMoveAnimation()
         anim.set_target_mobject(obj)
         anim.set_target(unreal.Vector(200, 0, 50))
         anim.set_duration(0.0)
@@ -64,7 +64,7 @@ class TestBoundary(PyManimTestCase):
     def test_long_animation_60s(self):
         scene = self.make_scene()
         obj = scene.create_sphere(40)
-        anim = unreal.PyManimMoveAnimation()
+        anim = unreal.UEMotionMoveAnimation()
         anim.set_target_mobject(obj)
         anim.set_target(unreal.Vector(200, 0, 50))
         anim.set_duration(60.0)

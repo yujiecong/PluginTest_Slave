@@ -1,25 +1,25 @@
 import unittest
 import unreal
-from test_framework import PyManimTestCase
+from test_framework import UEMotionTestCase
 
 
-class TestGroupAnimation(PyManimTestCase):
+class TestGroupAnimation(UEMotionTestCase):
     def test_create(self):
-        self.assertIsNotNone(unreal.PyManimGroupAnimation())
+        self.assertIsNotNone(unreal.UEMotionGroupAnimation())
 
     def test_add_animation(self):
-        group = unreal.PyManimGroupAnimation()
-        move = unreal.PyManimMoveAnimation()
+        group = unreal.UEMotionGroupAnimation()
+        move = unreal.UEMotionMoveAnimation()
         move.set_duration(1.0)
         group.add_animation(move)
         self.assertEqual(group.get_animation_count(), 1)
-        rotate = unreal.PyManimRotateAnimation()
+        rotate = unreal.UEMotionRotateAnimation()
         rotate.set_duration(1.0)
         group.add_animation(rotate)
         self.assertEqual(group.get_animation_count(), 2)
 
     def test_set_play_mode(self):
-        group = unreal.PyManimGroupAnimation()
+        group = unreal.UEMotionGroupAnimation()
         group.set_play_mode(False)
         group.set_play_mode(True)
 
@@ -30,19 +30,19 @@ class TestGroupAnimation(PyManimTestCase):
         cube = scene.create_cube(50)
         cube.set_location(unreal.Vector(200, 0, 0))
 
-        move = unreal.PyManimMoveAnimation()
+        move = unreal.UEMotionMoveAnimation()
         move.set_target_mobject(sphere)
         move.set_target(unreal.Vector(200, 0, 0))
         move.set_duration(1.0)
         move.set_easing("linear")
 
-        rotate = unreal.PyManimRotateAnimation()
+        rotate = unreal.UEMotionRotateAnimation()
         rotate.set_target_mobject(cube)
         rotate.set_rotation_angle(90)
         rotate.set_axis(unreal.Vector(0, 0, 1))
         rotate.set_duration(1.0)
 
-        group = unreal.PyManimGroupAnimation()
+        group = unreal.UEMotionGroupAnimation()
         group.add_animation(move)
         group.add_animation(rotate)
         group.set_play_mode(False)
@@ -58,20 +58,20 @@ class TestGroupAnimation(PyManimTestCase):
         sphere = scene.create_sphere(50)
         sphere.set_location(unreal.Vector(0, 0, 0))
 
-        move1 = unreal.PyManimMoveAnimation()
+        move1 = unreal.UEMotionMoveAnimation()
         move1.set_target_mobject(sphere)
         move1.set_target(unreal.Vector(100, 0, 0))
         move1.set_duration(1.0)
         move1.set_easing("linear")
 
-        move2 = unreal.PyManimMoveAnimation()
+        move2 = unreal.UEMotionMoveAnimation()
         move2.set_target_mobject(sphere)
         move2.set_start(unreal.Vector(100, 0, 0))
         move2.set_target(unreal.Vector(200, 0, 0))
         move2.set_duration(1.0)
         move2.set_easing("linear")
 
-        group = unreal.PyManimGroupAnimation()
+        group = unreal.UEMotionGroupAnimation()
         group.add_animation(move1)
         group.add_animation(move2)
         group.set_play_mode(True)
@@ -86,7 +86,7 @@ class TestGroupAnimation(PyManimTestCase):
         self.cleanup_scene(scene)
 
     def test_base_api(self):
-        group = unreal.PyManimGroupAnimation()
+        group = unreal.UEMotionGroupAnimation()
         group.set_duration(2.0)
         self.assertNear(group.get_duration(), 2.0, 0.01)
         group.set_easing("linear")
@@ -96,7 +96,7 @@ class TestGroupAnimation(PyManimTestCase):
 
     def test_empty_group(self):
         scene = self.make_scene()
-        group = unreal.PyManimGroupAnimation()
+        group = unreal.UEMotionGroupAnimation()
         scene.play(group)
         self.assertFalse(scene.has_active_animations())
         self.cleanup_scene(scene)

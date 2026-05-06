@@ -1,11 +1,11 @@
 import unittest
 import unreal
-from test_framework import PyManimTestCase
+from test_framework import UEMotionTestCase
 
 
-class TestScene(PyManimTestCase):
+class TestScene(UEMotionTestCase):
     def test_scene_create(self):
-        scene = unreal.PyManimScene()
+        scene = unreal.UEMotionScene()
         self.assertIsNotNone(scene)
 
     def test_scene_initialize(self):
@@ -14,13 +14,13 @@ class TestScene(PyManimTestCase):
         self.cleanup_scene(scene)
 
     def test_scene_initialize_custom_res(self):
-        scene = unreal.PyManimScene()
+        scene = unreal.UEMotionScene()
         scene.initialize(3840, 2160)
         self.assertTrue(scene.is_initialized())
         self.cleanup_scene(scene)
 
     def test_scene_double_initialize(self):
-        scene = unreal.PyManimScene()
+        scene = unreal.UEMotionScene()
         scene.initialize(1920, 1080)
         self.assertNoCrash(lambda: scene.initialize(1920, 1080))
         self.assertTrue(scene.is_initialized())
@@ -52,7 +52,7 @@ class TestScene(PyManimTestCase):
     def test_scene_play_tick(self):
         scene = self.make_scene()
         sphere = scene.create_sphere(50)
-        anim = unreal.PyManimMoveAnimation()
+        anim = unreal.UEMotionMoveAnimation()
         anim.set_target_mobject(sphere)
         anim.set_target(unreal.Vector(200, 0, 0))
         anim.set_duration(1.0)
@@ -65,7 +65,7 @@ class TestScene(PyManimTestCase):
     def test_scene_stop_all(self):
         scene = self.make_scene()
         sphere = scene.create_sphere(50)
-        anim = unreal.PyManimMoveAnimation()
+        anim = unreal.UEMotionMoveAnimation()
         anim.set_target_mobject(sphere)
         anim.set_target(unreal.Vector(200, 0, 0))
         anim.set_duration(5.0)
@@ -106,7 +106,7 @@ class TestScene(PyManimTestCase):
         scene.add_directional_light(unreal.Vector(0, -1, -1), unreal.LinearColor(1, 1, 1, 1), 10)
         scene.create_sphere(50)
         self.assertNoCrash(lambda: scene.render_frames(
-            "D:/PyManimTest/test_scene_frames", 0.5, 30))
+            "D:/UEMotionTest/test_scene_frames", 0.5, 30))
         self.cleanup_scene(scene)
 
     def test_scene_render_single_frame(self):
@@ -114,7 +114,7 @@ class TestScene(PyManimTestCase):
         scene.add_directional_light(unreal.Vector(0, -1, -1), unreal.LinearColor(1, 1, 1, 1), 10)
         scene.create_sphere(50)
         self.assertNoCrash(lambda: scene.render_single_frame(
-            "D:/PyManimTest/test_single_frame.png"))
+            "D:/UEMotionTest/test_single_frame.png"))
         self.cleanup_scene(scene)
 
 

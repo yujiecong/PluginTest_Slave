@@ -1,14 +1,14 @@
 import unittest
 import unreal
-from test_framework import PyManimTestCase
+from test_framework import UEMotionTestCase
 
 
-class TestScaleAnimation(PyManimTestCase):
+class TestScaleAnimation(UEMotionTestCase):
     def test_create(self):
-        self.assertIsNotNone(unreal.PyManimScaleAnimation())
+        self.assertIsNotNone(unreal.UEMotionScaleAnimation())
 
     def test_base_api(self):
-        anim = unreal.PyManimScaleAnimation()
+        anim = unreal.UEMotionScaleAnimation()
         anim.set_duration(1.5)
         self.assertNear(anim.get_duration(), 1.5, 0.01)
         anim.set_easing("ease_in_out")
@@ -17,7 +17,7 @@ class TestScaleAnimation(PyManimTestCase):
     def test_tick(self):
         scene = self.make_scene()
         obj = scene.create_sphere(50)
-        anim = unreal.PyManimScaleAnimation()
+        anim = unreal.UEMotionScaleAnimation()
         anim.set_target_mobject(obj)
         anim.set_start_scale(unreal.Vector(1, 1, 1))
         anim.set_end_scale(unreal.Vector(2, 2, 2))
@@ -31,7 +31,7 @@ class TestScaleAnimation(PyManimTestCase):
     def test_finish(self):
         scene = self.make_scene()
         obj = scene.create_sphere(50)
-        anim = unreal.PyManimScaleAnimation()
+        anim = unreal.UEMotionScaleAnimation()
         anim.set_target_mobject(obj)
         anim.set_start_scale(unreal.Vector(1, 1, 1))
         anim.set_end_scale(unreal.Vector(3, 3, 3))
@@ -49,7 +49,7 @@ class TestScaleAnimation(PyManimTestCase):
     def test_scale_down(self):
         scene = self.make_scene()
         obj = scene.create_sphere(50)
-        anim = unreal.PyManimScaleAnimation()
+        anim = unreal.UEMotionScaleAnimation()
         anim.set_target_mobject(obj)
         anim.set_start_scale(unreal.Vector(1, 1, 1))
         anim.set_end_scale(unreal.Vector(0.1, 0.1, 0.1))

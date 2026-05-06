@@ -1,15 +1,15 @@
 import unittest
 import unreal
-from test_framework import PyManimTestCase
+from test_framework import UEMotionTestCase
 
 
-class TestMoveAnimation(PyManimTestCase):
+class TestMoveAnimation(UEMotionTestCase):
     def test_create(self):
-        anim = unreal.PyManimMoveAnimation()
+        anim = unreal.UEMotionMoveAnimation()
         self.assertIsNotNone(anim)
 
     def test_base_api(self):
-        anim = unreal.PyManimMoveAnimation()
+        anim = unreal.UEMotionMoveAnimation()
         anim.set_duration(2.0)
         self.assertNear(anim.get_duration(), 2.0, 0.01)
         anim.set_easing("ease_in_out")
@@ -23,7 +23,7 @@ class TestMoveAnimation(PyManimTestCase):
         scene = self.make_scene()
         obj = scene.create_sphere(50)
         obj.set_location(unreal.Vector(0, 0, 0))
-        anim = unreal.PyManimMoveAnimation()
+        anim = unreal.UEMotionMoveAnimation()
         anim.set_target_mobject(obj)
         anim.set_target(unreal.Vector(200, 0, 0))
         anim.set_duration(2.0)
@@ -38,7 +38,7 @@ class TestMoveAnimation(PyManimTestCase):
         scene = self.make_scene()
         obj = scene.create_sphere(50)
         obj.set_location(unreal.Vector(0, 0, 0))
-        anim = unreal.PyManimMoveAnimation()
+        anim = unreal.UEMotionMoveAnimation()
         anim.set_target_mobject(obj)
         anim.set_target(unreal.Vector(200, 0, 0))
         anim.set_duration(1.0)
@@ -52,7 +52,7 @@ class TestMoveAnimation(PyManimTestCase):
     def test_with_start(self):
         scene = self.make_scene()
         obj = scene.create_sphere(50)
-        anim = unreal.PyManimMoveAnimation()
+        anim = unreal.UEMotionMoveAnimation()
         anim.set_target_mobject(obj)
         anim.set_start(unreal.Vector(-100, 0, 0))
         anim.set_target(unreal.Vector(100, 0, 0))

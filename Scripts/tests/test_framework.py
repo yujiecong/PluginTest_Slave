@@ -16,7 +16,7 @@ except NameError:
 REPORT_DIR = os.path.join(TESTS_DIR, "test_report")
 
 
-class PyManimTestCase(unittest.TestCase):
+class UEMotionTestCase(unittest.TestCase):
     def assertNear(self, a, b, tolerance=0.01, msg=""):
         self.assertTrue(abs(a - b) <= tolerance, f"{msg} Expected {b} +/- {tolerance}, got {a}")
 
@@ -29,7 +29,7 @@ class PyManimTestCase(unittest.TestCase):
     @staticmethod
     def make_scene():
         import unreal
-        scene = unreal.PyManimScene()
+        scene = unreal.UEMotionScene()
         scene.initialize(1920, 1080)
         return scene
 

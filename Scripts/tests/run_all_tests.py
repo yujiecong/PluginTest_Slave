@@ -28,7 +28,7 @@ def main():
     suite = loader.discover(TESTS_DIR, pattern="test_*.py")
 
     print("=" * 64)
-    print("  PyManim Automated Test Suite")
+    print("  UEMotion Automated Test Suite")
     print("=" * 64)
 
     runner = JsonReportRunner(verbosity=2)

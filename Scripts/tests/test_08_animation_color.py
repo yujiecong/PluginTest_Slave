@@ -1,14 +1,14 @@
 import unittest
 import unreal
-from test_framework import PyManimTestCase
+from test_framework import UEMotionTestCase
 
 
-class TestColorAnimation(PyManimTestCase):
+class TestColorAnimation(UEMotionTestCase):
     def test_create(self):
-        self.assertIsNotNone(unreal.PyManimColorAnimation())
+        self.assertIsNotNone(unreal.UEMotionColorAnimation())
 
     def test_base_api(self):
-        anim = unreal.PyManimColorAnimation()
+        anim = unreal.UEMotionColorAnimation()
         anim.set_duration(1.5)
         self.assertNear(anim.get_duration(), 1.5, 0.01)
         anim.set_easing("ease_in_out_cubic")
@@ -18,7 +18,7 @@ class TestColorAnimation(PyManimTestCase):
         scene = self.make_scene()
         obj = scene.create_sphere(50)
         obj.set_color(unreal.LinearColor(1, 0, 0, 1))
-        anim = unreal.PyManimColorAnimation()
+        anim = unreal.UEMotionColorAnimation()
         anim.set_target_mobject(obj)
         anim.set_start_color(unreal.LinearColor(1, 0, 0, 1))
         anim.set_end_color(unreal.LinearColor(0, 0, 1, 1))
@@ -34,7 +34,7 @@ class TestColorAnimation(PyManimTestCase):
         scene = self.make_scene()
         obj = scene.create_sphere(50)
         obj.set_color(unreal.LinearColor(1, 0, 0, 1))
-        anim = unreal.PyManimColorAnimation()
+        anim = unreal.UEMotionColorAnimation()
         anim.set_target_mobject(obj)
         anim.set_start_color(unreal.LinearColor(1, 0, 0, 1))
         anim.set_end_color(unreal.LinearColor(0, 0, 1, 1))
@@ -52,7 +52,7 @@ class TestColorAnimation(PyManimTestCase):
         scene = self.make_scene()
         obj = scene.create_sphere(50)
         obj.set_color(unreal.LinearColor(0, 1, 0, 1))
-        anim = unreal.PyManimColorAnimation()
+        anim = unreal.UEMotionColorAnimation()
         anim.set_target_mobject(obj)
         anim.set_end_color(unreal.LinearColor(1, 0, 0, 1))
         anim.set_duration(1.0)

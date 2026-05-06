@@ -1,10 +1,10 @@
 import unittest
 import math
 import unreal
-from test_framework import PyManimTestCase
+from test_framework import UEMotionTestCase
 
 
-class TestCamera(PyManimTestCase):
+class TestCamera(UEMotionTestCase):
     def test_set_get_position(self):
         scene = self.make_scene()
         cam = scene.get_camera()

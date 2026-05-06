@@ -1,8 +1,8 @@
 using UnrealBuildTool;
 
-public class PyManimPlugin : ModuleRules
+public class UEMotionPlugin : ModuleRules
 {
-	public PyManimPlugin(ReadOnlyTargetRules Target) : base(Target)
+	public UEMotionPlugin(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
@@ -29,6 +29,6 @@ public class PyManimPlugin : ModuleRules
 			"TimeManagement"
 		});
 
-		PrivateIncludePaths.AddRange(new string[] { "PyManimPlugin/Private" });
+		PrivateIncludePaths.AddRange(new string[] { "UEMotionPlugin/Private" });
 	}
 }

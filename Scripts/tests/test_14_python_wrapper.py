@@ -4,7 +4,7 @@ import os
 import unreal
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-from pymanim import Scene, vec, rot, resolve_color, COLOR_MAP
+from uemotion import Scene, vec, rot, resolve_color, COLOR_MAP
 
 
 class TestPythonWrapper(unittest.TestCase):

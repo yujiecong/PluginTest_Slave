@@ -25,7 +25,7 @@ class Animation:
             return None
         if len(self._ue_anims) == 1:
             return self._ue_anims[0]
-        group = unreal.PyManimGroupAnimation()
+        group = unreal.UEMotionGroupAnimation()
         for anim in self._ue_anims:
             group.add_animation(anim)
         group.set_play_mode(self._sequential)

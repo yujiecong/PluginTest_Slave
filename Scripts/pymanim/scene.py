@@ -3,7 +3,7 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from pymanim_utils import frames_to_video
+from uemotion_utils import frames_to_video
 
 from .mobject import Mobject
 from .camera import Camera
@@ -13,7 +13,7 @@ from .colors import resolve_color, vec
 
 class Scene:
     def __init__(self, width=1920, height=1080):
-        self._ue = unreal.PyManimScene()
+        self._ue = unreal.UEMotionScene()
         self._ue.initialize(width, height)
         self._width = width
         self._height = height
@@ -105,7 +105,7 @@ class Scene:
                 built = item.build()
                 if built:
                     all_ue_anims.append(built)
-            elif isinstance(item, unreal.PyManimAnimation):
+            elif isinstance(item, unreal.UEMotionAnimation):
                 all_ue_anims.append(item)
 
         if not all_ue_anims:
@@ -114,7 +114,7 @@ class Scene:
         if len(all_ue_anims) == 1:
             self._ue.play(all_ue_anims[0])
         else:
-            group = unreal.PyManimGroupAnimation()
+            group = unreal.UEMotionGroupAnimation()
             for anim in all_ue_anims:
                 group.add_animation(anim)
             group.set_play_mode(False)
@@ -131,7 +131,7 @@ class Scene:
             self._ue.tick(1.0 / fps)
 
     def wait(self, duration=1.0):
-        anim = unreal.PyManimWaitAnimation()
+        anim = unreal.UEMotionWaitAnimation()
         anim.set_duration(duration)
         self._ue.play(anim)
         fps = 30
@@ -152,9 +152,9 @@ class Scene:
 
         success = frames_to_video(frames_dir, output_path, fps)
         if success:
-            print(f"[PyManim] Video saved: {output_path}")
+            print(f"[UEMotion] Video saved: {output_path}")
         else:
-            print(f"[PyManim] Frames saved to: {frames_dir} (ffmpeg failed)")
+            print(f"[UEMotion] Frames saved to: {frames_dir} (ffmpeg failed)")
         return success
 
     def render_frame(self, file_path):

@@ -3,7 +3,7 @@ import sys
 import os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from pymanim import Scene, Animation
+from uemotion import Scene, Animation
 
 s = Scene(1920, 1080)
 s.directional_light(direction=(0, -1, -1), color="white", intensity=10)
