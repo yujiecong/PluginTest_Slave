@@ -23,9 +23,9 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UEMotion|Scene", meta = (AllowPrivateAccess = "true"))
 	USceneComponent* RootComp;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UEMotion|Scene", meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* CameraComp;
 };

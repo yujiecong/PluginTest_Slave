@@ -27,7 +27,7 @@
 			"Enabled": true
 		},
 		{
-			"Name": "PyManimPlugin",
+			"Name": "UEMotionPlugin",
 			"Enabled": true
 		}
 	]

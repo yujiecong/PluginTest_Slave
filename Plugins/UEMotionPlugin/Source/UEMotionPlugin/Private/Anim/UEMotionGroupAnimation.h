@@ -19,7 +19,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
 	int32 GetAnimationCount() const { return Animations.Num(); }
 
-	UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
 	bool IsFinished() const override;
 
 protected:
