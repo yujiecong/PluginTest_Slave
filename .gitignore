@@ -93,3 +93,5 @@ UpgradeLog.htm
 
 # Ignore ignore file used by some tools
 .ignore
+
+legacy

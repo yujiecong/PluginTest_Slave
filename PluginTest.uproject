@@ -19,8 +19,8 @@
 			]
 		},
 		{
-			"Name": "MyUSDImporter",
-			"Enabled": true
+			"Name": "MetaHumanSDK",
+			"Enabled": false
 		}
 	]
 }
