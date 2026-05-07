@@ -142,6 +142,7 @@ private:
 	bool CreateSceneMap();
 	bool CreateLevelSequenceAsset();
 	void SetupDefaultLighting();
+	void OpenLevelSequenceInEditor();
 
 	void AddActorToSequencer(AActor* Actor);
 	UMovieScene3DTransformTrack* GetOrCreateTransformTrack(UUEMotionMobject* Mobject);

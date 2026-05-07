@@ -28,9 +28,12 @@
 #include "Kismet/GameplayStatics.h"
 #include "UObject/Package.h"
 #include "Misc/PackageName.h"
+#include "Misc/Paths.h"
 #include "PackageTools.h"
 #include "FileHelpers.h"
+#include "HAL/PlatformFileManager.h"
 #include "Editor/EditorEngine.h"
+#include "Subsystems/AssetEditorSubsystem.h"
 
 FString UUEMotionScene::GetMapPath() const
 {
@@ -46,13 +49,20 @@ bool UUEMotionScene::CreateSceneMap()
 {
 	if (!GEditor) return false;
 
+	FString MapPath = GetMapPath();
+
+	if (UEditorAssetLibrary::DoesAssetExist(MapPath))
+	{
+		UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Map '%s' already exists, deleting it"), *MapPath);
+		UEditorAssetLibrary::DeleteAsset(MapPath);
+	}
+
 	UWorld* NewWorld = UEditorLoadingAndSavingUtils::NewMapFromTemplate(TEXT("/Engine/Maps/Templates/Template_Default"), true);
 	if (!NewWorld) return false;
 
 	SceneWorld = GEditor->GetEditorWorldContext().World();
 	if (!SceneWorld) return false;
 
-	FString MapPath = GetMapPath();
 	if (!UEditorLoadingAndSavingUtils::SaveMap(SceneWorld, MapPath))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("UEMotionScene: Failed to save map to '%s'"), *MapPath);
@@ -65,6 +75,12 @@ bool UUEMotionScene::CreateSceneMap()
 bool UUEMotionScene::CreateLevelSequenceAsset()
 {
 	FString SequencePackageName = GetSequencePath();
+
+	if (UEditorAssetLibrary::DoesAssetExist(SequencePackageName))
+	{
+		UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Sequence '%s' already exists, deleting it"), *SequencePackageName);
+		UEditorAssetLibrary::DeleteAsset(SequencePackageName);
+	}
 
 	UPackage* SequencePackage = CreatePackage(*SequencePackageName);
 	if (!SequencePackage) return false;
@@ -79,7 +95,8 @@ bool UUEMotionScene::CreateLevelSequenceAsset()
 	{
 		FFrameRate FrameRate(FMath::RoundToInt(PlaybackFPS), 1);
 		MovieScene->SetDisplayRate(FrameRate);
-		MovieScene->SetPlaybackRange(TRange<FFrameNumber>(0, 1), true);
+		int32 DefaultFrames = FMath::RoundToInt(2.0f * PlaybackFPS);
+		MovieScene->SetPlaybackRange(TRange<FFrameNumber>(0, DefaultFrames), true);
 		MovieScene->SetWorkingRange(0.0, 10.0);
 		MovieScene->SetViewRange(0.0, 10.0);
 	}
@@ -110,6 +127,18 @@ void UUEMotionScene::SetupDefaultLighting()
 			LightComp->SetIntensity(10.0f);
 			LightComp->SetLightColor(FLinearColor::White);
 		}
+	}
+}
+
+void UUEMotionScene::OpenLevelSequenceInEditor()
+{
+	if (!LevelSequence) return;
+
+	UAssetEditorSubsystem* AssetEditorSubsystem = GEditor->GetEditorSubsystem<UAssetEditorSubsystem>();
+	if (AssetEditorSubsystem)
+	{
+		AssetEditorSubsystem->OpenEditorForAsset(LevelSequence);
+		UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Opened LevelSequence in Sequencer editor"));
 	}
 }
 
@@ -154,6 +183,8 @@ void UUEMotionScene::Initialize(const FString& InSceneName, int32 Width, int32 H
 		bInitialized = true;
 
 		UEditorLoadingAndSavingUtils::SaveMap(SceneWorld, GetMapPath());
+
+		OpenLevelSequenceInEditor();
 
 		UE_LOG(LogTemp, Log, TEXT("UEMotionScene::Initialize: Scene '%s' created with Map + LevelSequence"), *SceneName);
 	}
@@ -329,7 +360,9 @@ void UUEMotionScene::AddActorToSequencer(AActor* Actor)
 	UMovieScene* MovieScene = LevelSequence->GetMovieScene();
 	if (!MovieScene) return;
 
-	UEMotionCompat::FindOrAddPossessable(MovieScene, Actor, LevelSequence, SceneWorld);
+	FGuid Binding = UEMotionCompat::FindOrAddPossessable(MovieScene, Actor, LevelSequence, SceneWorld);
+	UE_LOG(LogTemp, Log, TEXT("UEMotionScene: AddActorToSequencer '%s' -> Binding %s"),
+		*Actor->GetName(), Binding.IsValid() ? *Binding.ToString() : TEXT("INVALID"));
 }
 
 UMovieScene3DTransformTrack* UUEMotionScene::GetOrCreateTransformTrack(UUEMotionMobject* Mobject)
@@ -337,17 +370,26 @@ UMovieScene3DTransformTrack* UUEMotionScene::GetOrCreateTransformTrack(UUEMotion
 	if (!LevelSequence || !Mobject) return nullptr;
 
 	AActor* Actor = Mobject->GetInternalActor();
-	if (!Actor) return nullptr;
+	if (!Actor)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("UEMotionScene: GetOrCreateTransformTrack - Mobject has no internal actor"));
+		return nullptr;
+	}
 
 	UMovieScene* MovieScene = LevelSequence->GetMovieScene();
 	if (!MovieScene) return nullptr;
 
 	FGuid ObjectBinding = UEMotionCompat::FindOrAddPossessable(MovieScene, Actor, LevelSequence, SceneWorld);
-	if (!ObjectBinding.IsValid()) return nullptr;
+	if (!ObjectBinding.IsValid())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("UEMotionScene: GetOrCreateTransformTrack - Failed to get binding for '%s'"), *Actor->GetName());
+		return nullptr;
+	}
 
 	UMovieScene3DTransformTrack* ExistingTrack = UEMotionCompat::FindTransformTrack(MovieScene, ObjectBinding);
 	if (ExistingTrack)
 	{
+		UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Reusing existing TransformTrack for '%s'"), *Actor->GetName());
 		return ExistingTrack;
 	}
 
@@ -356,6 +398,12 @@ UMovieScene3DTransformTrack* UUEMotionScene::GetOrCreateTransformTrack(UUEMotion
 	if (NewTrack)
 	{
 		UEMotionCompat::CreateAndAddSection(NewTrack);
+		UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Created new TransformTrack for '%s' with binding %s"),
+			*Actor->GetName(), *ObjectBinding.ToString());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("UEMotionScene: Failed to create TransformTrack for '%s'"), *Actor->GetName());
 	}
 
 	return NewTrack;
@@ -387,7 +435,10 @@ UMovieSceneFloatTrack* UUEMotionScene::GetOrCreateFloatTrack(UUEMotionMobject* M
 
 void UUEMotionScene::RecordTransformKey(UMovieScene3DTransformTrack* Track, int32 Frame, const FVector& Location, const FRotator& Rotation, const FVector& Scale)
 {
-	if (!Track) return;
+	if (!Track || !LevelSequence) return;
+
+	UMovieScene* MovieScene = LevelSequence->GetMovieScene();
+	if (!MovieScene) return;
 
 	UMovieSceneSection* Section = Track->GetAllSections().Num() > 0 ? Track->GetAllSections()[0] : nullptr;
 	if (!Section) return;
@@ -395,21 +446,35 @@ void UUEMotionScene::RecordTransformKey(UMovieScene3DTransformTrack* Track, int3
 	UMovieScene3DTransformSection* TransformSection = Cast<UMovieScene3DTransformSection>(Section);
 	if (!TransformSection) return;
 
-	FFrameNumber FrameNumber(Frame);
-	UEMotionCompat::RecordTransformKeys(TransformSection, FrameNumber, Location, Rotation, Scale);
-	Section->SetRange(TRange<FFrameNumber>::All());
+	FFrameNumber TickFrame = UEMotionCompat::DisplayFrameToTick(MovieScene, Frame);
+	UEMotionCompat::RecordTransformKeys(MovieScene, TransformSection, Frame, Location, Rotation, Scale);
+
+	TRange<FFrameNumber> CurrentRange = Section->GetRange();
+	FFrameNumber MinTick = CurrentRange.GetLowerBound().IsOpen() ? TickFrame : FMath::Min(CurrentRange.GetLowerBoundValue(), TickFrame);
+	FFrameNumber MaxTick = CurrentRange.GetUpperBound().IsOpen() ? TickFrame : FMath::Max(CurrentRange.GetUpperBoundValue(), TickFrame);
+	Section->SetRange(TRange<FFrameNumber>(MinTick, MaxTick));
+
+	UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Recorded key at DisplayFrame=%d (Tick=%d) - Loc(%s) Rot(%s) Scale(%s) [Section Range: %d-%d]"),
+		Frame, TickFrame.Value, *Location.ToString(), *Rotation.ToString(), *Scale.ToString(), MinTick.Value, MaxTick.Value);
 }
 
 void UUEMotionScene::RecordFloatKey(UMovieSceneFloatTrack* Track, int32 Frame, float Value)
 {
-	if (!Track) return;
+	if (!Track || !LevelSequence) return;
+
+	UMovieScene* MovieScene = LevelSequence->GetMovieScene();
+	if (!MovieScene) return;
 
 	UMovieSceneFloatSection* Section = Cast<UMovieSceneFloatSection>(Track->GetAllSections().Num() > 0 ? Track->GetAllSections()[0] : nullptr);
 	if (!Section) return;
 
-	FFrameNumber FrameNumber(Frame);
-	UEMotionCompat::RecordFloatKey(Section, FrameNumber, Value);
-	Section->SetRange(TRange<FFrameNumber>::All());
+	FFrameNumber TickFrame = UEMotionCompat::DisplayFrameToTick(MovieScene, Frame);
+	UEMotionCompat::RecordFloatKey(MovieScene, Section, Frame, Value);
+
+	TRange<FFrameNumber> CurrentRange = Section->GetRange();
+	FFrameNumber MinTick = CurrentRange.GetLowerBound().IsOpen() ? TickFrame : FMath::Min(CurrentRange.GetLowerBoundValue(), TickFrame);
+	FFrameNumber MaxTick = CurrentRange.GetUpperBound().IsOpen() ? TickFrame : FMath::Max(CurrentRange.GetUpperBoundValue(), TickFrame);
+	Section->SetRange(TRange<FFrameNumber>(MinTick, MaxTick));
 }
 
 void UUEMotionScene::Play(UUEMotionAnimation* Animation)
@@ -430,6 +495,9 @@ void UUEMotionScene::Play(UUEMotionAnimation* Animation)
 
 	int32 StartFrame = FMath::RoundToInt(StartTime * PlaybackFPS);
 	int32 EndFrame = FMath::RoundToInt(EndTime * PlaybackFPS);
+
+	UE_LOG(LogTemp, Log, TEXT("UEMotionScene::Play: Duration=%.2f, Frames %d->%d, CurrentTime=%.2f->%.2f"),
+		Duration, StartFrame, EndFrame, StartTime, EndTime);
 
 	if (UUEMotionMoveAnimation* MoveAnim = Cast<UUEMotionMoveAnimation>(Animation))
 	{
@@ -568,12 +636,41 @@ bool UUEMotionScene::HasActiveAnimations() const
 
 void UUEMotionScene::RenderFrames(const FString& OutputDirectory, float Duration, float FPS)
 {
-	UE_LOG(LogTemp, Warning, TEXT("UEMotionScene::RenderFrames: Rendering is temporarily disabled"));
+	if (!bInitialized || !LevelSequence) return;
+
+	if (!Renderer)
+	{
+		Renderer = NewObject<UUEMotionRenderer>(this);
+		Renderer->Initialize(SceneWorld, ResolutionWidth, ResolutionHeight);
+		Renderer->OnRenderFinishedDelegate.AddDynamic(this, &UUEMotionScene::OnRendererFinished);
+	}
+
+	SaveAssets();
+
+	UE_LOG(LogTemp, Log, TEXT("UEMotionScene::RenderFrames: Starting MRQ render to '%s', Duration=%.2fs, FPS=%.0f"),
+		*OutputDirectory, Duration, FPS);
+
+	Renderer->RenderSequence(LevelSequence, OutputDirectory, Duration, FPS);
 }
 
 void UUEMotionScene::RenderSingleFrame(const FString& FilePath)
 {
-	UE_LOG(LogTemp, Warning, TEXT("UEMotionScene::RenderSingleFrame: Rendering is temporarily disabled"));
+	if (!bInitialized || !LevelSequence) return;
+
+	FString Directory = FPaths::GetPath(FilePath);
+	FString Extension = FPaths::GetExtension(FilePath);
+	if (Directory.IsEmpty())
+	{
+		Directory = FPaths::ProjectSavedDir() / TEXT("UEMotion") / TEXT("Renders");
+	}
+
+	IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
+	if (!PlatformFile.DirectoryExists(*Directory))
+	{
+		PlatformFile.CreateDirectoryTree(*Directory);
+	}
+
+	RenderFrames(Directory, 1.0f / 30.0f, 30.0f);
 }
 
 void UUEMotionScene::ClearScene()
@@ -619,17 +716,33 @@ void UUEMotionScene::SaveAssets()
 {
 	if (LevelSequence)
 	{
+		LevelSequence->MarkPackageDirty();
 		UPackage* SeqPackage = LevelSequence->GetOutermost();
 		if (SeqPackage)
 		{
-			UEMotionCompat::SavePackageToDisk(SeqPackage, TEXT(".uasset"));
+			UEMotionCompat::MarkPackageDirty(SeqPackage);
+			if (UEMotionCompat::SavePackageToDisk(SeqPackage, TEXT(".uasset")))
+			{
+				UE_LOG(LogTemp, Log, TEXT("UEMotionScene: LevelSequence saved to '%s'"), *SeqPackage->GetName());
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("UEMotionScene: Failed to save LevelSequence '%s'"), *SeqPackage->GetName());
+			}
 		}
 	}
 
 	if (SceneWorld)
 	{
 		FString MapPath = GetMapPath();
-		UEditorLoadingAndSavingUtils::SaveMap(SceneWorld, MapPath);
+		if (UEditorLoadingAndSavingUtils::SaveMap(SceneWorld, MapPath))
+		{
+			UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Map saved to '%s'"), *MapPath);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("UEMotionScene: Failed to save map '%s'"), *MapPath);
+		}
 	}
 }
 

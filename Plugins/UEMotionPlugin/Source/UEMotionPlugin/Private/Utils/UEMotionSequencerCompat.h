@@ -31,10 +31,11 @@ namespace UEMotionCompat
 	inline FGuid FindObjectBinding(UMovieScene* MovieScene, AActor* Actor)
 	{
 #if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 7
+		FString ActorName = Actor->GetName();
 		FMovieScenePossessable* Found = MovieScene->FindPossessable(
-			[Actor](FMovieScenePossessable& Possessable)
+			[ActorName](FMovieScenePossessable& Possessable)
 			{
-				return Possessable.GetName() == Actor->GetFName();
+				return Possessable.GetName() == ActorName;
 			});
 		return Found ? Found->GetGuid() : FGuid();
 #else
@@ -96,38 +97,55 @@ namespace UEMotionCompat
 #endif
 	}
 
-	inline void RecordTransformKeys(UMovieScene3DTransformSection* Section, FFrameNumber Frame,
+	inline FFrameNumber DisplayFrameToTick(UMovieScene* MovieScene, int32 DisplayFrame)
+	{
+		FFrameRate TickRes = MovieScene->GetTickResolution();
+		FFrameRate DisplayRate = MovieScene->GetDisplayRate();
+		double TickPerFrame = (double)TickRes.Numerator / TickRes.Denominator / ((double)DisplayRate.Numerator / DisplayRate.Denominator);
+		return FFrameNumber(static_cast<int32>(FMath::RoundToInt(DisplayFrame * TickPerFrame)));
+	}
+
+	inline void RecordTransformKeys(UMovieScene* MovieScene, UMovieScene3DTransformSection* Section, int32 DisplayFrame,
 		const FVector& Location, const FRotator& Rotation, const FVector& Scale)
 	{
 #if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 7
 		using namespace UE::MovieScene;
+
+		FFrameNumber TickFrame = DisplayFrameToTick(MovieScene, DisplayFrame);
 		FRotator RotDegrees = Rotation;
 
 		TArrayView<FMovieSceneDoubleChannel*> DoubleChannels = Section->GetChannelProxy().GetChannels<FMovieSceneDoubleChannel>();
-		if (DoubleChannels.Num() >= 9)
-		{
-			DoubleChannels[0]->SetDefault(Location.X);
-			DoubleChannels[1]->SetDefault(Location.Y);
-			DoubleChannels[2]->SetDefault(Location.Z);
-			DoubleChannels[3]->SetDefault(RotDegrees.Roll);
-			DoubleChannels[4]->SetDefault(RotDegrees.Pitch);
-			DoubleChannels[5]->SetDefault(RotDegrees.Yaw);
-			DoubleChannels[6]->SetDefault(Scale.X);
-			DoubleChannels[7]->SetDefault(Scale.Y);
-			DoubleChannels[8]->SetDefault(Scale.Z);
 
-			AddKeyToChannel(DoubleChannels[0], Frame, Location.X, EMovieSceneKeyInterpolation::Linear);
-			AddKeyToChannel(DoubleChannels[1], Frame, Location.Y, EMovieSceneKeyInterpolation::Linear);
-			AddKeyToChannel(DoubleChannels[2], Frame, Location.Z, EMovieSceneKeyInterpolation::Linear);
-			AddKeyToChannel(DoubleChannels[3], Frame, (double)RotDegrees.Roll, EMovieSceneKeyInterpolation::Linear);
-			AddKeyToChannel(DoubleChannels[4], Frame, (double)RotDegrees.Pitch, EMovieSceneKeyInterpolation::Linear);
-			AddKeyToChannel(DoubleChannels[5], Frame, (double)RotDegrees.Yaw, EMovieSceneKeyInterpolation::Linear);
-			AddKeyToChannel(DoubleChannels[6], Frame, Scale.X, EMovieSceneKeyInterpolation::Linear);
-			AddKeyToChannel(DoubleChannels[7], Frame, Scale.Y, EMovieSceneKeyInterpolation::Linear);
-			AddKeyToChannel(DoubleChannels[8], Frame, Scale.Z, EMovieSceneKeyInterpolation::Linear);
+		UE_LOG(LogTemp, Log, TEXT("RecordTransformKeys: DisplayFrame=%d -> TickFrame=%d, Loc=%s, Rot=%s, Scale=%s"),
+			DisplayFrame, TickFrame.Value, *Location.ToString(), *Rotation.ToString(), *Scale.ToString());
+
+		if (DoubleChannels.Num() < 9)
+		{
+			UE_LOG(LogTemp, Error, TEXT("RecordTransformKeys: Expected >= 9 DoubleChannels, got %d"), DoubleChannels.Num());
+			return;
 		}
+
+		DoubleChannels[0]->SetDefault(Location.X);
+		DoubleChannels[1]->SetDefault(Location.Y);
+		DoubleChannels[2]->SetDefault(Location.Z);
+		DoubleChannels[3]->SetDefault(RotDegrees.Pitch);
+		DoubleChannels[4]->SetDefault(RotDegrees.Yaw);
+		DoubleChannels[5]->SetDefault(RotDegrees.Roll);
+		DoubleChannels[6]->SetDefault(Scale.X);
+		DoubleChannels[7]->SetDefault(Scale.Y);
+		DoubleChannels[8]->SetDefault(Scale.Z);
+
+		AddKeyToChannel(DoubleChannels[0], TickFrame, Location.X, EMovieSceneKeyInterpolation::Linear);
+		AddKeyToChannel(DoubleChannels[1], TickFrame, Location.Y, EMovieSceneKeyInterpolation::Linear);
+		AddKeyToChannel(DoubleChannels[2], TickFrame, Location.Z, EMovieSceneKeyInterpolation::Linear);
+		AddKeyToChannel(DoubleChannels[3], TickFrame, (double)RotDegrees.Pitch, EMovieSceneKeyInterpolation::Linear);
+		AddKeyToChannel(DoubleChannels[4], TickFrame, (double)RotDegrees.Yaw, EMovieSceneKeyInterpolation::Linear);
+		AddKeyToChannel(DoubleChannels[5], TickFrame, (double)RotDegrees.Roll, EMovieSceneKeyInterpolation::Linear);
+		AddKeyToChannel(DoubleChannels[6], TickFrame, Scale.X, EMovieSceneKeyInterpolation::Linear);
+		AddKeyToChannel(DoubleChannels[7], TickFrame, Scale.Y, EMovieSceneKeyInterpolation::Linear);
+		AddKeyToChannel(DoubleChannels[8], TickFrame, Scale.Z, EMovieSceneKeyInterpolation::Linear);
 #else
-		FFrameTime FrameTime(Frame);
+		FFrameTime FrameTime(DisplayFrame);
 		auto SetChannelKey = [&](FMovieSceneDoubleChannel& Channel, double Value)
 		{
 			int32 KeyIndex = INDEX_NONE;
@@ -141,23 +159,24 @@ namespace UEMotionCompat
 		SetChannelKey(Section->GetChannel(0), Location.X);
 		SetChannelKey(Section->GetChannel(1), Location.Y);
 		SetChannelKey(Section->GetChannel(2), Location.Z);
-		SetChannelKey(Section->GetChannel(3), RotDegrees.Roll);
-		SetChannelKey(Section->GetChannel(4), RotDegrees.Pitch);
-		SetChannelKey(Section->GetChannel(5), RotDegrees.Yaw);
+		SetChannelKey(Section->GetChannel(3), RotDegrees.Pitch);
+		SetChannelKey(Section->GetChannel(4), RotDegrees.Yaw);
+		SetChannelKey(Section->GetChannel(5), RotDegrees.Roll);
 		SetChannelKey(Section->GetChannel(6), Scale.X);
 		SetChannelKey(Section->GetChannel(7), Scale.Y);
 		SetChannelKey(Section->GetChannel(8), Scale.Z);
 #endif
 	}
 
-	inline void RecordFloatKey(UMovieSceneFloatSection* Section, FFrameNumber Frame, float Value)
+	inline void RecordFloatKey(UMovieScene* MovieScene, UMovieSceneFloatSection* Section, int32 DisplayFrame, float Value)
 	{
 #if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 7
 		using namespace UE::MovieScene;
+		FFrameNumber TickFrame = DisplayFrameToTick(MovieScene, DisplayFrame);
 		Section->GetChannel().SetDefault(Value);
-		AddKeyToChannel(&Section->GetChannel(), Frame, Value, EMovieSceneKeyInterpolation::Linear);
+		AddKeyToChannel(&Section->GetChannel(), TickFrame, Value, EMovieSceneKeyInterpolation::Linear);
 #else
-		FFrameTime FrameTime(Frame);
+		FFrameTime FrameTime(DisplayFrame);
 		FMovieSceneFloatValue NewValue;
 		NewValue.Value = Value;
 		int32 KeyIndex = INDEX_NONE;
