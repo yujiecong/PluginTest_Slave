@@ -5,7 +5,7 @@ def test_opacity():
     failed = 0
 
     scene = unreal.UEMotionScene()
-    scene.initialize(1920, 1080)
+    scene.initialize("test_opacity", 1920, 1080)
 
     sphere = scene.create_sphere(50)
 

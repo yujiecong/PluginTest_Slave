@@ -15,14 +15,14 @@ class TestScene(UEMotionTestCase):
 
     def test_scene_initialize_custom_res(self):
         scene = unreal.UEMotionScene()
-        scene.initialize(3840, 2160)
+        scene.initialize("test_4k", 3840, 2160)
         self.assertTrue(scene.is_initialized())
         self.cleanup_scene(scene)
 
     def test_scene_double_initialize(self):
         scene = unreal.UEMotionScene()
-        scene.initialize(1920, 1080)
-        self.assertNoCrash(lambda: scene.initialize(1920, 1080))
+        scene.initialize("test_double_init", 1920, 1080)
+        self.assertNoCrash(lambda: scene.initialize("test_double_init", 1920, 1080))
         self.assertTrue(scene.is_initialized())
         self.cleanup_scene(scene)
 

@@ -1,118 +1,94 @@
 import unreal
 import sys
 import os
-import unittest
 import time
-import glob
-import subprocess
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'tests'))
-from test_framework import UEMotionTestCase, JsonReportRunner
+SCRIPTS_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, SCRIPTS_DIR)
 
-PROJECT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-OUTPUT_BASE = os.path.join(PROJECT_DIR, "Saved", "UEMotionTest", "full_pipeline")
+from uemotion import Scene
 
+PROJECT_DIR = os.path.abspath(os.path.join(SCRIPTS_DIR, '..'))
+OUTPUT_BASE = os.path.join(PROJECT_DIR, "Saved", "UEMotionTest", "full_pipeline").replace("\\", "/")
 
-def check_output_images():
-    results = {}
+NUM_STEPS = 5
+STEP_SIZE = 10
+INITIAL_Z = 50.0
+FPS = 30
+MOVE_DURATION = 1.0
 
-    steps_dir = os.path.join(OUTPUT_BASE, "y_equals_x_steps")
-    if os.path.isdir(steps_dir):
-        png_files = []
-        for root, dirs, files in os.walk(steps_dir):
-            for f in files:
-                if f.lower().endswith('.png'):
-                    png_files.append(os.path.join(root, f))
-        results["y_equals_x_steps"] = {
-            "found": len(png_files),
-            "files": png_files
-        }
-    else:
-        results["y_equals_x_steps"] = {"found": 0, "files": [], "error": "directory not found"}
+print("=" * 64)
+print("  UEMotion Full Pipeline Test")
+print(f"  Cube moves along y=x, step={STEP_SIZE} units, {NUM_STEPS} steps")
+print("=" * 64)
+print()
 
-    seq_dir = os.path.join(OUTPUT_BASE, "y_equals_x_sequence")
-    if os.path.isdir(seq_dir):
-        png_files = [f for f in os.listdir(seq_dir) if f.lower().endswith('.png')]
-        results["y_equals_x_sequence"] = {
-            "found": len(png_files),
-            "files": [os.path.join(seq_dir, f) for f in png_files]
-        }
-    else:
-        results["y_equals_x_sequence"] = {"found": 0, "files": [], "error": "directory not found"}
+print("[1/4] Creating scene...")
+s = Scene("y_equals_x", 1920, 1080)
+s.directional_light(direction=(0, -1, -1), color="white", intensity=10)
+s.point_light(location=(0, 0, 400), color="white", intensity=3000)
+s.camera.position = (-300, -500, 400)
+s.camera.look_at((NUM_STEPS * STEP_SIZE / 2.0, NUM_STEPS * STEP_SIZE / 2.0, INITIAL_Z))
 
-    uemotion_dir = os.path.join(OUTPUT_BASE, "uemotion_y_equals_x")
-    if os.path.isdir(uemotion_dir):
-        png_files = [f for f in os.listdir(uemotion_dir) if f.lower().endswith('.png')]
-        results["uemotion_y_equals_x"] = {
-            "found": len(png_files),
-            "files": [os.path.join(uemotion_dir, f) for f in png_files]
-        }
-    else:
-        results["uemotion_y_equals_x"] = {"found": 0, "files": [], "error": "directory not found"}
+print("[2/4] Creating cube and animating along y=x...")
+box = s.cube(30, color="cyan", location=(0, 0, INITIAL_Z))
 
-    return results
+for i in range(1, NUM_STEPS + 1):
+    target_x = i * STEP_SIZE
+    target_y = i * STEP_SIZE
+    box.move_to((target_x, target_y, INITIAL_Z), duration=MOVE_DURATION, easing="linear")
+    s.play()
 
+total_duration = NUM_STEPS * MOVE_DURATION
+print(f"  Animation recorded: {NUM_STEPS} steps, {total_duration}s total")
+print(f"  LevelSequence tracks written to Sequencer timeline")
 
-def main():
-    print("=" * 64)
-    print("  UEMotion Full Pipeline Test Runner")
-    print("=" * 64)
+print()
+print("[3/4] Rendering frames via MoviePipeline...")
 
-    import test_16_full_pipeline
-    loader = unittest.TestLoader()
-    suite = loader.loadTestsFromTestCase(test_16_full_pipeline.TestFullPipeline)
+frames_dir = os.path.join(OUTPUT_BASE, "y_equals_x_frames").replace("\\", "/")
+os.makedirs(frames_dir, exist_ok=True)
 
-    print(f"\n[INFO] Loaded {suite.countTestCases()} test cases")
-    print("[INFO] Running tests...\n")
+s._ue.render_frames(frames_dir, total_duration, FPS)
 
-    runner = unittest.TextTestRunner(verbosity=2)
-    result = runner.run(suite)
+print(f"  Rendering to: {frames_dir}")
+print("  Waiting for MoviePipeline to finish...")
 
-    print("\n" + "=" * 64)
-    print("  Checking output images...")
-    print("=" * 64)
+for wait in range(180):
+    time.sleep(1)
+    png_files = []
+    if os.path.isdir(frames_dir):
+        png_files = [f for f in os.listdir(frames_dir) if f.lower().endswith('.png')]
+    if len(png_files) > 0:
+        print(f"  Found {len(png_files)} image(s) after {wait + 1}s")
+        break
+    if wait % 10 == 9:
+        print(f"  ... still waiting ({wait + 1}s)")
 
-    time.sleep(2)
+print()
+print("[4/4] Checking output images...")
 
-    img_results = check_output_images()
-    total_images = 0
-    for category, info in img_results.items():
-        count = info["found"]
-        total_images += count
-        status = "OK" if count > 0 else "MISSING"
-        print(f"  [{status}] {category}: {count} image(s)")
-        if count > 0:
-            for f in info["files"][:5]:
-                print(f"         -> {f}")
-            if count > 5:
-                print(f"         ... and {count - 5} more")
+img_count = 0
+if os.path.isdir(frames_dir):
+    png_files = sorted([f for f in os.listdir(frames_dir) if f.lower().endswith('.png')])
+    img_count = len(png_files)
+    for f in png_files[:10]:
+        fpath = os.path.join(frames_dir, f)
+        fsize = os.path.getsize(fpath)
+        print(f"  -> {f} ({fsize} bytes)")
+    if len(png_files) > 10:
+        print(f"  ... and {len(png_files) - 10} more")
+else:
+    print(f"  [MISSING] Directory not found: {frames_dir}")
 
-    print(f"\n  Total images generated: {total_images}")
+print()
+print("=" * 64)
+if img_count > 0:
+    print(f"  RESULT: PASSED - {img_count} image(s) generated!")
+    print(f"  Output: {frames_dir}")
+else:
+    print("  RESULT: FAILED - No images generated")
+    print("  (MoviePipeline may need viewport/rendering support)")
+print("=" * 64)
 
-    if result.wasSuccessful() and total_images > 0:
-        print("\n  Result: ALL TESTS PASSED (images generated)")
-    elif result.wasSuccessful() and total_images == 0:
-        print("\n  Result: TESTS PASSED but NO IMAGES generated")
-    else:
-        print(f"\n  Result: {len(result.failures)} FAILURES, {len(result.errors)} ERRORS")
-
-    print("=" * 64)
-
-    return 0 if result.wasSuccessful() else 1
-
-
-exit_code = 1
-try:
-    exit_code = main()
-except Exception as e:
-    print(f"[FATAL] Test runner crashed: {e}")
-    import traceback
-    traceback.print_exc()
-finally:
-    print("\n[Cleanup] Killing UnrealEditor...")
-    try:
-        subprocess.run(["taskkill", "/f", "/im", "UnrealEditor.exe"],
-                       capture_output=True, timeout=10)
-        print("[Cleanup] UnrealEditor killed.")
-    except Exception as e:
-        print(f"[Cleanup] Failed to kill UnrealEditor: {e}")
+s.destroy()

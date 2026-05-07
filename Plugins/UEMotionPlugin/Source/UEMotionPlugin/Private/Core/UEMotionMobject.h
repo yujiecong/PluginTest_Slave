@@ -61,6 +61,8 @@ public:
 
 	void SetMobjectName(const FString& Name) { MobjectName = Name; }
 
+	AActor* GetInternalActor() const { return InternalActor.Get(); }
+
 private:
 	void CreateStaticMeshActor(AUEMotionSceneActor* Owner, const FString& MeshPath, float InScale);
 	UMaterialInterface* GetOrCreateBaseMaterial();

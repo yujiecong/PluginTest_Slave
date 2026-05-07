@@ -9,6 +9,11 @@ class UUEMotionCamera;
 class UUEMotionAnimation;
 class UUEMotionRenderer;
 class AUEMotionSceneActor;
+class ULevelSequence;
+class UMovieScene;
+class UMovieScene3DTransformTrack;
+class UMovieSceneFloatTrack;
+class UMovieSceneSpawnTrack;
 
 UCLASS(BlueprintType)
 class UUEMotionScene : public UObject
@@ -17,10 +22,19 @@ class UUEMotionScene : public UObject
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "UEMotion")
-	void Initialize(int32 Width = 1920, int32 Height = 1080);
+	void Initialize(const FString& SceneName = TEXT("default"), int32 Width = 1920, int32 Height = 1080);
 
 	UFUNCTION(BlueprintCallable, Category = "UEMotion")
 	bool IsInitialized() const;
+
+	UFUNCTION(BlueprintCallable, Category = "UEMotion")
+	FString GetSceneName() const;
+
+	UFUNCTION(BlueprintCallable, Category = "UEMotion")
+	UWorld* GetSceneWorld() const;
+
+	UFUNCTION(BlueprintCallable, Category = "UEMotion")
+	ULevelSequence* GetLevelSequence() const;
 
 	UFUNCTION(BlueprintCallable, Category = "UEMotion")
 	UUEMotionMobject* CreateSphere(float Radius = 50.0f);
@@ -53,6 +67,9 @@ public:
 	void Play(UUEMotionAnimation* Animation);
 
 	UFUNCTION(BlueprintCallable, Category = "UEMotion")
+	void Wait(float Duration = 1.0f);
+
+	UFUNCTION(BlueprintCallable, Category = "UEMotion")
 	void Tick(float DeltaTime);
 
 	UFUNCTION(BlueprintCallable, Category = "UEMotion")
@@ -76,16 +93,38 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "UEMotion")
 	void Destroy();
 
+	UFUNCTION(BlueprintCallable, Category = "UEMotion")
+	void SaveAssets();
+
+	UFUNCTION(BlueprintCallable, Category = "UEMotion")
+	void CleanupAssets();
+
+	UFUNCTION(BlueprintCallable, Category = "UEMotion")
+	void SetAutoCleanup(bool bCleanup);
+
+	UFUNCTION(BlueprintCallable, Category = "UEMotion")
+	bool GetAutoCleanup() const;
+
 private:
 	bool bInitialized = false;
+	FString SceneName;
 	int32 ResolutionWidth = 1920;
 	int32 ResolutionHeight = 1080;
+	bool bAutoCleanup = true;
+	float CurrentTime = 0.0f;
+	float PlaybackFPS = 30.0f;
 
 	UPROPERTY()
-	AUEMotionSceneActor* SceneActor;
+	UWorld* SceneWorld = nullptr;
 
 	UPROPERTY()
-	UUEMotionCamera* Camera;
+	ULevelSequence* LevelSequence = nullptr;
+
+	UPROPERTY()
+	AUEMotionSceneActor* SceneActor = nullptr;
+
+	UPROPERTY()
+	UUEMotionCamera* Camera = nullptr;
 
 	UPROPERTY()
 	TArray<UUEMotionMobject*> Mobjects;
@@ -94,5 +133,18 @@ private:
 	TArray<UUEMotionAnimation*> ActiveAnimations;
 
 	UPROPERTY()
-	UUEMotionRenderer* Renderer;
+	UUEMotionRenderer* Renderer = nullptr;
+
+	bool CreateSceneMap();
+	bool CreateLevelSequenceAsset();
+	void SetupDefaultLighting();
+
+	void AddActorToSequencer(AActor* Actor);
+	UMovieScene3DTransformTrack* GetOrCreateTransformTrack(UUEMotionMobject* Mobject);
+	UMovieSceneFloatTrack* GetOrCreateFloatTrack(UUEMotionMobject* Mobject, const FString& PropertyName);
+	void RecordTransformKey(UMovieScene3DTransformTrack* Track, int32 Frame, const FVector& Location, const FRotator& Rotation, const FVector& Scale);
+	void RecordFloatKey(UMovieSceneFloatTrack* Track, int32 Frame, float Value);
+
+	FString GetMapPath() const;
+	FString GetSequencePath() const;
 };

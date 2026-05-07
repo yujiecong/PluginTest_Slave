@@ -21,6 +21,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
 	void SetTargetMobject(UUEMotionMobject* InTarget);
 
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
+	UUEMotionMobject* GetTargetMobject() const { return TargetMobject; }
+
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
+	float GetRotationAngle() const { return TargetAngle; }
+
 protected:
 	virtual void TickAnimation(float DeltaTime, float EasedProgress) override;
 

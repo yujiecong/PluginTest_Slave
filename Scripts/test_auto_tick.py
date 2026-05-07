@@ -5,7 +5,7 @@ def test_auto_tick():
     failed = 0
 
     scene = unreal.UEMotionScene()
-    scene.initialize(1920, 1080)
+    scene.initialize("test_auto_tick", 1920, 1080)
 
     cube = scene.create_cube(50)
     cube.set_location([0, 0, 0])

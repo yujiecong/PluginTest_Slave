@@ -24,9 +24,14 @@ public class UEMotionPlugin : ModuleRules
 			"MovieRenderPipelineEditor",
 			"CinematicCamera",
 			"LevelSequence",
+			"LevelSequenceEditor",
 			"MovieScene",
 			"MovieSceneTracks",
-			"TimeManagement"
+			"MovieSceneTools",
+			"Sequencer",
+			"TimeManagement",
+			"EditorScriptingUtilities",
+			"AssetTools"
 		});
 
 		PrivateIncludePaths.AddRange(new string[] { "UEMotionPlugin/Private" });

@@ -5,7 +5,7 @@ def test_group_animation():
     failed = 0
 
     scene = unreal.UEMotionScene()
-    scene.initialize(1920, 1080)
+    scene.initialize("test_group", 1920, 1080)
 
     cube = scene.create_cube(50)
     cube.set_location([0, 0, 0])
@@ -74,7 +74,7 @@ def test_group_animation():
     scene.destroy()
 
     scene2 = unreal.UEMotionScene()
-    scene2.initialize(1920, 1080)
+    scene2.initialize("test_group2", 1920, 1080)
 
     cube2 = scene2.create_cube(50)
     cube2.set_location([0, 0, 0])

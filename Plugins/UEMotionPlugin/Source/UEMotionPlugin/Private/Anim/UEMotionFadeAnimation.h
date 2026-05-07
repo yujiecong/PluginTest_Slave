@@ -21,6 +21,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
 	void SetTargetMobject(UUEMotionMobject* InTarget);
 
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
+	UUEMotionMobject* GetTargetMobject() const { return TargetMobject.Get(); }
+
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
+	bool IsFadeOut() const { return !bFadeIn; }
+
 	virtual void Reset() override;
 
 protected:

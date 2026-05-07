@@ -22,6 +22,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
 	int32 GetAnimationCount() const { return Animations.Num(); }
 
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
+	const TArray<UUEMotionAnimation*>& GetChildAnimations() const { return Animations; }
+
 	virtual void Reset() override;
 
 protected:

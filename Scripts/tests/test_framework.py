@@ -30,7 +30,7 @@ class UEMotionTestCase(unittest.TestCase):
     def make_scene():
         import unreal
         scene = unreal.UEMotionScene()
-        scene.initialize(1920, 1080)
+        scene.initialize("test", 1920, 1080)
         return scene
 
     @staticmethod

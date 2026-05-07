@@ -1,33 +1,36 @@
 # 02 - 核心 UObject 类层次设计
 
-## 1. 类层次总览
+> **文档版本**: v2.0 (2026-05-07 更新)
+> **基于代码**: 实际 C++ 头文件同步
+> **注意**: C++ 类名使用 `UUEMotion*` 前缀，Python 端通过 `unreal` 模块调用时自动转换为 `UEMotion*`
+
+## 1. 类层次总览（已实现）
 
 ```
 UObject
-├── UEMotionScene              # 场景管理器
-├── UEMotionCamera             # 相机控制
-├── UEMotionMobject            # 可视对象基类
-│   ├── (派生: 由工厂方法创建具体形状)
-├── UEMotionAnimation          # 动画基类
-│   ├── UEMotionMoveAnimation
-│   ├── UEMotionRotateAnimation
-│   ├── UEMotionScaleAnimation
-│   ├── UEMotionFadeAnimation
-│   ├── UEMotionColorAnimation
-│   ├── UEMotionWaitAnimation
-│   └── UEMotionGroupAnimation
-└── UEMotionSequence           # 动画序列（复合动画容器）
+├── UUEMotionScene              # ✅ 场景管理器
+├── UUEMotionCamera             # ✅ 相机控制
+├── UUEMotionMobject            # ✅ 可视对象基类
+├── UUEMotionAnimation          # ✅ 动画基类 (Abstract)
+│   ├── UUEMotionMoveAnimation     # ✅ 位移动画
+│   ├── UUEMotionRotateAnimation   # ✅ 旋转动画
+│   ├── UUEMotionScaleAnimation    # ✅ 缩放动画
+│   ├── UUEMotionFadeAnimation     # ✅ 淡入淡出动画
+│   ├── UUEMotionColorAnimation    # ✅ 颜色渐变动画
+│   ├── UUEMotionWaitAnimation     # ✅ 等待动画
+│   └── UUEMotionGroupAnimation    # ✅ 组合动画
+└── UUEMotionRenderer           # ✅ 渲染器 (MRP)
 
 AActor
-└── AUEMotionSceneActor         # 场景在世界的物理载体
+└── AUEMotionSceneActor         # ✅ 场景在世界的物理载体
 
 UBlueprintFunctionLibrary
-└── UEMotionBlueprintLibrary   # 静态辅助：形状创建、工具函数
+└── UUEMotionBlueprintLibrary   # ✅ 静态辅助函数
 ```
 
 所有 `UObject` 子类均标记 `UCLASS(BlueprintType)`，确保暴露到 Python。
 
-## 2. UEMotionScene — 场景管理器
+## 2. UUEMotionScene — 场景管理器 ✅
 
 ### 职责
 - 管理整个渲染世界的生命周期
@@ -35,123 +38,122 @@ UBlueprintFunctionLibrary
 - 驱动动画 Tick
 - 触发渲染输出
 
-### 设计
+### 实际 API（基于 UEMotionScene.h）
 
 ```cpp
 UCLASS(BlueprintType)
-class UEMotionScene : public UObject
+class UUEMotionScene : public UObject
 {
     GENERATED_BODY()
 
 public:
     // ========== 生命周期 ==========
-    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion")
     void Initialize(int32 Width = 1920, int32 Height = 1080);
 
-    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion")
     void Destroy();
 
-    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion")
     bool IsInitialized() const;
 
     // ========== 相机 ==========
-    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
-    UEMotionCamera* GetCamera();
+    UFUNCTION(BlueprintCallable, Category = "UEMotion")
+    UUEMotionCamera* GetCamera();
 
-    // ========== Mobject 创建 ==========
-    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
-    UEMotionMobject* CreateSphere(float Radius = 50.0f);
+    // ========== Mobject 创建（6种基础形状）==========
+    UFUNCTION(BlueprintCallable, Category = "UEMotion")
+    UUEMotionMobject* CreateSphere(float Radius = 50.0f);
 
-    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
-    UEMotionMobject* CreateCube(float Size = 100.0f);
+    UFUNCTION(BlueprintCallable, Category = "UEMotion")
+    UUEMotionMobject* CreateCube(float Size = 50.0f);
 
-    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
-    UEMotionMobject* CreateCylinder(float Radius = 50.0f, float Height = 100.0f);
+    UFUNCTION(BlueprintCallable, Category = "UEMotion")
+    UUEMotionMobject* CreateCylinder(float Radius = 50.0f, float Height = 100.0f);
 
-    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
-    UEMotionMobject* CreateCone(float Radius = 50.0f, float Height = 100.0f);
+    UFUNCTION(BlueprintCallable, Category = "UEMotion")
+    UUEMotionMobject* CreateCone(float Radius = 50.0f, float Height = 100.0f);
 
-    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
-    UEMotionMobject* CreatePlane(float Width = 200.0f, float Height = 200.0f);
+    UFUNCTION(BlueprintCallable, Category = "UEMotion")
+    UUEMotionMobject* CreatePlane(float Width = 500.0f, float Height = 500.0f);
 
-    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
-    UEMotionMobject* CreateTorus(float OuterRadius = 100.0f, float InnerRadius = 30.0f);
-
-    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
-    UEMotionMobject* CreateArrow(float Length = 100.0f);
-
-    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
-    UEMotionMobject* CreateLine(FVector Start, FVector End);
-
-    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
-    UEMotionMobject* CreateCircle(float Radius = 100.0f);
-
-    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
-    UEMotionMobject* CreateGrid(float Size = 1000.0f, int32 Divisions = 10);
-
-    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
-    UEMotionMobject* CreateCoordinateAxes(float Length = 500.0f);
-
-    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
-    UEMotionMobject* CreateText(const FString& Text, float Size = 32.0f);
+    UFUNCTION(BlueprintCallable, Category = "UEMotion")
+    UUEMotionMobject* CreateTorus(float OuterRadius = 80.0f, float InnerRadius = 25.0f);
 
     // ========== 灯光 ==========
-    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
-    void AddDirectionalLight(FVector Direction = FVector(0, -1, -1), FLinearColor Color = FLinearColor::White, float Intensity = 10.0f);
+    UFUNCTION(BlueprintCallable, Category = "UEMotion")
+    void AddDirectionalLight(const FVector& Direction, const FLinearColor& Color, float Intensity = 10.0f);
 
-    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
-    void AddPointLight(FVector Location = FVector(0, 0, 200), FLinearColor Color = FLinearColor::White, float Intensity = 5000.0f);
-
-    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
-    void SetAmbientLight(FLinearColor Color = FLinearColor(0.1f, 0.1f, 0.1f));
+    UFUNCTION(BlueprintCallable, Category = "UEMotion")
+    void AddPointLight(const FVector& Location, const FLinearColor& Color, float Intensity = 5000.0f);
 
     // ========== 动画驱动 ==========
-    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
-    void Play(UEMotionAnimation* Animation);
+    UFUNCTION(BlueprintCallable, Category = "UEMotion")
+    void Play(UUEMotionAnimation* Animation);
 
-    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
-    void PlaySequential(TArray<UEMotionAnimation*> Animations);
-
-    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
-    void StopAll();
-
-    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
-    bool IsPlaying() const;
-
-    // ========== Tick (每帧调用) ==========
-    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion")
     void Tick(float DeltaTime);
 
+    UFUNCTION(BlueprintCallable, Category = "UEMotion")
+    void StopAll();
+
+    UFUNCTION(BlueprintCallable, Category = "UEMotion")
+    bool HasActiveAnimations() const;
+
     // ========== 渲染输出 ==========
-    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
-    void RenderFrame(const FString& FilePath);
+    UFUNCTION(BlueprintCallable, Category = "UEMotion")
+    void RenderFrames(const FString& OutputDirectory, float Duration, float FPS = 30.0f);
 
-    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
-    void RenderFrames(const FString& OutputDir, float Duration, float FPS = 30.0f);
+    UFUNCTION(BlueprintCallable, Category = "UEMotion")
+    void RenderSingleFrame(const FString& FilePath);
 
-    // ========== 查询 ==========
-    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
-    TArray<UEMotionMobject*> GetAllMobjects() const;
+    // ========== 查询与管理 ==========
+    UFUNCTION(BlueprintCallable, Category = "UEMotion")
+    TArray<UUEMotionMobject*> GetAllMobjects() const;
 
-    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
-    UEMotionMobject* GetMobjectByName(const FString& Name) const;
+    UFUNCTION(BlueprintCallable, Category = "UEMotion")
+    void ClearScene();
 
 private:
+    bool bInitialized = false;
+    int32 ResolutionWidth = 1920;
+    int32 ResolutionHeight = 1080;
+
     UPROPERTY()
     AUEMotionSceneActor* SceneActor;
 
     UPROPERTY()
-    UEMotionCamera* Camera;
+    UUEMotionCamera* Camera;
 
     UPROPERTY()
-    TArray<UEMotionMobject*> Mobjects;
+    TArray<UUEMotionMobject*> Mobjects;
 
     UPROPERTY()
-    TArray<UEMotionAnimation*> ActiveAnimations;
+    TArray<UUEMotionAnimation*> ActiveAnimations;
 
-    bool bInitialized = false;
+    UPROPERTY()
+    UUEMotionRenderer* Renderer;
 };
 ```
+
+### 与原始设计的差异
+
+| 原始设计 API | 实际实现 | 状态 |
+|-------------|---------|------|
+| `CreateArrow()` | ❌ 不存在 | 未实现 |
+| `CreateLine()` | ❌ 不存在 | 未实现 |
+| `CreateCircle()` | ❌ 不存在 | 未实现 |
+| `CreateGrid()` | ❌ 不存在 | 未实现 |
+| `CreateCoordinateAxes()` | ❌ 不存在 | 未实现 |
+| `CreateText()` | ❌ 不存在 | 未实现 |
+| `SetAmbientLight()` | ❌ 不存在 | 未实现 |
+| `PlaySequential()` | ❌ 不存在 | 用 GroupAnimation 替代 |
+| `GetMobjectByName()` | ❌ 不存在 | 未实现 |
+| `ClearScene()` | ✅ 新增 | 已实现 |
+| `HasActiveAnimations()` | ✅ 新增 | 已实现 |
+| `Renderer` 成员 | ✅ 新增 | 内部持有渲染器 |
+
+**说明**: 当前版本聚焦核心功能（6种形状），高级形状（Arrow/Line/Grid/Axes/Text）可在后续版本添加。
 
 ### Python 调用示例
 
@@ -171,11 +173,11 @@ camera.look_at(sphere)
 scene.render_frame("D:/output/frame.png")
 ```
 
-## 3. UEMotionCamera — 相机控制
+## 3. UUEMotionCamera — 相机控制 ✅
 
 ```cpp
 UCLASS(BlueprintType)
-class UEMotionCamera : public UObject
+class UUEMotionCamera : public UObject
 {
     GENERATED_BODY()
 
@@ -237,52 +239,58 @@ private:
 };
 ```
 
-## 4. UEMotionMobject — 可视对象基类
+## 4. UUEMotionMobject — 可视对象基类 ✅
 
 ### 职责
-- 封装一个 UE Actor + ProceduralMeshComponent
-- 提供位置/旋转/缩放/颜色/材质控制
-- 持有 `.animate` 动画构建器入口
+- 封装一个 UE Actor + **StaticMeshComponent**（使用UE内置基础形状）
+- 提供位置/旋转/缩放/颜色/透明度/材质控制
+- 持有动画构建器入口（通过 `Create*Animation()` 方法）
+
+### 实际 API（基于 UEMotionMobject.h）
 
 ```cpp
 UCLASS(BlueprintType)
-class UEMotionMobject : public UObject
+class UUEMotionMobject : public UObject
 {
     GENERATED_BODY()
 
 public:
+    // ========== 初始化 ==========
+    void InitializeAsSphere(AUEMotionSceneActor* Owner, float Radius);
+    void InitializeAsMesh(AUEMotionSceneActor* Owner, const FString& MeshPath, float Scale);
+
     // ========== 元数据 ==========
     UFUNCTION(BlueprintCallable, Category = "UEMotion|Mobject")
-    void SetName(const FString& Name);
+    FString GetName() const;
 
     UFUNCTION(BlueprintCallable, Category = "UEMotion|Mobject")
-    FString GetName() const;
+    void SetMobjectName(const FString& Name);
 
     // ========== 可见性 ==========
     UFUNCTION(BlueprintCallable, Category = "UEMotion|Mobject")
     void SetVisibility(bool bVisible);
 
     UFUNCTION(BlueprintCallable, Category = "UEMotion|Mobject")
-    bool IsVisible() const;
+    bool GetVisibility() const;
 
     // ========== 变换 (直接设置) ==========
-    UFUNCTION(BlueprintCallable, Category = "UEMotion|Mobject")
-    void SetTransform(const FTransform& Transform);
-
-    UFUNCTION(BlueprintCallable, Category = "UEMotion|Mobject")
-    FTransform GetTransform() const;
-
     UFUNCTION(BlueprintCallable, Category = "UEMotion|Mobject")
     void SetLocation(const FVector& Location);
 
     UFUNCTION(BlueprintCallable, Category = "UEMotion|Mobject")
-    void SetRotation(const FRotator& Rotation);
+    FVector GetLocation() const;
 
     UFUNCTION(BlueprintCallable, Category = "UEMotion|Mobject")
     void SetScale(const FVector& Scale);
 
     UFUNCTION(BlueprintCallable, Category = "UEMotion|Mobject")
-    FVector GetLocation() const;
+    FVector GetScale() const;
+
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Mobject")
+    void SetRotation(const FRotator& Rotation);
+
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Mobject")
+    FRotator GetRotation() const;
 
     // ========== 颜色 ==========
     UFUNCTION(BlueprintCallable, Category = "UEMotion|Mobject")
@@ -326,51 +334,78 @@ public:
     // ========== 内部 ==========
     FString MobjectName;
     bool bVisible = true;
+    float CurrentOpacity = 1.0f;
     FLinearColor CurrentColor = FLinearColor::White;
 
     UPROPERTY()
     TWeakObjectPtr<AActor> InternalActor;
 
     UPROPERTY()
-    TWeakObjectPtr<UProceduralMeshComponent> MeshComponent;
+    TWeakObjectPtr<UStaticMeshComponent> MeshComponent;  // 注意：使用 StaticMeshComponent
+
+    UPROPERTY()
+    TWeakObjectPtr<UMaterialInstanceDynamic> MaterialInstance;
+
+    UPROPERTY()
+    UMaterialInterface* CachedBaseMaterial = nullptr;
 };
 ```
 
-## 5. UEMotionAnimation — 动画基类 + 子类
+## 5. UUEMotionAnimation — 动画基类 + 子类 ✅
+
+### 实际 API（基于 UEMotionAnimation.h）
 
 ```cpp
-// ========== 动画基类 ==========
-UCLASS(BlueprintType)
-class UEMotionAnimation : public UObject
+// ========== 动画基类 (Abstract) ==========
+UCLASS(BlueprintType, Abstract)
+class UUEMotionAnimation : public UObject
 {
     GENERATED_BODY()
 
 public:
     UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
-    void SetDuration(float InDuration);
+    void SetDuration(float InDuration) { Duration = InDuration; }
 
     UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
-    float GetDuration() const;
+    float GetDuration() const { return Duration; }
 
     UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
-    void SetEasing(const FString& EasingType);  // "linear", "ease_in", "ease_out", "ease_in_out"
-
-    // 由 Scene::Tick 调用，子类覆写
-    virtual void Tick(float DeltaTime, float Progress) {}
+    void SetEasing(const FString& Type) { EasingType = Type; }
 
     UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
-    bool IsFinished() const;
+    FString GetEasing() const { return EasingType; }
+
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
+    virtual bool IsFinished() const { return Elapsed >= Duration; }
+
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
+    float GetProgress() const;
+
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
+    virtual void Reset() { Elapsed = 0.0f; }
+
+    // 内部推进方法
+    void Advance(float DeltaTime);
+
+    static float ApplyEasing(const FString& Type, float t);
 
 protected:
+    virtual void TickAnimation(float DeltaTime, float EasedProgress) {}
+
+    UPROPERTY()
     float Duration = 1.0f;
+
+    UPROPERTY()
     float Elapsed = 0.0f;
-    FString EasingType = "linear";
+
+    UPROPERTY()
+    FString EasingType = TEXT("linear");
 };
 
 
 // ========== 位移动画 ==========
 UCLASS(BlueprintType)
-class UEMotionMoveAnimation : public UEMotionAnimation
+class UUEMotionMoveAnimation : public UUEMotionAnimation
 {
     GENERATED_BODY()
 

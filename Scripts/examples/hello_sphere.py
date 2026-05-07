@@ -5,7 +5,7 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from uemotion import Scene
 
-s = Scene(1920, 1080)
+s = Scene("hello_sphere", 1920, 1080)
 s.directional_light(direction=(0, -1, -1), color="white", intensity=8)
 s.camera.position = (-350, -450, 250)
 s.camera.look_at((0, 0, 0))

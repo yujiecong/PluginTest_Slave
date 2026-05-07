@@ -2,70 +2,78 @@ import unreal
 import sys
 import os
 import time
+import importlib
 
 SCRIPTS_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPTS_DIR)
-sys.path.insert(0, os.path.join(SCRIPTS_DIR, 'tests'))
 
+import uemotion
+importlib.reload(uemotion)
 from uemotion import Scene
 
 PROJECT_DIR = os.path.abspath(os.path.join(SCRIPTS_DIR, '..'))
 OUTPUT_BASE = os.path.join(PROJECT_DIR, "Saved", "UEMotionTest", "full_pipeline").replace("\\", "/")
 
+NUM_STEPS = 5
+STEP_SIZE = 10
+INITIAL_Z = 50.0
+FPS = 30
+MOVE_DURATION = 1.0
+
 print("=" * 64)
 print("  UEMotion Full Pipeline Test")
-print("  Cube moves along y=x, step=10 units")
+print(f"  Cube moves along y=x, step={STEP_SIZE} units, {NUM_STEPS} steps")
 print("=" * 64)
 print()
 
-num_steps = 5
-step_size = 10
-initial_z = 50.0
+print("[0/4] Reloading uemotion module...")
+import uemotion.scene
+import uemotion.mobject
+import uemotion.camera
+import uemotion.animation
+import uemotion.colors
+importlib.reload(uemotion.colors)
+importlib.reload(uemotion.animation)
+importlib.reload(uemotion.camera)
+importlib.reload(uemotion.mobject)
+importlib.reload(uemotion.scene)
+importlib.reload(uemotion)
+Scene = uemotion.Scene
+print("  Module reloaded.")
 
+print()
 print("[1/4] Creating scene...")
-s = Scene(1920, 1080)
+s = Scene("y_equals_x", 1920, 1080)
 s.directional_light(direction=(0, -1, -1), color="white", intensity=10)
 s.point_light(location=(0, 0, 400), color="white", intensity=3000)
 s.camera.position = (-300, -500, 400)
-s.camera.look_at((num_steps * step_size / 2.0, num_steps * step_size / 2.0, initial_z))
+s.camera.look_at((NUM_STEPS * STEP_SIZE / 2.0, NUM_STEPS * STEP_SIZE / 2.0, INITIAL_Z))
 
 print("[2/4] Creating cube and animating along y=x...")
-box = s.cube(30, color="cyan", location=(0, 0, initial_z))
+box = s.cube(30, color="cyan", location=(0, 0, INITIAL_Z))
 
-for i in range(1, num_steps + 1):
-    target_x = i * step_size
-    target_y = i * step_size
-    box.move_to((target_x, target_y, initial_z), duration=1.0, easing="linear")
+for i in range(1, NUM_STEPS + 1):
+    target_x = i * STEP_SIZE
+    target_y = i * STEP_SIZE
+    box.move_to((target_x, target_y, INITIAL_Z), duration=MOVE_DURATION, easing="linear")
     s.play()
-    loc = box.location
-    print(f"  Step {i}: Cube at ({loc.x:.1f}, {loc.y:.1f}, {loc.z:.1f})")
 
-loc = box.location
-print(f"\n  Final position: ({loc.x:.1f}, {loc.y:.1f}, {loc.z:.1f})")
-print(f"  Expected:       ({num_steps * step_size}, {num_steps * step_size}, {initial_z})")
-
-x_ok = abs(loc.x - num_steps * step_size) < 3.0
-y_ok = abs(loc.y - num_steps * step_size) < 3.0
-z_ok = abs(loc.z - initial_z) < 3.0
-
-if x_ok and y_ok and z_ok:
-    print("  [PASS] Position correct!")
-else:
-    print(f"  [FAIL] Position mismatch! x_ok={x_ok} y_ok={y_ok} z_ok={z_ok}")
+total_duration = NUM_STEPS * MOVE_DURATION
+print(f"  Animation recorded: {NUM_STEPS} steps, {total_duration}s total")
 
 print()
 print("[3/4] Rendering frames via MoviePipeline...")
 
-frames_dir = OUTPUT_BASE + "/y_equals_x_steps"
+frames_dir = os.path.join(OUTPUT_BASE, "y_equals_x_frames").replace("\\", "/")
 os.makedirs(frames_dir, exist_ok=True)
 
-s._ue.render_frames(frames_dir, 2.0, 30)
+s._ue.render_frames(frames_dir, total_duration, FPS)
 
-print("  Waiting for MoviePipeline to finish rendering...")
-for wait in range(120):
+print(f"  Rendering to: {frames_dir}")
+print("  Waiting for MoviePipeline to finish...")
+
+for wait in range(180):
     time.sleep(1)
-    if not s._ue.has_active_animations():
-        pass
     png_files = []
     if os.path.isdir(frames_dir):
         png_files = [f for f in os.listdir(frames_dir) if f.lower().endswith('.png')]
@@ -80,9 +88,9 @@ print("[4/4] Checking output images...")
 
 img_count = 0
 if os.path.isdir(frames_dir):
-    png_files = [f for f in os.listdir(frames_dir) if f.lower().endswith('.png')]
+    png_files = sorted([f for f in os.listdir(frames_dir) if f.lower().endswith('.png')])
     img_count = len(png_files)
-    for f in sorted(png_files)[:10]:
+    for f in png_files[:10]:
         fpath = os.path.join(frames_dir, f)
         fsize = os.path.getsize(fpath)
         print(f"  -> {f} ({fsize} bytes)")

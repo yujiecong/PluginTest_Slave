@@ -21,6 +21,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
 	void SetTargetMobject(UUEMotionMobject* InTarget);
 
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
+	UUEMotionMobject* GetTargetMobject() const { return TargetMobject; }
+
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
+	FVector GetEndScale() const { return EndScale; }
+
 protected:
 	virtual void TickAnimation(float DeltaTime, float EasedProgress) override;
 

@@ -6,7 +6,7 @@ import math
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from uemotion import Scene, vec
 
-s = Scene(1920, 1080)
+s = Scene("math_visualization", 1920, 1080)
 s.directional_light(direction=(0, -1, -1), color="white", intensity=10)
 s.point_light(location=(0, 0, 400), color="white", intensity=3000)
 s.camera.position = (-200, -500, 350)

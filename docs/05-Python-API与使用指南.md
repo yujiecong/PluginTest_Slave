@@ -1,6 +1,45 @@
 # 05 - Python API 与使用指南
 
-## 1. Python API 映射规则
+> **文档版本**: v2.0 (2026-05-07 更新)
+> **实现状态**: ✅ 已完成（原生API + Python封装层）
+> **推荐使用**: Python 封装层（`Scripts/uemotion/`）
+
+## 1. API 使用方式
+
+UEMotionPlugin 提供 **两种** Python API 使用方式：
+
+| 方式 | 模块 | 特点 | 推荐度 |
+|------|------|------|:------:|
+| **原生 API** | `unreal` | 直接调用 C++ UObject，完整功能 | ⭐⭐⭐ |
+| **Python 封装层** ✅ | `uemotion` | 更简洁、支持颜色字符串、链式调用、自动视频合成 | ⭐⭐⭐⭐⭐ |
+
+### 1.1 原生 API（unreal 模块）
+
+直接通过 UE5 内置的 `unreal` 模块调用 C++ API：
+
+```python
+import unreal
+
+scene = unreal.UEMotionScene()
+scene.initialize(width=1920, height=1080)
+sphere = scene.create_sphere(50.0)
+sphere.set_color(unreal.LinearColor(1, 0, 0, 1))
+```
+
+### 1.2 Python 封装层（推荐 ✅）
+
+使用项目提供的 `Scripts/uemotion/` 封装层，提供更 Pythonic 的 API：
+
+```python
+from uemotion import Scene
+
+s = Scene(1920, 1080)
+ball = s.sphere(50, color="red", location=[0, 0, 50])
+s.play(ball.move_to([200, 0, 50], duration=2))
+s.render("output.mp4", duration=5)
+```
+
+### 1.3 Python API 映射规则
 
 UE5 的 Python 桥接会自动将 C++ 的 `BlueprintCallable` 函数名转换为 Python 风格：
 
@@ -16,7 +55,7 @@ UE5 的 Python 桥接会自动将 C++ 的 `BlueprintCallable` 函数名转换为
 
 ## 2. 完整 API 参考
 
-### 2.1 UEMotionScene
+### 2.1 原生 API - UEMotionScene（实际可用）
 
 ```python
 scene = unreal.UEMotionScene()
@@ -29,19 +68,21 @@ scene.is_initialized()                            # → bool
 # === 相机 ===
 camera = scene.get_camera()                       # → UEMotionCamera
 
-# === Mobject 创建 ===
+# === Mobject 创建（6种基础形状）✅ ==========
 sphere  = scene.create_sphere(radius=50.0)
-cube    = scene.create_cube(size=100.0)
+cube    = scene.create_cube(size=50.0)
 cylinder = scene.create_cylinder(radius=50.0, height=100.0)
 cone    = scene.create_cone(radius=50.0, height=100.0)
-plane   = scene.create_plane(width=200.0, height=200.0)
-torus   = scene.create_torus(outer_radius=100.0, inner_radius=30.0)
-arrow   = scene.create_arrow(length=100.0)
-line    = scene.create_line(start=[0,0,0], end=[100,100,0])
-circle  = scene.create_circle(radius=100.0)
-grid    = scene.create_grid(size=1000.0, divisions=10)
-axes    = scene.create_coordinate_axes(length=500.0)
-text    = scene.create_text("Hello", size=32.0)
+plane   = scene.create_plane(width=500.0, height=500.0)
+torus   = scene.create_torus(outer_radius=80.0, inner_radius=25.0)
+
+# ⚠️ 以下形状尚未实现（Phase 4+ 计划）：
+# arrow   = scene.create_arrow(length=100.0)           # ❌
+# line    = scene.create_line(start, end)               # ❌
+# circle  = scene.create_circle(radius=100.0)          # ❌
+# grid    = scene.create_grid(size=1000.0, divisions=10) # ❌
+# axes    = scene.create_coordinate_axes(length=500.0) # ❌
+# text    = scene.create_text("Hello", size=32.0)      # ❌
 
 # === 光照 ===
 scene.add_directional_light(
@@ -54,21 +95,20 @@ scene.add_point_light(
     color=unreal.LinearColor(1, 1, 1, 1),
     intensity=5000.0
 )
-scene.set_ambient_light(unreal.LinearColor(0.15, 0.15, 0.15, 1))
 
 # === 动画 ===
 scene.play(animation)
-scene.play_sequential([anim1, anim2, anim3])
 scene.stop_all()
 scene.tick(delta_time)
+scene.has_activeanimations()                       # → bool
 
 # === 渲染 ===
-scene.render_frame("D:/output/frame.png")
+scene.render_single_frame("D:/output/frame.png")
 scene.render_frames("D:/output/frames/", duration=5.0, fps=30.0)
 
-# === 查询 ===
+# === 查询与管理 ===
 mobjects = scene.get_all_mobjects()
-obj = scene.get_mobject_by_name("MySphere")
+scene.clear_scene()
 ```
 
 ### 2.2 UEMotionCamera
@@ -399,7 +439,157 @@ if __name__ == "__main__":
     s.render("D:/output/wrapped/", duration=5.0, fps=30)
 ```
 
-## 7. 常见问题
+## 7. Python 封装层完整 API 参考 ✅（推荐使用）
+
+> **位置**: `Scripts/uemotion/`
+> **导入方式**: `from uemotion import Scene, Mobject, Camera, Animation`
+
+### 7.1 Scene 类（`scene.py`）
+
+```python
+from uemotion import Scene
+
+# 初始化
+s = Scene(width=1920, height=1080)
+
+# 形状创建（支持颜色字符串和位置参数）
+s.sphere(radius=50, color="red", location=[x, y, z])     # → Mobject
+s.cube(size=50, color="blue", location=[x, y, z])        # → Mobject
+s.cylinder(radius=50, height=100, color="green")          # → Mobject
+s.cone(radius=50, height=100)                             # → Mobject
+s.plane(width=500, height=500, color="gray")              # → Mobject
+s.torus(outer_radius=80, inner_radius=25)                 # → Mobject
+
+# 光照
+s.directional_light(direction=(0, -1, -1), color="white", intensity=10)
+s.point_light(location=(0, 0, 200), color="white", intensity=5000)
+
+# 动画播放（支持多个动画同时或顺序）
+s.play(animation1, animation2, ...)   # 同时播放
+s.wait(duration=1.0)                  # 等待
+
+# 渲染（自动调用 ffmpeg 合成视频）
+s.render("output.mp4", duration=5.0, fps=30)  # → bool (成功/失败)
+s.render_frame("frame.png")                     # 单帧截图
+
+# 相机访问
+s.camera                                   # → Camera 对象
+
+# 场景管理
+s.clear()                                  # 清空场景
+s.destroy()                                # 销毁场景
+```
+
+### 7.2 Mobject 类（`mobject.py`）
+
+```python
+ball = s.sphere(50)
+
+# 属性设置（支持链式调用）
+ball.color = "red"                        # 颜色：字符串或 LinearColor
+ball.location = [100, 200, 50]            # 位置
+ball.scale = [2, 2, 2]                    # 缩放
+ball.rotation = [0, 90, 0]                # 旋转 (pitch, yaw, roll)
+ball.opacity = 0.5                         # 透明度 (0.0 ~ 1.0)
+
+# 属性获取
+pos = ball.location                        # → [x, y, z]
+col = ball.color                          # → FLinearColor
+vis = ball.visibility                     # → bool
+
+# 动画构建（返回 Animation 对象）
+ball.move_to(target, duration=2.0)         # 位移动画
+ball.rotate(angle=360, axis=[0,0,1], duration=3)  # 旋转动画
+ball.scale_to(factor=2.0, duration=1.5)    # 缩放动画
+ball.fade_out(duration=1.0)               # 淡出
+ball.fade_in(duration=1.0)                # 淡入
+ball.color_to("blue", duration=2.0)        # 颜色渐变
+
+# 销毁
+ball.destroy()
+```
+
+### 7.3 Camera 类（`camera.py`）
+
+```python
+cam = s.camera
+
+# 定位
+cam.position = [-300, -400, 200]
+cam.rotation = [-15, 0, 0]       # pitch, yaw, roll
+cam.fov = 60.0                   # 视场角
+
+# 注视
+cam.look_at(mobject)             # 注视物体
+cam.look_at_position([0, 0, 0])  # 注视位置
+```
+
+### 7.4 Animation 类（`animation.py`）
+
+```python
+# 创建动画对象
+move = ball.move_to([200, 0, 50], duration=2)
+rotate = ball.rotate(360, duration=3)
+
+# 设置缓动函数
+move.easing = "ease_in_out"      # linear / ease_in / ease_out / ease_in_out
+
+# 组合动画
+from uemotion import Animation
+group = Animation.group(move, rotate, mode="parallel")  # 同时播放
+seq = Animation.sequence(move, rotate)                    # 顺序播放
+
+# 等待动画
+wait = Animation.wait(duration=0.5)
+```
+
+### 7.5 颜色工具（`colors.py`）
+
+```python
+from uemotion import resolve_color, COLOR_MAP
+
+# 颜色解析（支持多种格式）
+resolve_color("red")              # → FLinearColor(1, 0, 0, 1)
+resolve_color("#FF0000")          # → FLinearColor(1, 0, 0, 1)
+resolve_color([1, 0, 0, 1])       # → FLinearColor(1, 0, 0, 1)
+resolve_color(unreal.LinearColor(1, 0, 0, 1))  # → 原样返回
+
+# 预设颜色映射
+COLOR_MAP["red"]                  # → FLinearColor(1, 0, 0, 1)
+COLOR_MAP["blue"]                 # → FLinearColor(0, 0, 1, 1)
+COLOR_MAP["green"]                # → FLinearColor(0, 1, 0, 1)
+# ... 更多预设颜色
+
+# 向量工具
+vec(x, y, z)                      # → FVector
+rot(pitch, yaw, roll)            # → FRotator
+```
+
+## 8. 完整示例集合
+
+项目提供 **5 个完整示例**，位于 `Scripts/examples/`：
+
+| 示例 | 文件 | 内容 | 运行方式 |
+|------|------|------|----------|
+| Hello Sphere | `hello_sphere.py` | 最小示例：创建球体 + 渲染 | 见下方 |
+| Shapes Gallery | `shapes_gallery.py` | 展示所有 6 种形状 | 见下方 |
+| Math Visualization | `math_visualization.py` | Sin 波可视化 | 见下方 |
+| Geometry Transform | `geometry_transform.py` | 几何变换组合动画 | 见下方 |
+| Animation Showcase | `animation_showcase.py` | 所有动画类型展示 | 见下方 |
+
+### 运行示例
+
+```bash
+# 在 UE5 编辑器中：Window → Developer Tools → Python Console
+
+# 方式一：运行单个示例
+exec(open('Scripts/examples/hello_sphere.py').read())
+
+# 方式二：运行所有测试（验证环境）
+exec(open('Scripts/tests/run_all_tests.py').read())
+```
+
+## 9. 常见问题
 
 ### Q: Python 脚本放哪里？
 放在项目根目录的 `Scripts/` 文件夹。CLI 模式用绝对路径或相对路径。

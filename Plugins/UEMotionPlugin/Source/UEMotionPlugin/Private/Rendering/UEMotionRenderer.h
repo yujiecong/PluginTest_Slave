@@ -29,7 +29,7 @@ public:
 	void SetOutputFormat(const FString& Format);
 
 	UFUNCTION(BlueprintCallable, Category = "UEMotion|Renderer")
-	void RenderSequence(const FString& OutputDirectory, float Duration, float FPS = 30.0f);
+	void RenderSequence(ULevelSequence* Sequence, const FString& OutputDirectory, float Duration, float FPS = 30.0f);
 
 	UFUNCTION(BlueprintCallable, Category = "UEMotion|Renderer")
 	void RenderSingleFrame(const FString& FilePath);
@@ -48,7 +48,7 @@ private:
 	AActor* BoundCamera = nullptr;
 
 	UPROPERTY()
-	ULevelSequence* TempSequence = nullptr;
+	ULevelSequence* ActiveSequence = nullptr;
 
 	UPROPERTY()
 	UMoviePipelineExecutorBase* ActiveExecutor = nullptr;
@@ -59,6 +59,5 @@ private:
 	FString OutputFileFormat = TEXT("png");
 	bool bIsRendering = false;
 
-	ULevelSequence* CreateTempSequence(float Duration, float FPS);
 	void OnRenderFinished(UMoviePipelineExecutorBase* InExecutor, bool bSuccess);
 };

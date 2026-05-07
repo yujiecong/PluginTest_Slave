@@ -6,7 +6,7 @@ def test_rotate_animation():
     failed = 0
 
     scene = unreal.UEMotionScene()
-    scene.initialize(1920, 1080)
+    scene.initialize("test_rotate", 1920, 1080)
 
     cube = scene.create_cube(50)
 

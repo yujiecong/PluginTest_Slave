@@ -13,11 +13,11 @@ except ImportError:
 @unittest.skipUnless(HAS_UEMOTION, "uemotion Python wrapper module not available (Phase 4)")
 class TestPythonWrapper(unittest.TestCase):
     def test_scene_create(self):
-        s = Scene(1920, 1080)
+        s = Scene("test_create", 1920, 1080)
         self.assertIsNotNone(s)
 
     def test_sphere(self):
-        s = Scene(1920, 1080)
+        s = Scene("test_sphere", 1920, 1080)
         s.directional_light()
         ball = s.sphere(60, color="red", location=(0, 0, 50))
         self.assertIsNotNone(ball)
@@ -25,14 +25,14 @@ class TestPythonWrapper(unittest.TestCase):
         s.destroy()
 
     def test_cube(self):
-        s = Scene(1920, 1080)
+        s = Scene("test_cube", 1920, 1080)
         s.directional_light()
         box = s.cube(50, color="blue", location=(100, 0, 50))
         self.assertIsNotNone(box)
         s.destroy()
 
     def test_all_shapes(self):
-        s = Scene(1920, 1080)
+        s = Scene("test_shapes", 1920, 1080)
         s.directional_light()
         self.assertIsNotNone(s.sphere(40, color="red"))
         self.assertIsNotNone(s.cube(40, color="blue"))
@@ -43,7 +43,7 @@ class TestPythonWrapper(unittest.TestCase):
         s.destroy()
 
     def test_move_to(self):
-        s = Scene(1920, 1080)
+        s = Scene("test_move", 1920, 1080)
         s.directional_light()
         ball = s.sphere(40, color="red", location=(0, 0, 50))
         ball.move_to((200, 0, 50), duration=1.0, easing="ease_in_out")
@@ -51,7 +51,7 @@ class TestPythonWrapper(unittest.TestCase):
         s.destroy()
 
     def test_rotate(self):
-        s = Scene(1920, 1080)
+        s = Scene("test_rotate", 1920, 1080)
         s.directional_light()
         box = s.cube(50, color="blue", location=(0, 0, 50))
         box.rotate(360, axis=(0, 0, 1), duration=1.0)
@@ -59,7 +59,7 @@ class TestPythonWrapper(unittest.TestCase):
         s.destroy()
 
     def test_scale_to(self):
-        s = Scene(1920, 1080)
+        s = Scene("test_scale", 1920, 1080)
         s.directional_light()
         ball = s.sphere(40, color="red", location=(0, 0, 50))
         ball.scale_to(2.0, duration=1.0)
@@ -67,7 +67,7 @@ class TestPythonWrapper(unittest.TestCase):
         s.destroy()
 
     def test_fade_in(self):
-        s = Scene(1920, 1080)
+        s = Scene("test_fade_in", 1920, 1080)
         s.directional_light()
         ball = s.sphere(40, color="red", location=(0, 0, 50))
         ball.fade_in(duration=1.0)
@@ -75,7 +75,7 @@ class TestPythonWrapper(unittest.TestCase):
         s.destroy()
 
     def test_fade_out(self):
-        s = Scene(1920, 1080)
+        s = Scene("test_fade_out", 1920, 1080)
         s.directional_light()
         ball = s.sphere(40, color="red", location=(0, 0, 50))
         ball.fade_out(duration=1.0)
@@ -83,7 +83,7 @@ class TestPythonWrapper(unittest.TestCase):
         s.destroy()
 
     def test_change_color(self):
-        s = Scene(1920, 1080)
+        s = Scene("test_color", 1920, 1080)
         s.directional_light()
         ball = s.sphere(40, color="red", location=(0, 0, 50))
         ball.change_color("blue", duration=1.0)
@@ -91,7 +91,7 @@ class TestPythonWrapper(unittest.TestCase):
         s.destroy()
 
     def test_camera(self):
-        s = Scene(1920, 1080)
+        s = Scene("test_camera", 1920, 1080)
         s.directional_light()
         s.camera.position = (-350, -450, 250)
         s.camera.look_at((0, 0, 0))
@@ -100,7 +100,7 @@ class TestPythonWrapper(unittest.TestCase):
         s.destroy()
 
     def test_wait(self):
-        s = Scene(1920, 1080)
+        s = Scene("test_wait", 1920, 1080)
         s.directional_light()
         s.wait(0.5)
         s.destroy()
@@ -122,7 +122,7 @@ class TestPythonWrapper(unittest.TestCase):
         self.assertIsNotNone(v2)
 
     def test_chain(self):
-        s = Scene(1920, 1080)
+        s = Scene("test_chain", 1920, 1080)
         s.directional_light()
         ball = s.sphere(40, color="red", location=(0, 0, 50))
         ball.move_to((200, 0, 50), duration=1.0).rotate(360, duration=1.0)

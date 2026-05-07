@@ -40,18 +40,13 @@ void UUEMotionRenderer::SetOutputFormat(const FString& Format)
 	OutputFileFormat = Format;
 }
 
-void UUEMotionRenderer::RenderSequence(const FString& OutputDirectory, float Duration, float FPS)
+void UUEMotionRenderer::RenderSequence(ULevelSequence* Sequence, const FString& OutputDirectory, float Duration, float FPS)
 {
 	if (!TargetWorld || bIsRendering) return;
+	if (!Sequence) return;
 
 	bIsRendering = true;
-
-	ULevelSequence* Sequence = CreateTempSequence(Duration, FPS);
-	if (!Sequence)
-	{
-		bIsRendering = false;
-		return;
-	}
+	ActiveSequence = Sequence;
 
 	UMoviePipelineQueue* PipelineQueue = NewObject<UMoviePipelineQueue>(this);
 	UMoviePipelineExecutorJob* Job = PipelineQueue->AllocateNewJob(UMoviePipelineExecutorJob::StaticClass());
@@ -117,7 +112,10 @@ void UUEMotionRenderer::RenderSingleFrame(const FString& FilePath)
 		PlatformFile.CreateDirectoryTree(*Directory);
 	}
 
-	RenderSequence(Directory, 1.0f / 30.0f, 30.0f);
+	if (ActiveSequence)
+	{
+		RenderSequence(ActiveSequence, Directory, 1.0f / 30.0f, 30.0f);
+	}
 }
 
 bool UUEMotionRenderer::IsRendering() const
@@ -129,24 +127,6 @@ float UUEMotionRenderer::GetProgress() const
 {
 	if (!ActiveExecutor) return 0.0f;
 	return 0.5f;
-}
-
-ULevelSequence* UUEMotionRenderer::CreateTempSequence(float Duration, float FPS)
-{
-	if (!TargetWorld) return nullptr;
-
-	ULevelSequence* Sequence = NewObject<ULevelSequence>(GetTransientPackage(), NAME_None, RF_Transient);
-	if (!Sequence) return nullptr;
-
-	UMovieScene* MovieScene = Sequence->GetMovieScene();
-	if (!MovieScene) return nullptr;
-
-	int32 TotalFrames = FMath::CeilToInt(Duration * FPS);
-	FFrameRate FrameRate(FMath::RoundToInt(FPS), 1);
-	MovieScene->SetDisplayRate(FrameRate);
-	MovieScene->SetPlaybackRange(TRange<FFrameNumber>(0, TotalFrames));
-
-	return Sequence;
 }
 
 void UUEMotionRenderer::OnRenderFinished(UMoviePipelineExecutorBase* InExecutor, bool bSuccess)

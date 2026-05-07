@@ -129,7 +129,7 @@ class TestFullPipeline(UEMotionTestCase):
         step_size = 10
         initial_z = 50.0
 
-        s = Scene(1920, 1080)
+        s = Scene("y_equals_x", 1920, 1080)
         s.directional_light(direction=(0, -1, -1), color="white", intensity=10)
         s.point_light(location=(0, 0, 400), color="white", intensity=3000)
         s.camera.position = (-300, -500, 400)

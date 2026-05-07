@@ -12,17 +12,30 @@ from .colors import resolve_color, vec
 
 
 class Scene:
-    def __init__(self, width=1920, height=1080):
+    def __init__(self, name="default", width=1920, height=1080):
         self._ue = unreal.UEMotionScene()
-        self._ue.initialize(width, height)
+        self._ue.initialize(name, width, height)
+        self._name = name
         self._width = width
         self._height = height
         self._pending_animations = []
         self._camera = Camera(self, self._ue.get_camera())
 
     @property
+    def name(self):
+        return self._name
+
+    @property
     def camera(self):
         return self._camera
+
+    @property
+    def level_sequence(self):
+        return self._ue.get_level_sequence()
+
+    @property
+    def scene_world(self):
+        return self._ue.get_scene_world()
 
     def sphere(self, radius=50, color="white", location=None):
         obj = self._ue.create_sphere(radius)
@@ -120,24 +133,8 @@ class Scene:
             group.set_play_mode(False)
             self._ue.play(group)
 
-        max_duration = 0
-        for anim in all_ue_anims:
-            d = anim.get_duration() if hasattr(anim, 'get_duration') else 1.0
-            if d > max_duration:
-                max_duration = d
-        fps = 30
-        total_frames = int(max_duration * fps) + 1
-        for _ in range(total_frames):
-            self._ue.tick(1.0 / fps)
-
     def wait(self, duration=1.0):
-        anim = unreal.UEMotionWaitAnimation()
-        anim.set_duration(duration)
-        self._ue.play(anim)
-        fps = 30
-        total_frames = int(duration * fps) + 1
-        for _ in range(total_frames):
-            self._ue.tick(1.0 / fps)
+        self._ue.wait(duration)
 
     def render(self, output_path, duration=5.0, fps=30):
         output_dir = os.path.dirname(output_path)
@@ -159,6 +156,12 @@ class Scene:
 
     def render_frame(self, file_path):
         self._ue.render_single_frame(file_path)
+
+    def save_assets(self):
+        self._ue.save_assets()
+
+    def set_auto_cleanup(self, cleanup):
+        self._ue.set_auto_cleanup(cleanup)
 
     def clear(self):
         self._ue.clear_scene()
