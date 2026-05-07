@@ -4,6 +4,7 @@
 #include "GameFramework/Actor.h"
 #include "UEMotionSceneActor.generated.h"
 
+class UUEMotionScene;
 class UCameraComponent;
 
 UCLASS()
@@ -16,16 +17,14 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
-	UFUNCTION(BlueprintCallable, Category = "UEMotion")
-	UCameraComponent* GetCameraComponent() const;
+	void SetOwnerScene(UUEMotionScene* InScene);
 
-protected:
-	virtual void BeginPlay() override;
+	UFUNCTION(BlueprintCallable, Category = "UEMotion")
+	UCameraComponent* GetCameraComponent() const { return CameraComponent; }
 
 private:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UEMotion|Scene", meta = (AllowPrivateAccess = "true"))
-	USceneComponent* RootComp;
+	TWeakObjectPtr<UUEMotionScene> OwnerScene;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UEMotion|Scene", meta = (AllowPrivateAccess = "true"))
-	UCameraComponent* CameraComp;
+	UPROPERTY()
+	UCameraComponent* CameraComponent;
 };

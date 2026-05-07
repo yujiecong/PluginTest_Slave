@@ -29,7 +29,7 @@ public:
 	float GetProgress() const { return FMath::Clamp(Elapsed / FMath::Max(Duration, 0.001f), 0.0f, 1.0f); }
 
 	UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
-	void Reset() { Elapsed = 0.0f; }
+	virtual void Reset() { Elapsed = 0.0f; }
 
 	void Advance(float DeltaTime)
 	{

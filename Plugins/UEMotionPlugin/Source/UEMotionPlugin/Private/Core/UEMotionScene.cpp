@@ -27,6 +27,7 @@ void UUEMotionScene::Initialize(int32 Width, int32 Height)
 
 	if (SceneActor)
 	{
+		SceneActor->SetOwnerScene(this);
 		Camera = NewObject<UUEMotionCamera>(this);
 		Camera->Init(SceneActor);
 		Camera->LookAt(FVector(0, 0, 0));

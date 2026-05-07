@@ -30,5 +30,5 @@ private:
 
 	float TargetAngle = 360.0f;
 	FVector Axis = FVector(0, 0, 1);
-	FRotator StartRotation = FRotator::ZeroRotator;
+	FQuat StartQuat = FQuat::Identity;
 };

@@ -17,9 +17,9 @@ public:
 	void SetPlayMode(bool bSequential) { bIsSequential = bSequential; }
 
 	UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
-	int32 GetAnimationCount() const { return Animations.Num(); }
+	const TArray<UUEMotionAnimation*>& GetAnimations() const { return Animations; }
 
-	bool IsFinished() const override;
+	virtual void Reset() override;
 
 protected:
 	virtual void TickAnimation(float DeltaTime, float EasedProgress) override;
@@ -29,6 +29,4 @@ private:
 	TArray<UUEMotionAnimation*> Animations;
 
 	bool bIsSequential = false;
-	float SequentialElapsed = 0.0f;
-	int32 CurrentSequentialIndex = 0;
 };

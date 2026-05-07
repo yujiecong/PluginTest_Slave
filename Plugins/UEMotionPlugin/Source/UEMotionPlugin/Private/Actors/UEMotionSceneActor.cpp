@@ -1,29 +1,28 @@
 #include "UEMotionSceneActor.h"
-#include "Components/SceneComponent.h"
+#include "Core/UEMotionScene.h"
 #include "Camera/CameraComponent.h"
 
 AUEMotionSceneActor::AUEMotionSceneActor()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bStartWithTickEnabled = true;
 
-	RootComp = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
-	SetRootComponent(RootComp);
-
-	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
-	CameraComp->SetupAttachment(RootComp);
-}
-
-void AUEMotionSceneActor::BeginPlay()
-{
-	Super::BeginPlay();
+	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
+	CameraComponent->SetupAttachment(RootComponent);
+	CameraComponent->SetFieldOfView(90.0f);
 }
 
 void AUEMotionSceneActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (OwnerScene.IsValid())
+	{
+		OwnerScene->Tick(DeltaTime);
+	}
 }
 
-UCameraComponent* AUEMotionSceneActor::GetCameraComponent() const
+void AUEMotionSceneActor::SetOwnerScene(UUEMotionScene* InScene)
 {
-	return CameraComp;
+	OwnerScene = InScene;
 }

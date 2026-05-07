@@ -13,17 +13,22 @@ class UUEMotionFadeAnimation : public UUEMotionAnimation
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
-	void SetFadeOut(bool bOut) { bFadeOut = bOut; }
+	void SetFadeIn(bool bIn) { bFadeIn = bIn; }
+
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
+	void SetFadeOut(bool bOut) { bFadeIn = !bOut; }
 
 	UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
 	void SetTargetMobject(UUEMotionMobject* InTarget);
+
+	virtual void Reset() override;
 
 protected:
 	virtual void TickAnimation(float DeltaTime, float EasedProgress) override;
 
 private:
 	UPROPERTY()
-	UUEMotionMobject* TargetMobject = nullptr;
+	TWeakObjectPtr<UUEMotionMobject> TargetMobject;
 
-	bool bFadeOut = false;
+	bool bFadeIn = false;
 };

@@ -6,16 +6,35 @@ void UUEMotionFadeAnimation::SetTargetMobject(UUEMotionMobject* InTarget)
 	TargetMobject = InTarget;
 }
 
+void UUEMotionFadeAnimation::Reset()
+{
+	Super::Reset();
+	if (TargetMobject.IsValid())
+	{
+		if (bFadeIn)
+		{
+			TargetMobject->SetOpacity(0.0f);
+		}
+		else
+		{
+			TargetMobject->SetOpacity(1.0f);
+		}
+	}
+}
+
 void UUEMotionFadeAnimation::TickAnimation(float DeltaTime, float EasedProgress)
 {
-	if (!TargetMobject) return;
+	if (!TargetMobject.IsValid()) return;
 
-	if (bFadeOut)
+	float Opacity;
+	if (bFadeIn)
 	{
-		TargetMobject->SetVisibility(EasedProgress < 0.99f);
+		Opacity = EasedProgress;
 	}
 	else
 	{
-		TargetMobject->SetVisibility(EasedProgress > 0.01f);
+		Opacity = 1.0f - EasedProgress;
 	}
+
+	TargetMobject->SetOpacity(Opacity);
 }

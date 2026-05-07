@@ -48,6 +48,12 @@ public:
 	FRotator GetRotation() const;
 
 	UFUNCTION(BlueprintCallable, Category = "UEMotion|Mobject")
+	void SetOpacity(float InOpacity);
+
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Mobject")
+	float GetOpacity() const;
+
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Mobject")
 	void Destroy();
 
 	UFUNCTION(BlueprintCallable, Category = "UEMotion|Mobject")
@@ -57,8 +63,10 @@ public:
 
 private:
 	void CreateStaticMeshActor(AUEMotionSceneActor* Owner, const FString& MeshPath, float InScale);
+	UMaterialInterface* GetOrCreateBaseMaterial();
 
 	bool bVisible = true;
+	float CurrentOpacity = 1.0f;
 	FLinearColor CurrentColor = FLinearColor::White;
 	FString MobjectName;
 
@@ -70,4 +78,7 @@ private:
 
 	UPROPERTY()
 	TWeakObjectPtr<UMaterialInstanceDynamic> MaterialInstance;
+
+	UPROPERTY()
+	UMaterialInterface* CachedBaseMaterial = nullptr;
 };
