@@ -16,10 +16,10 @@ UE5 的 Python 桥接会自动将 C++ 的 `BlueprintCallable` 函数名转换为
 
 ## 2. 完整 API 参考
 
-### 2.1 UPyManimScene
+### 2.1 UEMotionScene
 
 ```python
-scene = unreal.PyManimScene()
+scene = unreal.UEMotionScene()
 
 # === 生命周期 ===
 scene.initialize(width=1920, height=1080)
@@ -27,7 +27,7 @@ scene.destroy()
 scene.is_initialized()                            # → bool
 
 # === 相机 ===
-camera = scene.get_camera()                       # → UPyManimCamera
+camera = scene.get_camera()                       # → UEMotionCamera
 
 # === Mobject 创建 ===
 sphere  = scene.create_sphere(radius=50.0)
@@ -71,7 +71,7 @@ mobjects = scene.get_all_mobjects()
 obj = scene.get_mobject_by_name("MySphere")
 ```
 
-### 2.2 UPyManimCamera
+### 2.2 UEMotionCamera
 
 ```python
 camera = scene.get_camera()
@@ -97,7 +97,7 @@ camera.look_at_position([0, 0, 0])
 camera.orbit_around(target=mobject, radius=500.0, angle_degrees=90.0)
 ```
 
-### 2.3 UPyManimMobject
+### 2.3 UEMotionMobject
 
 ```python
 obj = scene.create_sphere(50.0)
@@ -141,7 +141,7 @@ fade    = obj.create_fade_animation()
 color   = obj.create_color_animation()
 ```
 
-### 2.4 UPyManimAnimation 子类
+### 2.4 UEMotionAnimation 子类
 
 ```python
 # ========== 位移动画 ==========
@@ -176,13 +176,13 @@ color_anim.set_end_color(unreal.LinearColor(0, 0, 1, 1))
 color_anim.set_duration(2.0)
 
 # ========== 组合动画 ==========
-group = unreal.PyManimGroupAnimation()
+group = unreal.UEMotionGroupAnimation()
 group.add_animation(move)
 group.add_animation(rotate)
 group.set_play_mode(False)  # False=同时播放, True=顺序播放
 
 # ========== 等待 ==========
-wait = unreal.PyManimWaitAnimation()
+wait = unreal.UEMotionWaitAnimation()
 wait.set_duration(0.5)
 ```
 
@@ -191,7 +191,7 @@ wait.set_duration(0.5)
 ```python
 import unreal
 
-scene = unreal.PyManimScene()
+scene = unreal.UEMotionScene()
 scene.initialize(width=1920, height=1080)
 
 # 光照
@@ -230,7 +230,7 @@ scene.render_frames("D:/output/hello_sphere/", duration=2.0, fps=30)
 import unreal
 import math
 
-scene = unreal.PyManimScene()
+scene = unreal.UEMotionScene()
 scene.initialize(1920, 1080)
 
 scene.add_directional_light([0, -1, -1], unreal.LinearColor(1,1,1,1), 8)
@@ -271,7 +271,7 @@ scene.render_frames("D:/output/sin_wave/", duration=8.0, fps=30)
 ```python
 import unreal
 
-scene = unreal.PyManimScene()
+scene = unreal.UEMotionScene()
 scene.initialize(1920, 1080)
 scene.add_directional_light([0, -1, -1], unreal.LinearColor(1,1,1,1), 8)
 scene.set_ambient_light(unreal.LinearColor(0.15, 0.15, 0.15, 1))
@@ -295,7 +295,7 @@ cone.set_location([150, 0, 0])
 cone.set_color(unreal.LinearColor(0.3, 1, 0.3, 1))
 
 # 同时旋转
-anim_group = unreal.PyManimGroupAnimation()
+anim_group = unreal.UEMotionGroupAnimation()
 
 for obj in [sphere, cube, cone]:
     rot = obj.create_rotate_animation()
@@ -317,16 +317,16 @@ scene.render_frames("D:/output/geometry/", duration=6.0, fps=30)
 
 ## 6. 实用工具：Python 包装层（可选）
 
-如果觉得 `unreal.PyManimScene()` 太冗长，可以在 Python 侧做一层轻量封装：
+如果觉得 `unreal.UEMotionScene()` 太冗长，可以在 Python 侧做一层轻量封装：
 
 ```python
-# pymanim_wrapper.py — 可选的 Python 封装（放在 Scripts/ 目录）
+# uemotion_wrapper.py — 可选的 Python 封装（放在 Scripts/ 目录）
 import unreal
 
 class Scene:
     """Pythonic 场景包装"""
     def __init__(self, width=1920, height=1080):
-        self._native = unreal.PyManimScene()
+        self._native = unreal.UEMotionScene()
         self._native.initialize(width, height)
 
     def sphere(self, radius=50, color=None, location=None):

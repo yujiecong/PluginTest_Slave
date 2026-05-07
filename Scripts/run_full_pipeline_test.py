@@ -40,15 +40,15 @@ def check_output_images():
     else:
         results["y_equals_x_sequence"] = {"found": 0, "files": [], "error": "directory not found"}
 
-    pymanim_dir = os.path.join(OUTPUT_BASE, "pymanim_y_equals_x")
-    if os.path.isdir(pymanim_dir):
-        png_files = [f for f in os.listdir(pymanim_dir) if f.lower().endswith('.png')]
-        results["pymanim_y_equals_x"] = {
+    uemotion_dir = os.path.join(OUTPUT_BASE, "uemotion_y_equals_x")
+    if os.path.isdir(uemotion_dir):
+        png_files = [f for f in os.listdir(uemotion_dir) if f.lower().endswith('.png')]
+        results["uemotion_y_equals_x"] = {
             "found": len(png_files),
-            "files": [os.path.join(pymanim_dir, f) for f in png_files]
+            "files": [os.path.join(uemotion_dir, f) for f in png_files]
         }
     else:
-        results["pymanim_y_equals_x"] = {"found": 0, "files": [], "error": "directory not found"}
+        results["uemotion_y_equals_x"] = {"found": 0, "files": [], "error": "directory not found"}
 
     return results
 

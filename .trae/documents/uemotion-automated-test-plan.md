@@ -1,4 +1,4 @@
-# PyManim 自动化测试方案
+# UEMotion 自动化测试方案
 
 ## 目标
 
@@ -82,7 +82,7 @@ Scripts/tests/
 
 | #  | 测试名                                  | 测试内容                                        | 覆盖 API                                                      |
 | -- | ------------------------------------ | ------------------------------------------- | ----------------------------------------------------------- |
-| 1  | test\_scene\_create                  | 创建 PyManimScene 对象                          | 构造                                                          |
+| 1  | test\_scene\_create                  | 创建 UEMotionScene 对象                          | 构造                                                          |
 | 2  | test\_scene\_initialize              | Initialize(1920,1080)，验证 IsInitialized=True | Initialize, IsInitialized                                   |
 | 3  | test\_scene\_initialize\_custom\_res | Initialize(3840,2160) 自定义分辨率                | Initialize                                                  |
 | 4  | test\_scene\_double\_initialize      | 重复 Initialize 不崩溃                           | Initialize                                                  |
@@ -224,7 +224,7 @@ Scripts/tests/
 
 ```
 ============================================================
-  PyManim Automated Test Report
+  UEMotion Automated Test Report
   Date: 2026-05-07 14:30:00
   UE Version: 5.7
 ============================================================
@@ -330,19 +330,19 @@ Scripts/tests/
 
 | 类                        | API 总数  | 测试模块               | 预计覆盖           |
 | ------------------------ | ------- | ------------------ | -------------- |
-| UPyManimBlueprintLibrary | 30      | test\_11\_easing   | 30             |
-| UPyManimScene            | 20      | test\_01\_scene    | 20             |
-| UPyManimRenderer         | 8       | test\_13\_renderer | 8              |
-| UPyManimAnimation (基类)   | 7       | test\_04\~10       | 7              |
-| UPyManimGroupAnimation   | 3       | test\_10\_group    | 3              |
-| UPyManimColorAnimation   | 3       | test\_08\_color    | 3              |
-| UPyManimFadeAnimation    | 2       | test\_07\_fade     | 2              |
-| UPyManimScaleAnimation   | 3       | test\_06\_scale    | 3              |
-| UPyManimRotateAnimation  | 3       | test\_05\_rotate   | 3              |
-| UPyManimMoveAnimation    | 3       | test\_04\_move     | 3              |
-| UPyManimWaitAnimation    | 0 (继承7) | test\_09\_wait     | 7              |
-| UPyManimMobject          | 12      | test\_02\_mobject  | 12             |
-| UPyManimCamera           | 8       | test\_03\_camera   | 8              |
-| APyManimSceneActor       | 1       | test\_01\_scene    | 1              |
+| UEMotionBlueprintLibrary | 30      | test\_11\_easing   | 30             |
+| UEMotionScene            | 20      | test\_01\_scene    | 20             |
+| UEMotionRenderer         | 8       | test\_13\_renderer | 8              |
+| UEMotionAnimation (基类)   | 7       | test\_04\~10       | 7              |
+| UEMotionGroupAnimation   | 3       | test\_10\_group    | 3              |
+| UEMotionColorAnimation   | 3       | test\_08\_color    | 3              |
+| UEMotionFadeAnimation    | 2       | test\_07\_fade     | 2              |
+| UEMotionScaleAnimation   | 3       | test\_06\_scale    | 3              |
+| UEMotionRotateAnimation  | 3       | test\_05\_rotate   | 3              |
+| UEMotionMoveAnimation    | 3       | test\_04\_move     | 3              |
+| UEMotionWaitAnimation    | 0 (继承7) | test\_09\_wait     | 7              |
+| UEMotionMobject          | 12      | test\_02\_mobject  | 12             |
+| UEMotionCamera           | 8       | test\_03\_camera   | 8              |
+| AUEMotionSceneActor       | 1       | test\_01\_scene    | 1              |
 | **合计**                   | **103** | <br />             | **103 (100%)** |
 

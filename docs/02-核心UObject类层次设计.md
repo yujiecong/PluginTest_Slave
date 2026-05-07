@@ -4,30 +4,30 @@
 
 ```
 UObject
-├── UPyManimScene              # 场景管理器
-├── UPyManimCamera             # 相机控制
-├── UPyManimMobject            # 可视对象基类
+├── UEMotionScene              # 场景管理器
+├── UEMotionCamera             # 相机控制
+├── UEMotionMobject            # 可视对象基类
 │   ├── (派生: 由工厂方法创建具体形状)
-├── UPyManimAnimation          # 动画基类
-│   ├── UPyManimMoveAnimation
-│   ├── UPyManimRotateAnimation
-│   ├── UPyManimScaleAnimation
-│   ├── UPyManimFadeAnimation
-│   ├── UPyManimColorAnimation
-│   ├── UPyManimWaitAnimation
-│   └── UPyManimGroupAnimation
-└── UPyManimSequence           # 动画序列（复合动画容器）
+├── UEMotionAnimation          # 动画基类
+│   ├── UEMotionMoveAnimation
+│   ├── UEMotionRotateAnimation
+│   ├── UEMotionScaleAnimation
+│   ├── UEMotionFadeAnimation
+│   ├── UEMotionColorAnimation
+│   ├── UEMotionWaitAnimation
+│   └── UEMotionGroupAnimation
+└── UEMotionSequence           # 动画序列（复合动画容器）
 
 AActor
-└── APyManimSceneActor         # 场景在世界的物理载体
+└── AUEMotionSceneActor         # 场景在世界的物理载体
 
 UBlueprintFunctionLibrary
-└── UPyManimBlueprintLibrary   # 静态辅助：形状创建、工具函数
+└── UEMotionBlueprintLibrary   # 静态辅助：形状创建、工具函数
 ```
 
 所有 `UObject` 子类均标记 `UCLASS(BlueprintType)`，确保暴露到 Python。
 
-## 2. UPyManimScene — 场景管理器
+## 2. UEMotionScene — 场景管理器
 
 ### 职责
 - 管理整个渲染世界的生命周期
@@ -39,115 +39,115 @@ UBlueprintFunctionLibrary
 
 ```cpp
 UCLASS(BlueprintType)
-class UPyManimScene : public UObject
+class UEMotionScene : public UObject
 {
     GENERATED_BODY()
 
 public:
     // ========== 生命周期 ==========
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Scene")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
     void Initialize(int32 Width = 1920, int32 Height = 1080);
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Scene")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
     void Destroy();
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Scene")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
     bool IsInitialized() const;
 
     // ========== 相机 ==========
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Scene")
-    UPyManimCamera* GetCamera();
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
+    UEMotionCamera* GetCamera();
 
     // ========== Mobject 创建 ==========
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Scene")
-    UPyManimMobject* CreateSphere(float Radius = 50.0f);
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
+    UEMotionMobject* CreateSphere(float Radius = 50.0f);
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Scene")
-    UPyManimMobject* CreateCube(float Size = 100.0f);
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
+    UEMotionMobject* CreateCube(float Size = 100.0f);
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Scene")
-    UPyManimMobject* CreateCylinder(float Radius = 50.0f, float Height = 100.0f);
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
+    UEMotionMobject* CreateCylinder(float Radius = 50.0f, float Height = 100.0f);
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Scene")
-    UPyManimMobject* CreateCone(float Radius = 50.0f, float Height = 100.0f);
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
+    UEMotionMobject* CreateCone(float Radius = 50.0f, float Height = 100.0f);
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Scene")
-    UPyManimMobject* CreatePlane(float Width = 200.0f, float Height = 200.0f);
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
+    UEMotionMobject* CreatePlane(float Width = 200.0f, float Height = 200.0f);
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Scene")
-    UPyManimMobject* CreateTorus(float OuterRadius = 100.0f, float InnerRadius = 30.0f);
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
+    UEMotionMobject* CreateTorus(float OuterRadius = 100.0f, float InnerRadius = 30.0f);
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Scene")
-    UPyManimMobject* CreateArrow(float Length = 100.0f);
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
+    UEMotionMobject* CreateArrow(float Length = 100.0f);
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Scene")
-    UPyManimMobject* CreateLine(FVector Start, FVector End);
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
+    UEMotionMobject* CreateLine(FVector Start, FVector End);
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Scene")
-    UPyManimMobject* CreateCircle(float Radius = 100.0f);
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
+    UEMotionMobject* CreateCircle(float Radius = 100.0f);
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Scene")
-    UPyManimMobject* CreateGrid(float Size = 1000.0f, int32 Divisions = 10);
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
+    UEMotionMobject* CreateGrid(float Size = 1000.0f, int32 Divisions = 10);
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Scene")
-    UPyManimMobject* CreateCoordinateAxes(float Length = 500.0f);
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
+    UEMotionMobject* CreateCoordinateAxes(float Length = 500.0f);
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Scene")
-    UPyManimMobject* CreateText(const FString& Text, float Size = 32.0f);
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
+    UEMotionMobject* CreateText(const FString& Text, float Size = 32.0f);
 
     // ========== 灯光 ==========
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Scene")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
     void AddDirectionalLight(FVector Direction = FVector(0, -1, -1), FLinearColor Color = FLinearColor::White, float Intensity = 10.0f);
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Scene")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
     void AddPointLight(FVector Location = FVector(0, 0, 200), FLinearColor Color = FLinearColor::White, float Intensity = 5000.0f);
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Scene")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
     void SetAmbientLight(FLinearColor Color = FLinearColor(0.1f, 0.1f, 0.1f));
 
     // ========== 动画驱动 ==========
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Scene")
-    void Play(UPyManimAnimation* Animation);
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
+    void Play(UEMotionAnimation* Animation);
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Scene")
-    void PlaySequential(TArray<UPyManimAnimation*> Animations);
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
+    void PlaySequential(TArray<UEMotionAnimation*> Animations);
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Scene")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
     void StopAll();
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Scene")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
     bool IsPlaying() const;
 
     // ========== Tick (每帧调用) ==========
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Scene")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
     void Tick(float DeltaTime);
 
     // ========== 渲染输出 ==========
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Scene")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
     void RenderFrame(const FString& FilePath);
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Scene")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
     void RenderFrames(const FString& OutputDir, float Duration, float FPS = 30.0f);
 
     // ========== 查询 ==========
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Scene")
-    TArray<UPyManimMobject*> GetAllMobjects() const;
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
+    TArray<UEMotionMobject*> GetAllMobjects() const;
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Scene")
-    UPyManimMobject* GetMobjectByName(const FString& Name) const;
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
+    UEMotionMobject* GetMobjectByName(const FString& Name) const;
 
 private:
     UPROPERTY()
-    APyManimSceneActor* SceneActor;
+    AUEMotionSceneActor* SceneActor;
 
     UPROPERTY()
-    UPyManimCamera* Camera;
+    UEMotionCamera* Camera;
 
     UPROPERTY()
-    TArray<UPyManimMobject*> Mobjects;
+    TArray<UEMotionMobject*> Mobjects;
 
     UPROPERTY()
-    TArray<UPyManimAnimation*> ActiveAnimations;
+    TArray<UEMotionAnimation*> ActiveAnimations;
 
     bool bInitialized = false;
 };
@@ -158,7 +158,7 @@ private:
 ```python
 import unreal
 
-scene = unreal.PyManimScene()
+scene = unreal.UEMotionScene()
 scene.initialize(width=1920, height=1080)
 
 sphere = scene.create_sphere(50.0)
@@ -171,56 +171,56 @@ camera.look_at(sphere)
 scene.render_frame("D:/output/frame.png")
 ```
 
-## 3. UPyManimCamera — 相机控制
+## 3. UEMotionCamera — 相机控制
 
 ```cpp
 UCLASS(BlueprintType)
-class UPyManimCamera : public UObject
+class UEMotionCamera : public UObject
 {
     GENERATED_BODY()
 
 public:
     // ========== 定位 ==========
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Camera")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Camera")
     void SetPosition(float X, float Y, float Z);
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Camera")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Camera")
     void SetPositionVector(const FVector& Position);
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Camera")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Camera")
     FVector GetPosition() const;
 
     // ========== 旋转 ==========
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Camera")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Camera")
     void SetRotation(float Pitch, float Yaw, float Roll);
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Camera")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Camera")
     FRotator GetRotation() const;
 
     // ========== FOV ==========
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Camera")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Camera")
     void SetFOV(float FieldOfView);
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Camera")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Camera")
     float GetFOV() const;
 
     // ========== 注视 ==========
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Camera")
-    void LookAt(UPyManimMobject* Target);
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Camera")
+    void LookAt(UEMotionMobject* Target);
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Camera")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Camera")
     void LookAtPosition(const FVector& Target);
 
     // ========== 环绕 ==========
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Camera")
-    void OrbitAround(UPyManimMobject* Target, float Radius, float AngleDegrees);
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Camera")
+    void OrbitAround(UEMotionMobject* Target, float Radius, float AngleDegrees);
 
     // ========== 动画 ==========
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Camera")
-    UPyManimMoveAnimation* CreateMoveAnimation();
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Camera")
+    UEMotionMoveAnimation* CreateMoveAnimation();
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Camera")
-    UPyManimRotateAnimation* CreateRotateAnimation();
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Camera")
+    UEMotionRotateAnimation* CreateRotateAnimation();
 
 private:
     UPROPERTY()
@@ -237,7 +237,7 @@ private:
 };
 ```
 
-## 4. UPyManimMobject — 可视对象基类
+## 4. UEMotionMobject — 可视对象基类
 
 ### 职责
 - 封装一个 UE Actor + ProceduralMeshComponent
@@ -246,82 +246,82 @@ private:
 
 ```cpp
 UCLASS(BlueprintType)
-class UPyManimMobject : public UObject
+class UEMotionMobject : public UObject
 {
     GENERATED_BODY()
 
 public:
     // ========== 元数据 ==========
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Mobject")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Mobject")
     void SetName(const FString& Name);
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Mobject")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Mobject")
     FString GetName() const;
 
     // ========== 可见性 ==========
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Mobject")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Mobject")
     void SetVisibility(bool bVisible);
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Mobject")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Mobject")
     bool IsVisible() const;
 
     // ========== 变换 (直接设置) ==========
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Mobject")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Mobject")
     void SetTransform(const FTransform& Transform);
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Mobject")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Mobject")
     FTransform GetTransform() const;
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Mobject")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Mobject")
     void SetLocation(const FVector& Location);
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Mobject")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Mobject")
     void SetRotation(const FRotator& Rotation);
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Mobject")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Mobject")
     void SetScale(const FVector& Scale);
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Mobject")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Mobject")
     FVector GetLocation() const;
 
     // ========== 颜色 ==========
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Mobject")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Mobject")
     void SetColor(const FLinearColor& Color);
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Mobject")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Mobject")
     FLinearColor GetColor() const;
 
     // ========== 透明度 ==========
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Mobject")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Mobject")
     void SetOpacity(float Opacity);  // 0.0 ~ 1.0
 
     // ========== 材质 ==========
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Mobject")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Mobject")
     void SetMaterial(const FString& MaterialPath);  // 资源路径
 
     // ========== 几何信息 (只读) ==========
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Mobject")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Mobject")
     FBox GetBounds() const;
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Mobject")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Mobject")
     FVector GetCenter() const;
 
     // ========== 关键方法: 返回动画对象 ==========
-    // 每个返回一个预设参数的 UPyManim*Animation 子类
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Mobject|Animation")
-    UPyManimMoveAnimation* CreateMoveAnimation();
+    // 每个返回一个预设参数的 UUEMotion*Animation 子类
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Mobject|Animation")
+    UEMotionMoveAnimation* CreateMoveAnimation();
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Mobject|Animation")
-    UPyManimRotateAnimation* CreateRotateAnimation();
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Mobject|Animation")
+    UEMotionRotateAnimation* CreateRotateAnimation();
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Mobject|Animation")
-    UPyManimScaleAnimation* CreateScaleAnimation();
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Mobject|Animation")
+    UEMotionScaleAnimation* CreateScaleAnimation();
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Mobject|Animation")
-    UPyManimFadeAnimation* CreateFadeAnimation();
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Mobject|Animation")
+    UEMotionFadeAnimation* CreateFadeAnimation();
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Mobject|Animation")
-    UPyManimColorAnimation* CreateColorAnimation();
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Mobject|Animation")
+    UEMotionColorAnimation* CreateColorAnimation();
 
     // ========== 内部 ==========
     FString MobjectName;
@@ -336,29 +336,29 @@ public:
 };
 ```
 
-## 5. UPyManimAnimation — 动画基类 + 子类
+## 5. UEMotionAnimation — 动画基类 + 子类
 
 ```cpp
 // ========== 动画基类 ==========
 UCLASS(BlueprintType)
-class UPyManimAnimation : public UObject
+class UEMotionAnimation : public UObject
 {
     GENERATED_BODY()
 
 public:
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Animation")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
     void SetDuration(float InDuration);
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Animation")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
     float GetDuration() const;
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Animation")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
     void SetEasing(const FString& EasingType);  // "linear", "ease_in", "ease_out", "ease_in_out"
 
     // 由 Scene::Tick 调用，子类覆写
     virtual void Tick(float DeltaTime, float Progress) {}
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Animation")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
     bool IsFinished() const;
 
 protected:
@@ -370,24 +370,24 @@ protected:
 
 // ========== 位移动画 ==========
 UCLASS(BlueprintType)
-class UPyManimMoveAnimation : public UPyManimAnimation
+class UEMotionMoveAnimation : public UEMotionAnimation
 {
     GENERATED_BODY()
 
 public:
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Animation")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
     void SetTarget(const FVector& TargetLocation);
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Animation")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
     void SetStart(const FVector& StartLocation);
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Animation")
-    void SetTargetMobject(UPyManimMobject* InTarget);
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
+    void SetTargetMobject(UEMotionMobject* InTarget);
 
     virtual void Tick(float DeltaTime, float Progress) override;
 
     UPROPERTY()
-    UPyManimMobject* TargetMobject;
+    UEMotionMobject* TargetMobject;
 
     FVector Start;
     FVector End;
@@ -396,24 +396,24 @@ public:
 
 // ========== 旋转动画 ==========
 UCLASS(BlueprintType)
-class UPyManimRotateAnimation : public UPyManimAnimation
+class UEMotionRotateAnimation : public UEMotionAnimation
 {
     GENERATED_BODY()
 
 public:
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Animation")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
     void SetRotationAngle(float AngleDegrees);
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Animation")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
     void SetAxis(const FVector& InAxis);
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Animation")
-    void SetTargetMobject(UPyManimMobject* InTarget);
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
+    void SetTargetMobject(UEMotionMobject* InTarget);
 
     virtual void Tick(float DeltaTime, float Progress) override;
 
     UPROPERTY()
-    UPyManimMobject* TargetMobject;
+    UEMotionMobject* TargetMobject;
 
     float Angle = 360.0f;
     FVector Axis = FVector(0, 0, 1);
@@ -422,24 +422,24 @@ public:
 
 // ========== 缩放动画 ==========
 UCLASS(BlueprintType)
-class UPyManimScaleAnimation : public UPyManimAnimation
+class UEMotionScaleAnimation : public UEMotionAnimation
 {
     GENERATED_BODY()
 
 public:
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Animation")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
     void SetStartScale(float InStartScale);
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Animation")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
     void SetEndScale(float InEndScale);
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Animation")
-    void SetTargetMobject(UPyManimMobject* InTarget);
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
+    void SetTargetMobject(UEMotionMobject* InTarget);
 
     virtual void Tick(float DeltaTime, float Progress) override;
 
     UPROPERTY()
-    UPyManimMobject* TargetMobject;
+    UEMotionMobject* TargetMobject;
 
     float StartScale = 1.0f;
     float EndScale = 2.0f;
@@ -448,24 +448,24 @@ public:
 
 // ========== 淡入淡出动画 ==========
 UCLASS(BlueprintType)
-class UPyManimFadeAnimation : public UPyManimAnimation
+class UEMotionFadeAnimation : public UEMotionAnimation
 {
     GENERATED_BODY()
 
 public:
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Animation")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
     void SetFadeIn(bool bIn);
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Animation")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
     void SetFadeOut(bool bOut);
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Animation")
-    void SetTargetMobject(UPyManimMobject* InTarget);
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
+    void SetTargetMobject(UEMotionMobject* InTarget);
 
     virtual void Tick(float DeltaTime, float Progress) override;
 
     UPROPERTY()
-    UPyManimMobject* TargetMobject;
+    UEMotionMobject* TargetMobject;
 
     bool bFadeIn = false;
     bool bFadeOut = false;
@@ -474,24 +474,24 @@ public:
 
 // ========== 颜色渐变动画 ==========
 UCLASS(BlueprintType)
-class UPyManimColorAnimation : public UPyManimAnimation
+class UEMotionColorAnimation : public UEMotionAnimation
 {
     GENERATED_BODY()
 
 public:
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Animation")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
     void SetStartColor(const FLinearColor& InColor);
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Animation")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
     void SetEndColor(const FLinearColor& InColor);
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Animation")
-    void SetTargetMobject(UPyManimMobject* InTarget);
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
+    void SetTargetMobject(UEMotionMobject* InTarget);
 
     virtual void Tick(float DeltaTime, float Progress) override;
 
     UPROPERTY()
-    UPyManimMobject* TargetMobject;
+    UEMotionMobject* TargetMobject;
 
     FLinearColor StartColor;
     FLinearColor EndColor;
@@ -500,7 +500,7 @@ public:
 
 // ========== 等待动画 ==========
 UCLASS(BlueprintType)
-class UPyManimWaitAnimation : public UPyManimAnimation
+class UEMotionWaitAnimation : public UEMotionAnimation
 {
     GENERATED_BODY()
 
@@ -510,67 +510,67 @@ class UPyManimWaitAnimation : public UPyManimAnimation
 
 // ========== 组合动画 ==========
 UCLASS(BlueprintType)
-class UPyManimGroupAnimation : public UPyManimAnimation
+class UEMotionGroupAnimation : public UEMotionAnimation
 {
     GENERATED_BODY()
 
 public:
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Animation")
-    void AddAnimation(UPyManimAnimation* Animation);
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
+    void AddAnimation(UEMotionAnimation* Animation);
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Animation")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
     void SetPlayMode(bool bSequential);  // true=顺序, false=同时
 
     virtual void Tick(float DeltaTime, float Progress) override;
 
     UPROPERTY()
-    TArray<UPyManimAnimation*> ChildAnimations;
+    TArray<UEMotionAnimation*> ChildAnimations;
 
     bool bPlaySequential = false;
 };
 ```
 
-## 6. UPyManimBlueprintLibrary — 静态辅助
+## 6. UEMotionBlueprintLibrary — 静态辅助
 
 ```cpp
 UCLASS()
-class UPyManimBlueprintLibrary : public UBlueprintFunctionLibrary
+class UEMotionBlueprintLibrary : public UBlueprintFunctionLibrary
 {
     GENERATED_BODY()
 
 public:
     // ========== 形状快速创建 (直接生成 Actor) ==========
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Factory")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Factory")
     static UProceduralMeshComponent* CreateBoxMesh(float Size);
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Factory")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Factory")
     static UProceduralMeshComponent* CreateSphereMesh(float Radius, int32 Segments = 32);
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Factory")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Factory")
     static UProceduralMeshComponent* CreateCylinderMesh(float Radius, float Height, int32 Segments = 32);
 
     // ========== 工具函数 ==========
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Util")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Util")
     static float EaseLinear(float t);
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Util")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Util")
     static float EaseInQuad(float t);
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Util")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Util")
     static float EaseOutQuad(float t);
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Util")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Util")
     static float EaseInOutQuad(float t);
 
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Util")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Util")
     static float ApplyEasing(const FString& EasingType, float t);
 
     // ========== 颜色工具 ==========
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Util")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Util")
     static FLinearColor LerpColor(const FLinearColor& A, const FLinearColor& B, float Alpha);
 
     // ========== 数学工具 ==========
-    UFUNCTION(BlueprintCallable, Category = "PyManim|Util")
+    UFUNCTION(BlueprintCallable, Category = "UEMotion|Util")
     static FVector LerpVector(const FVector& A, const FVector& B, float Alpha);
 };
 ```
@@ -581,7 +581,7 @@ public:
 import unreal
 
 # 1. 创建场景
-scene = unreal.PyManimScene()
+scene = unreal.UEMotionScene()
 scene.initialize(width=1920, height=1080)
 
 # 2. 光照
@@ -624,7 +624,7 @@ rotate = cube.create_rotate_animation()
 rotate.set_rotation_angle(360)
 rotate.set_duration(3.0)
 
-group = unreal.PyManimGroupAnimation()
+group = unreal.UEMotionGroupAnimation()
 group.add_animation(fade)
 group.add_animation(rotate)
 group.set_play_mode(False)  # 同时播放

@@ -118,12 +118,12 @@ class TestFullPipeline(UEMotionTestCase):
 
         self.cleanup_scene(scene)
 
-    def test_cube_y_equals_x_pymanim(self):
+    def test_cube_y_equals_x_uemotion(self):
         try:
             sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-            from pymanim import Scene, vec
+            from uemotion import Scene, vec
         except ImportError:
-            self.skipTest("pymanim module not available")
+            self.skipTest("uemotion module not available")
 
         num_steps = 5
         step_size = 10
@@ -150,7 +150,7 @@ class TestFullPipeline(UEMotionTestCase):
         self.assertTrue(abs(loc.y - num_steps * step_size) < 3.0,
                         f"Final Y: expected {num_steps * step_size}, got {loc.y}")
 
-        frames_dir = os.path.join(OUTPUT_BASE, "pymanim_y_equals_x").replace("\\", "/")
+        frames_dir = os.path.join(OUTPUT_BASE, "uemotion_y_equals_x").replace("\\", "/")
         self.assertNoCrash(lambda: s._ue.render_frames(frames_dir, 0.5, 30))
 
         s.destroy()

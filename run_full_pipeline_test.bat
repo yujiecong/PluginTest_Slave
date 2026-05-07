@@ -65,15 +65,15 @@ if exist "%OUTPUT_DIR%\y_equals_x_sequence" (
     echo   [MISSING] y_equals_x_sequence: directory not found
 )
 
-if exist "%OUTPUT_DIR%\pymanim_y_equals_x" (
+if exist "%OUTPUT_DIR%\uemotion_y_equals_x" (
     set COUNT=0
-    for /r "%OUTPUT_DIR%\pymanim_y_equals_x" %%f in (*.png) do (
+    for /r "%OUTPUT_DIR%\uemotion_y_equals_x" %%f in (*.png) do (
         set /a COUNT+=1
     )
-    echo   [OK] pymanim_y_equals_x: !COUNT! image(s)
+    echo   [OK] uemotion_y_equals_x: !COUNT! image(s)
     set /a TOTAL_IMAGES+=COUNT
 ) else (
-    echo   [MISSING] pymanim_y_equals_x: directory not found
+    echo   [MISSING] uemotion_y_equals_x: directory not found
 )
 
 echo.

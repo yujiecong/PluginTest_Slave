@@ -7,7 +7,7 @@ SCRIPTS_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPTS_DIR)
 sys.path.insert(0, os.path.join(SCRIPTS_DIR, 'tests'))
 
-from pymanim import Scene
+from uemotion import Scene
 
 PROJECT_DIR = os.path.abspath(os.path.join(SCRIPTS_DIR, '..'))
 OUTPUT_BASE = os.path.join(PROJECT_DIR, "Saved", "UEMotionTest", "full_pipeline").replace("\\", "/")
