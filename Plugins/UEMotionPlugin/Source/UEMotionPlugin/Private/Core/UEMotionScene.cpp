@@ -2,6 +2,7 @@
 #include "UEMotionCamera.h"
 #include "UEMotionMobject.h"
 #include "Anim/UEMotionAnimation.h"
+#include "Anim/UEMotionGroupAnimation.h"
 #include "Rendering/UEMotionRenderer.h"
 #include "Actors/UEMotionSceneActor.h"
 #include "Engine/World.h"
@@ -197,6 +198,11 @@ void UUEMotionScene::Play(UUEMotionAnimation* Animation)
 	if (Animation->GetDuration() <= 0.0f)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("UEMotionScene::Play: Animation duration <= 0, skipping"));
+		return;
+	}
+	UUEMotionGroupAnimation* Group = Cast<UUEMotionGroupAnimation>(Animation);
+	if (Group && Group->GetAnimationCount() == 0)
+	{
 		return;
 	}
 	ActiveAnimations.Add(Animation);

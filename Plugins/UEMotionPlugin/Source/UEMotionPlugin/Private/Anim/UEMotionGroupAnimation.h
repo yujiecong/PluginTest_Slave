@@ -14,10 +14,13 @@ public:
 	void AddAnimation(UUEMotionAnimation* Animation);
 
 	UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
-	void SetPlayMode(bool bSequential) { bIsSequential = bSequential; }
+	void SetPlayMode(bool bSequential);
 
 	UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
 	const TArray<UUEMotionAnimation*>& GetAnimations() const { return Animations; }
+
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Animation")
+	int32 GetAnimationCount() const { return Animations.Num(); }
 
 	virtual void Reset() override;
 
@@ -25,6 +28,7 @@ protected:
 	virtual void TickAnimation(float DeltaTime, float EasedProgress) override;
 
 private:
+	void RecalculateDuration();
 	UPROPERTY()
 	TArray<UUEMotionAnimation*> Animations;
 

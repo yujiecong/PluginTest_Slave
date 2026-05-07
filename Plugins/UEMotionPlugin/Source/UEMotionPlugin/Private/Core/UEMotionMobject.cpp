@@ -201,9 +201,21 @@ void UUEMotionMobject::SetOpacity(float InOpacity)
 	{
 		MaterialInstance->SetScalarParameterValue(FName("Opacity"), CurrentOpacity);
 	}
-	if (InternalActor.IsValid())
+	if (CurrentOpacity <= 0.0f)
 	{
-		InternalActor->SetActorHiddenInGame(CurrentOpacity <= 0.0f);
+		bVisible = false;
+		if (MeshComponent.IsValid())
+		{
+			MeshComponent->SetVisibility(false);
+		}
+	}
+	else
+	{
+		bVisible = true;
+		if (MeshComponent.IsValid())
+		{
+			MeshComponent->SetVisibility(true);
+		}
 	}
 }
 

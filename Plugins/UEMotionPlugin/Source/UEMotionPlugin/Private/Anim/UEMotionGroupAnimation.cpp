@@ -4,7 +4,17 @@ void UUEMotionGroupAnimation::AddAnimation(UUEMotionAnimation* Animation)
 {
 	if (!Animation) return;
 	Animations.Add(Animation);
+	RecalculateDuration();
+}
 
+void UUEMotionGroupAnimation::SetPlayMode(bool bSequential)
+{
+	bIsSequential = bSequential;
+	RecalculateDuration();
+}
+
+void UUEMotionGroupAnimation::RecalculateDuration()
+{
 	if (bIsSequential)
 	{
 		float TotalDuration = 0.0f;
