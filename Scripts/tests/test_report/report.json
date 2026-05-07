@@ -1,0 +1,585 @@
+{
+  "timestamp": "2026-05-07T21:25:13",
+  "total": 115,
+  "passed": 100,
+  "failed": 0,
+  "skipped": 15,
+  "duration_s": 8.04,
+  "tests": [
+    {
+      "name": "test_all_shapes (test_14_python_wrapper.TestPythonWrapper.test_all_shapes)",
+      "status": "skip",
+      "error": "uemotion Python wrapper module not available (Phase 4)"
+    },
+    {
+      "name": "test_camera (test_14_python_wrapper.TestPythonWrapper.test_camera)",
+      "status": "skip",
+      "error": "uemotion Python wrapper module not available (Phase 4)"
+    },
+    {
+      "name": "test_chain (test_14_python_wrapper.TestPythonWrapper.test_chain)",
+      "status": "skip",
+      "error": "uemotion Python wrapper module not available (Phase 4)"
+    },
+    {
+      "name": "test_change_color (test_14_python_wrapper.TestPythonWrapper.test_change_color)",
+      "status": "skip",
+      "error": "uemotion Python wrapper module not available (Phase 4)"
+    },
+    {
+      "name": "test_color_resolution (test_14_python_wrapper.TestPythonWrapper.test_color_resolution)",
+      "status": "skip",
+      "error": "uemotion Python wrapper module not available (Phase 4)"
+    },
+    {
+      "name": "test_cube (test_14_python_wrapper.TestPythonWrapper.test_cube)",
+      "status": "skip",
+      "error": "uemotion Python wrapper module not available (Phase 4)"
+    },
+    {
+      "name": "test_fade_in (test_14_python_wrapper.TestPythonWrapper.test_fade_in)",
+      "status": "skip",
+      "error": "uemotion Python wrapper module not available (Phase 4)"
+    },
+    {
+      "name": "test_fade_out (test_14_python_wrapper.TestPythonWrapper.test_fade_out)",
+      "status": "skip",
+      "error": "uemotion Python wrapper module not available (Phase 4)"
+    },
+    {
+      "name": "test_move_to (test_14_python_wrapper.TestPythonWrapper.test_move_to)",
+      "status": "skip",
+      "error": "uemotion Python wrapper module not available (Phase 4)"
+    },
+    {
+      "name": "test_rotate (test_14_python_wrapper.TestPythonWrapper.test_rotate)",
+      "status": "skip",
+      "error": "uemotion Python wrapper module not available (Phase 4)"
+    },
+    {
+      "name": "test_scale_to (test_14_python_wrapper.TestPythonWrapper.test_scale_to)",
+      "status": "skip",
+      "error": "uemotion Python wrapper module not available (Phase 4)"
+    },
+    {
+      "name": "test_scene_create (test_14_python_wrapper.TestPythonWrapper.test_scene_create)",
+      "status": "skip",
+      "error": "uemotion Python wrapper module not available (Phase 4)"
+    },
+    {
+      "name": "test_sphere (test_14_python_wrapper.TestPythonWrapper.test_sphere)",
+      "status": "skip",
+      "error": "uemotion Python wrapper module not available (Phase 4)"
+    },
+    {
+      "name": "test_vec (test_14_python_wrapper.TestPythonWrapper.test_vec)",
+      "status": "skip",
+      "error": "uemotion Python wrapper module not available (Phase 4)"
+    },
+    {
+      "name": "test_wait (test_14_python_wrapper.TestPythonWrapper.test_wait)",
+      "status": "skip",
+      "error": "uemotion Python wrapper module not available (Phase 4)"
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    },
+    {
+      "name": "",
+      "status": "pass",
+      "error": ""
+    }
+  ]
+}
