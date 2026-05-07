@@ -6,7 +6,9 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from test_framework import UEMotionTestCase
 
-OUTPUT_BASE = "D:/UEMotionTest/full_pipeline"
+PROJECT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+OUTPUT_BASE = os.path.join(PROJECT_DIR, "Saved", "UEMotionTest", "full_pipeline")
+OUTPUT_BASE = OUTPUT_BASE.replace("\\", "/")
 
 
 class TestFullPipeline(UEMotionTestCase):
@@ -69,19 +71,15 @@ class TestFullPipeline(UEMotionTestCase):
         camera.look_at(unreal.Vector(num_steps * step_size / 2.0, num_steps * step_size / 2.0, initial_z))
 
         frames_dir = os.path.join(OUTPUT_BASE, "y_equals_x_steps")
-        if not os.path.exists(frames_dir):
-            os.makedirs(frames_dir, exist_ok=True)
+        os.makedirs(frames_dir, exist_ok=True)
 
         for i in range(num_steps + 1):
             pos_x = float(i * step_size)
             pos_y = float(i * step_size)
             cube.set_location(unreal.Vector(pos_x, pos_y, initial_z))
 
-            step_dir = os.path.join(frames_dir, f"step_{i:04d}")
-            if not os.path.exists(step_dir):
-                os.makedirs(step_dir, exist_ok=True)
-
-            self.assertNoCrash(lambda d=step_dir: scene.render_single_frame(d + "/frame.png"))
+            frame_path = os.path.join(frames_dir, f"step_{i:04d}.png").replace("\\", "/")
+            self.assertNoCrash(lambda p=frame_path: scene.render_single_frame(p))
 
         self.cleanup_scene(scene)
 
@@ -115,7 +113,7 @@ class TestFullPipeline(UEMotionTestCase):
             scene.play(anim)
             self.tick_animation(scene, 1.5)
 
-        seq_dir = os.path.join(OUTPUT_BASE, "y_equals_x_sequence")
+        seq_dir = os.path.join(OUTPUT_BASE, "y_equals_x_sequence").replace("\\", "/")
         self.assertNoCrash(lambda: scene.render_frames(seq_dir, 0.5, 30))
 
         self.cleanup_scene(scene)
@@ -152,7 +150,7 @@ class TestFullPipeline(UEMotionTestCase):
         self.assertTrue(abs(loc.y - num_steps * step_size) < 3.0,
                         f"Final Y: expected {num_steps * step_size}, got {loc.y}")
 
-        frames_dir = os.path.join(OUTPUT_BASE, "pymanim_y_equals_x")
+        frames_dir = os.path.join(OUTPUT_BASE, "pymanim_y_equals_x").replace("\\", "/")
         self.assertNoCrash(lambda: s._ue.render_frames(frames_dir, 0.5, 30))
 
         s.destroy()

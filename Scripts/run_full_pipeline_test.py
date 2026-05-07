@@ -4,11 +4,13 @@ import os
 import unittest
 import time
 import glob
+import subprocess
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'tests'))
 from test_framework import UEMotionTestCase, JsonReportRunner
 
-OUTPUT_BASE = "D:/UEMotionTest/full_pipeline"
+PROJECT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+OUTPUT_BASE = os.path.join(PROJECT_DIR, "Saved", "UEMotionTest", "full_pipeline")
 
 
 def check_output_images():
@@ -56,9 +58,9 @@ def main():
     print("  UEMotion Full Pipeline Test Runner")
     print("=" * 64)
 
+    import test_16_full_pipeline
     loader = unittest.TestLoader()
-    suite = loader.loadTestsFromName('test_16_full_pipeline.TestFullPipeline',
-                                     module=__import__('test_16_full_pipeline'))
+    suite = loader.loadTestsFromTestCase(test_16_full_pipeline.TestFullPipeline)
 
     print(f"\n[INFO] Loaded {suite.countTestCases()} test cases")
     print("[INFO] Running tests...\n")
@@ -107,7 +109,10 @@ except Exception as e:
     import traceback
     traceback.print_exc()
 finally:
+    print("\n[Cleanup] Killing UnrealEditor...")
     try:
-        unreal.SystemLibrary.quit_game(unreal.EditorLevelLibrary.get_editor_world())
-    except Exception:
-        pass
+        subprocess.run(["taskkill", "/f", "/im", "UnrealEditor.exe"],
+                       capture_output=True, timeout=10)
+        print("[Cleanup] UnrealEditor killed.")
+    except Exception as e:
+        print(f"[Cleanup] Failed to kill UnrealEditor: {e}")
