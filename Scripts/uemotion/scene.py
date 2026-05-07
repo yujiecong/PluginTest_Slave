@@ -20,6 +20,27 @@ class Scene:
         self._height = height
         self._pending_animations = []
         self._camera = Camera(self, self._ue.get_camera())
+        self._render_callbacks = []
+        self._bind_render_delegate()
+
+    def _bind_render_delegate(self):
+        delegate = None
+        for attr_name in ['on_render_finished_delegate', 'on_render_finished']:
+            if hasattr(self._ue, attr_name):
+                delegate = getattr(self._ue, attr_name)
+                break
+        if delegate is not None:
+            delegate.add_callable_unique(self._on_render_finished)
+        else:
+            unreal.log_warning("UEMotion: OnRenderFinished delegate not found on UEMotionScene. Callbacks will not work until editor is fully restarted.")
+
+    def _on_render_finished(self, scene, success):
+        for cb in self._render_callbacks:
+            try:
+                cb(success)
+            except Exception as e:
+                unreal.log_warning(f"UEMotion: render callback error: {e}")
+        self._render_callbacks.clear()
 
     @property
     def name(self):
@@ -136,7 +157,7 @@ class Scene:
     def wait(self, duration=1.0):
         self._ue.wait(duration)
 
-    def render(self, output_path, duration=5.0, fps=30):
+    def render(self, output_path, duration=5.0, fps=30, on_finished=None):
         output_dir = os.path.dirname(output_path)
         if output_dir and not os.path.exists(output_dir):
             os.makedirs(output_dir, exist_ok=True)
@@ -145,14 +166,14 @@ class Scene:
         if not os.path.exists(frames_dir):
             os.makedirs(frames_dir, exist_ok=True)
 
+        if on_finished:
+            self._render_callbacks.append(on_finished)
+
         self._ue.render_frames(frames_dir, duration, fps)
 
-        success = frames_to_video(frames_dir, output_path, fps)
-        if success:
-            print(f"[UEMotion] Video saved: {output_path}")
-        else:
-            print(f"[UEMotion] Frames saved to: {frames_dir} (ffmpeg failed)")
-        return success
+    def on_render_finished(self, callback):
+        self._render_callbacks.append(callback)
+        return self
 
     def render_frame(self, file_path):
         self._ue.render_single_frame(file_path)

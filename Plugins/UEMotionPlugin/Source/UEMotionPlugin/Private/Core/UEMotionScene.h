@@ -4,6 +4,8 @@
 #include "UObject/NoExportTypes.h"
 #include "UEMotionScene.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnUEMotionRenderFinished, UUEMotionScene*, Scene, bool, bSuccess);
+
 class UUEMotionMobject;
 class UUEMotionCamera;
 class UUEMotionAnimation;
@@ -21,6 +23,8 @@ class UUEMotionScene : public UObject
 	GENERATED_BODY()
 
 public:
+	UPROPERTY(BlueprintAssignable, Category = "UEMotion")
+	FOnUEMotionRenderFinished OnRenderFinished;
 	UFUNCTION(BlueprintCallable, Category = "UEMotion")
 	void Initialize(const FString& SceneName = TEXT("default"), int32 Width = 1920, int32 Height = 1080);
 
@@ -144,6 +148,9 @@ private:
 	UMovieSceneFloatTrack* GetOrCreateFloatTrack(UUEMotionMobject* Mobject, const FString& PropertyName);
 	void RecordTransformKey(UMovieScene3DTransformTrack* Track, int32 Frame, const FVector& Location, const FRotator& Rotation, const FVector& Scale);
 	void RecordFloatKey(UMovieSceneFloatTrack* Track, int32 Frame, float Value);
+
+	UFUNCTION()
+	void OnRendererFinished(bool bSuccess);
 
 	FString GetMapPath() const;
 	FString GetSequencePath() const;

@@ -1,7 +1,6 @@
 import unreal
 import sys
 import os
-import time
 import importlib
 
 SCRIPTS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -67,46 +66,36 @@ print("[3/4] Rendering frames via MoviePipeline...")
 frames_dir = os.path.join(OUTPUT_BASE, "y_equals_x_frames").replace("\\", "/")
 os.makedirs(frames_dir, exist_ok=True)
 
+def on_render_done(success):
+    print()
+    print("[4/4] Checking output images...")
+
+    img_count = 0
+    if os.path.isdir(frames_dir):
+        png_files = sorted([f for f in os.listdir(frames_dir) if f.lower().endswith('.png')])
+        img_count = len(png_files)
+        for f in png_files[:10]:
+            fpath = os.path.join(frames_dir, f)
+            fsize = os.path.getsize(fpath)
+            print(f"  -> {f} ({fsize} bytes)")
+        if len(png_files) > 10:
+            print(f"  ... and {len(png_files) - 10} more")
+    else:
+        print(f"  [MISSING] Directory not found: {frames_dir}")
+
+    print()
+    print("=" * 64)
+    if success and img_count > 0:
+        print(f"  RESULT: PASSED - {img_count} image(s) generated!")
+        print(f"  Output: {frames_dir}")
+    else:
+        print(f"  RESULT: {'FAILED (render error)' if not success else 'NO IMAGES'}")
+    print("=" * 64)
+
+    s.destroy()
+
+s.on_render_finished(on_render_done)
 s._ue.render_frames(frames_dir, total_duration, FPS)
 
 print(f"  Rendering to: {frames_dir}")
-print("  Waiting for MoviePipeline to finish...")
-
-for wait in range(180):
-    time.sleep(1)
-    png_files = []
-    if os.path.isdir(frames_dir):
-        png_files = [f for f in os.listdir(frames_dir) if f.lower().endswith('.png')]
-    if len(png_files) > 0:
-        print(f"  Found {len(png_files)} image(s) after {wait + 1}s")
-        break
-    if wait % 10 == 9:
-        print(f"  ... still waiting ({wait + 1}s)")
-
-print()
-print("[4/4] Checking output images...")
-
-img_count = 0
-if os.path.isdir(frames_dir):
-    png_files = sorted([f for f in os.listdir(frames_dir) if f.lower().endswith('.png')])
-    img_count = len(png_files)
-    for f in png_files[:10]:
-        fpath = os.path.join(frames_dir, f)
-        fsize = os.path.getsize(fpath)
-        print(f"  -> {f} ({fsize} bytes)")
-    if len(png_files) > 10:
-        print(f"  ... and {len(png_files) - 10} more")
-else:
-    print(f"  [MISSING] Directory not found: {frames_dir}")
-
-print()
-print("=" * 64)
-if img_count > 0:
-    print(f"  RESULT: PASSED - {img_count} image(s) generated!")
-    print(f"  Output: {frames_dir}")
-else:
-    print("  RESULT: FAILED - No images generated")
-    print("  (MoviePipeline may need viewport/rendering support)")
-print("=" * 64)
-
-s.destroy()
+print("  Callback registered, rendering in background...")

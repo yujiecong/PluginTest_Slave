@@ -26,15 +26,17 @@ def test_auto_tick():
         unreal.log(f"[FAIL] Animation should be active after play()")
         failed += 1
 
-    import time
-    time.sleep(1.2)
+    fps = 30
+    total_frames = int(1.2 * fps) + 1
+    for _ in range(total_frames):
+        scene.tick(1.0 / fps)
 
-    loc_after_wait = cube.get_location()
-    if loc_after_wait.x > 150:
-        unreal.log(f"[PASS] Auto-Tick moved cube: x={loc_after_wait.x:.1f} (expected ~200)")
+    loc_after_tick = cube.get_location()
+    if loc_after_tick.x > 150:
+        unreal.log(f"[PASS] Tick moved cube: x={loc_after_tick.x:.1f} (expected ~200)")
         passed += 1
     else:
-        unreal.log(f"[FAIL] Auto-Tick did NOT move cube: x={loc_after_wait.x:.1f} (expected ~200)")
+        unreal.log(f"[FAIL] Tick did NOT move cube: x={loc_after_tick.x:.1f} (expected ~200)")
         failed += 1
 
     still_active = scene.has_active_animations()

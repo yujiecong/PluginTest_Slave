@@ -11,6 +11,7 @@
 #include "Anim/UEMotionWaitAnimation.h"
 #include "Rendering/UEMotionRenderer.h"
 #include "Actors/UEMotionSceneActor.h"
+#include "Utils/UEMotionSequencerCompat.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "Engine/DirectionalLight.h"
@@ -21,14 +22,6 @@
 #include "LevelSequenceActor.h"
 #include "MovieScene.h"
 #include "MovieSceneSequencePlayer.h"
-#include "Tracks/MovieScene3DTransformTrack.h"
-#include "Sections/MovieScene3DTransformSection.h"
-#include "Tracks/MovieSceneFloatTrack.h"
-#include "Sections/MovieSceneFloatSection.h"
-#include "Tracks/MovieSceneSpawnTrack.h"
-#include "Sections/MovieSceneSpawnSection.h"
-#include "Sections/MovieSceneVectorSection.h"
-#include "Channels/MovieSceneChannelProxy.h"
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "AssetToolsModule.h"
 #include "EditorAssetLibrary.h"
@@ -36,6 +29,8 @@
 #include "UObject/Package.h"
 #include "Misc/PackageName.h"
 #include "PackageTools.h"
+#include "FileHelpers.h"
+#include "Editor/EditorEngine.h"
 
 FString UUEMotionScene::GetMapPath() const
 {
@@ -49,23 +44,21 @@ FString UUEMotionScene::GetSequencePath() const
 
 bool UUEMotionScene::CreateSceneMap()
 {
-	UWorld* EditorWorld = GEditor ? GEditor->GetEditorWorldContext().World() : nullptr;
-	if (!EditorWorld) return false;
+	if (!GEditor) return false;
 
-	FString MapPackageName = GetMapPath();
-	FString MapPackagePath = FPackageName::LongPackageNameToFilename(MapPackageName, TEXT(".umap"));
-
-	UPackage* MapPackage = CreatePackage(*MapPackageName);
-	if (!MapPackage) return false;
-
-	UWorld* NewWorld = UWorld::CreateWorld(EWorldType::Editor, false, FName(*SceneName), MapPackage);
+	UWorld* NewWorld = UEditorLoadingAndSavingUtils::NewMapFromTemplate(TEXT("/Engine/Maps/Templates/Template_Default"), true);
 	if (!NewWorld) return false;
 
-	SceneWorld = NewWorld;
+	SceneWorld = GEditor->GetEditorWorldContext().World();
+	if (!SceneWorld) return false;
 
-	FWorldContext& WorldContext = GEngine->GetWorldContextFromWorldChecked(NewWorld);
-	WorldContext.WorldType = EWorldType::Editor;
+	FString MapPath = GetMapPath();
+	if (!UEditorLoadingAndSavingUtils::SaveMap(SceneWorld, MapPath))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("UEMotionScene: Failed to save map to '%s'"), *MapPath);
+	}
 
+	UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Map created and saved to '%s'"), *MapPath);
 	return true;
 }
 
@@ -92,9 +85,12 @@ bool UUEMotionScene::CreateLevelSequenceAsset()
 	}
 
 	FAssetRegistryModule::AssetCreated(NewSequence);
-	SequencePackage->MarkDirty();
+	UEMotionCompat::MarkPackageDirty(SequencePackage);
+	UEMotionCompat::SavePackageToDisk(SequencePackage, TEXT(".uasset"));
 
 	LevelSequence = NewSequence;
+
+	UE_LOG(LogTemp, Log, TEXT("UEMotionScene: LevelSequence created and saved to '%s'"), *SequencePackageName);
 	return true;
 }
 
@@ -156,6 +152,8 @@ void UUEMotionScene::Initialize(const FString& InSceneName, int32 Width, int32 H
 
 		SetupDefaultLighting();
 		bInitialized = true;
+
+		UEditorLoadingAndSavingUtils::SaveMap(SceneWorld, GetMapPath());
 
 		UE_LOG(LogTemp, Log, TEXT("UEMotionScene::Initialize: Scene '%s' created with Map + LevelSequence"), *SceneName);
 	}
@@ -331,21 +329,7 @@ void UUEMotionScene::AddActorToSequencer(AActor* Actor)
 	UMovieScene* MovieScene = LevelSequence->GetMovieScene();
 	if (!MovieScene) return;
 
-	FGuid ObjectBinding;
-	const FMovieSceneBinding* ExistingBinding = MovieScene->FindBinding(Actor);
-	if (ExistingBinding)
-	{
-		ObjectBinding = ExistingBinding->GetObjectGuid();
-	}
-	else
-	{
-		ObjectBinding = MovieScene->AddPossessable(Actor->GetFName(), Actor->GetClass());
-	}
-
-	if (ObjectBinding.IsValid())
-	{
-		LevelSequence->BindPossessableObject(ObjectBinding, *Actor, SceneWorld);
-	}
+	UEMotionCompat::FindOrAddPossessable(MovieScene, Actor, LevelSequence, SceneWorld);
 }
 
 UMovieScene3DTransformTrack* UUEMotionScene::GetOrCreateTransformTrack(UUEMotionMobject* Mobject)
@@ -358,37 +342,20 @@ UMovieScene3DTransformTrack* UUEMotionScene::GetOrCreateTransformTrack(UUEMotion
 	UMovieScene* MovieScene = LevelSequence->GetMovieScene();
 	if (!MovieScene) return nullptr;
 
-	FGuid ObjectBinding;
-	const FMovieSceneBinding* ExistingBinding = MovieScene->FindBinding(Actor);
-	if (ExistingBinding)
-	{
-		ObjectBinding = ExistingBinding->GetObjectGuid();
-	}
-	else
-	{
-		ObjectBinding = MovieScene->AddPossessable(Actor->GetFName(), Actor->GetClass());
-		if (ObjectBinding.IsValid())
-		{
-			LevelSequence->BindPossessableObject(ObjectBinding, *Actor, SceneWorld);
-		}
-	}
-
+	FGuid ObjectBinding = UEMotionCompat::FindOrAddPossessable(MovieScene, Actor, LevelSequence, SceneWorld);
 	if (!ObjectBinding.IsValid()) return nullptr;
 
-	for (UMovieSceneTrack* Track : MovieScene->GetAllTracks())
+	UMovieScene3DTransformTrack* ExistingTrack = UEMotionCompat::FindTransformTrack(MovieScene, ObjectBinding);
+	if (ExistingTrack)
 	{
-		UMovieScene3DTransformTrack* TransformTrack = Cast<UMovieScene3DTransformTrack>(Track);
-		if (TransformTrack && TransformTrack->GetObjectId() == ObjectBinding)
-		{
-			return TransformTrack;
-		}
+		return ExistingTrack;
 	}
 
 	UMovieScene3DTransformTrack* NewTrack = Cast<UMovieScene3DTransformTrack>(
 		MovieScene->AddTrack<UMovieScene3DTransformTrack>(ObjectBinding));
 	if (NewTrack)
 	{
-		NewTrack->AddSectionToAll();
+		UEMotionCompat::CreateAndAddSection(NewTrack);
 	}
 
 	return NewTrack;
@@ -404,21 +371,7 @@ UMovieSceneFloatTrack* UUEMotionScene::GetOrCreateFloatTrack(UUEMotionMobject* M
 	UMovieScene* MovieScene = LevelSequence->GetMovieScene();
 	if (!MovieScene) return nullptr;
 
-	FGuid ObjectBinding;
-	const FMovieSceneBinding* ExistingBinding = MovieScene->FindBinding(Actor);
-	if (ExistingBinding)
-	{
-		ObjectBinding = ExistingBinding->GetObjectGuid();
-	}
-	else
-	{
-		ObjectBinding = MovieScene->AddPossessable(Actor->GetFName(), Actor->GetClass());
-		if (ObjectBinding.IsValid())
-		{
-			LevelSequence->BindPossessableObject(ObjectBinding, *Actor, SceneWorld);
-		}
-	}
-
+	FGuid ObjectBinding = UEMotionCompat::FindOrAddPossessable(MovieScene, Actor, LevelSequence, SceneWorld);
 	if (!ObjectBinding.IsValid()) return nullptr;
 
 	UMovieSceneFloatTrack* NewTrack = Cast<UMovieSceneFloatTrack>(
@@ -426,7 +379,7 @@ UMovieSceneFloatTrack* UUEMotionScene::GetOrCreateFloatTrack(UUEMotionMobject* M
 	if (NewTrack)
 	{
 		NewTrack->SetPropertyNameAndPath(FName(*PropertyName), PropertyName);
-		NewTrack->AddSectionToAll();
+		UEMotionCompat::CreateAndAddSection(NewTrack);
 	}
 
 	return NewTrack;
@@ -439,31 +392,11 @@ void UUEMotionScene::RecordTransformKey(UMovieScene3DTransformTrack* Track, int3
 	UMovieSceneSection* Section = Track->GetAllSections().Num() > 0 ? Track->GetAllSections()[0] : nullptr;
 	if (!Section) return;
 
-	FFrameTime FrameTime(Frame);
-
-	auto SetChannelKey = [&](FMovieSceneDoubleChannel& Channel, double Value)
-	{
-		int32 KeyIndex = INDEX_NONE;
-		Channel.Evaluate(FrameTime, Value);
-		FMovieSceneDoubleValue NewValue;
-		NewValue.Value = Value;
-		Channel.SetKeyInChannel(FrameTime, &NewValue, KeyIndex);
-	};
-
 	UMovieScene3DTransformSection* TransformSection = Cast<UMovieScene3DTransformSection>(Section);
 	if (!TransformSection) return;
 
-	FRotator RotDegrees = Rotation;
-	SetChannelKey(TransformSection->GetChannel(0), Location.X);
-	SetChannelKey(TransformSection->GetChannel(1), Location.Y);
-	SetChannelKey(TransformSection->GetChannel(2), Location.Z);
-	SetChannelKey(TransformSection->GetChannel(3), RotDegrees.Roll);
-	SetChannelKey(TransformSection->GetChannel(4), RotDegrees.Pitch);
-	SetChannelKey(TransformSection->GetChannel(5), RotDegrees.Yaw);
-	SetChannelKey(TransformSection->GetChannel(6), Scale.X);
-	SetChannelKey(TransformSection->GetChannel(7), Scale.Y);
-	SetChannelKey(TransformSection->GetChannel(8), Scale.Z);
-
+	FFrameNumber FrameNumber(Frame);
+	UEMotionCompat::RecordTransformKeys(TransformSection, FrameNumber, Location, Rotation, Scale);
 	Section->SetRange(TRange<FFrameNumber>::All());
 }
 
@@ -474,13 +407,8 @@ void UUEMotionScene::RecordFloatKey(UMovieSceneFloatTrack* Track, int32 Frame, f
 	UMovieSceneFloatSection* Section = Cast<UMovieSceneFloatSection>(Track->GetAllSections().Num() > 0 ? Track->GetAllSections()[0] : nullptr);
 	if (!Section) return;
 
-	FFrameTime FrameTime(Frame);
-	FMovieSceneFloatValue NewValue;
-	NewValue.Value = Value;
-
-	int32 KeyIndex = INDEX_NONE;
-	Section->GetChannel().SetKeyInChannel(FrameTime, &NewValue, KeyIndex);
-
+	FFrameNumber FrameNumber(Frame);
+	UEMotionCompat::RecordFloatKey(Section, FrameNumber, Value);
 	Section->SetRange(TRange<FFrameNumber>::All());
 }
 
@@ -640,36 +568,12 @@ bool UUEMotionScene::HasActiveAnimations() const
 
 void UUEMotionScene::RenderFrames(const FString& OutputDirectory, float Duration, float FPS)
 {
-	if (!bInitialized || !SceneActor) return;
-	if (OutputDirectory.IsEmpty()) return;
-	if (Duration <= 0.0f) return;
-	if (FPS <= 0.0f) return;
-
-	if (!Renderer)
-	{
-		Renderer = NewObject<UUEMotionRenderer>(this);
-	}
-
-	Renderer->Initialize(SceneWorld, ResolutionWidth, ResolutionHeight);
-	Renderer->BindCamera(SceneActor);
-	Renderer->SetAntiAliasing(1);
-	Renderer->SetOutputFormat(TEXT("png"));
-	Renderer->RenderSequence(LevelSequence, OutputDirectory, Duration, FPS);
+	UE_LOG(LogTemp, Warning, TEXT("UEMotionScene::RenderFrames: Rendering is temporarily disabled"));
 }
 
 void UUEMotionScene::RenderSingleFrame(const FString& FilePath)
 {
-	if (!bInitialized || !SceneActor) return;
-	if (FilePath.IsEmpty()) return;
-
-	if (!Renderer)
-	{
-		Renderer = NewObject<UUEMotionRenderer>(this);
-	}
-
-	Renderer->Initialize(SceneWorld, ResolutionWidth, ResolutionHeight);
-	Renderer->BindCamera(SceneActor);
-	Renderer->RenderSingleFrame(FilePath);
+	UE_LOG(LogTemp, Warning, TEXT("UEMotionScene::RenderSingleFrame: Rendering is temporarily disabled"));
 }
 
 void UUEMotionScene::ClearScene()
@@ -694,6 +598,12 @@ void UUEMotionScene::Destroy()
 		SceneActor = nullptr;
 	}
 
+	if (Renderer)
+	{
+		Renderer->OnRenderFinishedDelegate.RemoveAll(this);
+		Renderer = nullptr;
+	}
+
 	Camera = nullptr;
 	LevelSequence = nullptr;
 	SceneWorld = nullptr;
@@ -712,23 +622,14 @@ void UUEMotionScene::SaveAssets()
 		UPackage* SeqPackage = LevelSequence->GetOutermost();
 		if (SeqPackage)
 		{
-			FString SeqPath = FPackageName::LongPackageNameToFilename(SeqPackage->GetName(), TEXT(".uasset"));
-			FSavePackageArgs SaveArgs;
-			SaveArgs.TopLevelFlags = RF_Public | RF_Standalone;
-			UPackage::SavePackage(SeqPackage, nullptr, *SeqPath, SaveArgs);
+			UEMotionCompat::SavePackageToDisk(SeqPackage, TEXT(".uasset"));
 		}
 	}
 
 	if (SceneWorld)
 	{
-		UPackage* MapPackage = SceneWorld->GetOutermost();
-		if (MapPackage)
-		{
-			FString MapFilename = FPackageName::LongPackageNameToFilename(MapPackage->GetName(), TEXT(".umap"));
-			FSavePackageArgs SaveArgs;
-			SaveArgs.TopLevelFlags = RF_Public | RF_Standalone;
-			UPackage::SavePackage(MapPackage, nullptr, *MapFilename, SaveArgs);
-		}
+		FString MapPath = GetMapPath();
+		UEditorLoadingAndSavingUtils::SaveMap(SceneWorld, MapPath);
 	}
 }
 
@@ -758,4 +659,14 @@ void UUEMotionScene::SetAutoCleanup(bool bCleanup)
 bool UUEMotionScene::GetAutoCleanup() const
 {
 	return bAutoCleanup;
+}
+
+void UUEMotionScene::OnRendererFinished(bool bSuccess)
+{
+	if (Renderer)
+	{
+		Renderer->OnRenderFinishedDelegate.RemoveDynamic(this, &UUEMotionScene::OnRendererFinished);
+	}
+
+	OnRenderFinished.Broadcast(this, bSuccess);
 }

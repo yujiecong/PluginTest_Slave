@@ -4,6 +4,8 @@
 #include "UObject/NoExportTypes.h"
 #include "UEMotionRenderer.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUEMotionRendererFinished, bool, bSuccess);
+
 class UWorld;
 class ACineCameraActor;
 class ULevelSequence;
@@ -16,6 +18,8 @@ class UUEMotionRenderer : public UObject
 	GENERATED_BODY()
 
 public:
+	UPROPERTY(BlueprintAssignable, Category = "UEMotion|Renderer")
+	FOnUEMotionRendererFinished OnRenderFinishedDelegate;
 	UFUNCTION(BlueprintCallable, Category = "UEMotion|Renderer")
 	void Initialize(UWorld* World, int32 Width = 1920, int32 Height = 1080);
 

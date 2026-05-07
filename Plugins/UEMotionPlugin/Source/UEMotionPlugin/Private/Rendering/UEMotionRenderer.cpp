@@ -10,8 +10,9 @@
 #include "MoviePipelinePrimaryConfig.h"
 #include "MoviePipelineOutputSetting.h"
 #include "MoviePipelineAntiAliasingSetting.h"
-#include "MoviePipelineInProcessExecutor.h"
+#include "MoviePipelinePIEExecutor.h"
 #include "MoviePipelineBlueprintLibrary.h"
+#include "MoviePipelineQueueSubsystem.h"
 #include "CineCameraComponent.h"
 #include "ImageWriteQueue.h"
 #include "Kismet/GameplayStatics.h"
@@ -42,13 +43,23 @@ void UUEMotionRenderer::SetOutputFormat(const FString& Format)
 
 void UUEMotionRenderer::RenderSequence(ULevelSequence* Sequence, const FString& OutputDirectory, float Duration, float FPS)
 {
-	if (!TargetWorld || bIsRendering) return;
+	if (!GEditor) return;
+	if (bIsRendering) return;
 	if (!Sequence) return;
 
 	bIsRendering = true;
 	ActiveSequence = Sequence;
 
-	UMoviePipelineQueue* PipelineQueue = NewObject<UMoviePipelineQueue>(this);
+	UMoviePipelineQueueSubsystem* QueueSubsystem = GEditor->GetEditorSubsystem<UMoviePipelineQueueSubsystem>();
+	if (!QueueSubsystem)
+	{
+		bIsRendering = false;
+		return;
+	}
+
+	UMoviePipelineQueue* PipelineQueue = QueueSubsystem->GetQueue();
+	PipelineQueue->DeleteAllJobs();
+
 	UMoviePipelineExecutorJob* Job = PipelineQueue->AllocateNewJob(UMoviePipelineExecutorJob::StaticClass());
 	if (!Job)
 	{
@@ -85,13 +96,12 @@ void UUEMotionRenderer::RenderSequence(ULevelSequence* Sequence, const FString& 
 		AASetting->RenderWarmUpCount = 32;
 	}
 
-	UMoviePipelineInProcessExecutor* Executor = NewObject<UMoviePipelineInProcessExecutor>(this);
-	Executor->bUseCurrentLevel = true;
+	UMoviePipelinePIEExecutor* Executor = NewObject<UMoviePipelinePIEExecutor>(QueueSubsystem);
 
 	Executor->OnExecutorFinished().AddUObject(this, &UUEMotionRenderer::OnRenderFinished);
 
 	ActiveExecutor = Executor;
-	Executor->Execute(PipelineQueue);
+	QueueSubsystem->RenderQueueWithExecutorInstance(Executor);
 }
 
 void UUEMotionRenderer::RenderSingleFrame(const FString& FilePath)
@@ -142,4 +152,6 @@ void UUEMotionRenderer::OnRenderFinished(UMoviePipelineExecutorBase* InExecutor,
 	{
 		UE_LOG(LogTemp, Warning, TEXT("UEMotionRenderer: Render failed"));
 	}
+
+	OnRenderFinishedDelegate.Broadcast(bSuccess);
 }
