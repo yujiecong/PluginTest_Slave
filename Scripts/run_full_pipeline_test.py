@@ -75,7 +75,6 @@ def on_render_done(success):
     print("=" * 64)
 
     s.set_auto_cleanup(False)
-    s.destroy()
 
 s.on_render_finished(on_render_done)
 s._ue.render_frames(frames_dir, total_duration, FPS)

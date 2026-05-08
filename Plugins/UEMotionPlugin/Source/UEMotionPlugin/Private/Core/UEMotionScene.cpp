@@ -98,9 +98,12 @@ bool UUEMotionScene::CreateLevelSequenceAsset()
 		FFrameRate FrameRate(FMath::RoundToInt(PlaybackFPS), 1);
 		MovieScene->SetDisplayRate(FrameRate);
 		int32 DefaultFrames = FMath::RoundToInt(2.0f * PlaybackFPS);
-		MovieScene->SetPlaybackRange(TRange<FFrameNumber>(0, DefaultFrames), true);
-		MovieScene->SetWorkingRange(0.0, 10.0);
-		MovieScene->SetViewRange(0.0, 10.0);
+		FFrameNumber StartTick = UEMotionCompat::DisplayFrameToTick(MovieScene, 0);
+		FFrameNumber EndTick = UEMotionCompat::DisplayFrameToTick(MovieScene, DefaultFrames);
+		MovieScene->SetPlaybackRange(TRange<FFrameNumber>(StartTick, EndTick), true);
+		float EndTime = (float)DefaultFrames / PlaybackFPS;
+		MovieScene->SetWorkingRange(0.0, EndTime);
+		MovieScene->SetViewRange(0.0, EndTime);
 	}
 
 	FAssetRegistryModule::AssetCreated(NewSequence);
@@ -694,9 +697,12 @@ void UUEMotionScene::Play(UUEMotionAnimation* Animation)
 	if (MovieScene)
 	{
 		int32 TotalFrames = FMath::RoundToInt(CurrentTime * PlaybackFPS) + 1;
-		MovieScene->SetPlaybackRange(TRange<FFrameNumber>(0, TotalFrames), true);
-		MovieScene->SetWorkingRange(0.0, CurrentTime + 1.0);
-		MovieScene->SetViewRange(0.0, CurrentTime + 1.0);
+		FFrameNumber StartTick = UEMotionCompat::DisplayFrameToTick(MovieScene, 0);
+		FFrameNumber EndTick = UEMotionCompat::DisplayFrameToTick(MovieScene, TotalFrames);
+		MovieScene->SetPlaybackRange(TRange<FFrameNumber>(StartTick, EndTick), true);
+		float RangeEndTime = (float)TotalFrames / PlaybackFPS;
+		MovieScene->SetWorkingRange(0.0, RangeEndTime);
+		MovieScene->SetViewRange(0.0, RangeEndTime);
 		UpdateCameraCutRange(TotalFrames);
 		UpdateCameraTransformRange(TotalFrames);
 	}
@@ -710,9 +716,12 @@ void UUEMotionScene::Wait(float Duration)
 	if (MovieScene)
 	{
 		int32 TotalFrames = FMath::RoundToInt(CurrentTime * PlaybackFPS) + 1;
-		MovieScene->SetPlaybackRange(TRange<FFrameNumber>(0, TotalFrames), true);
-		MovieScene->SetWorkingRange(0.0, CurrentTime + 1.0);
-		MovieScene->SetViewRange(0.0, CurrentTime + 1.0);
+		FFrameNumber StartTick = UEMotionCompat::DisplayFrameToTick(MovieScene, 0);
+		FFrameNumber EndTick = UEMotionCompat::DisplayFrameToTick(MovieScene, TotalFrames);
+		MovieScene->SetPlaybackRange(TRange<FFrameNumber>(StartTick, EndTick), true);
+		float RangeEndTime = (float)TotalFrames / PlaybackFPS;
+		MovieScene->SetWorkingRange(0.0, RangeEndTime);
+		MovieScene->SetViewRange(0.0, RangeEndTime);
 		UpdateCameraCutRange(TotalFrames);
 		UpdateCameraTransformRange(TotalFrames);
 	}
