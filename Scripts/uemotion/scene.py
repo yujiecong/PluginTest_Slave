@@ -9,10 +9,16 @@ from .mobject import Mobject
 from .camera import Camera
 from .animation import Animation
 from .colors import resolve_color, vec
+from .constants import (
+    FRAME_WIDTH, FRAME_HEIGHT,
+    ORIGIN, UL, UR, DL, DR,
+    DEFAULT_PIXEL_WIDTH, DEFAULT_PIXEL_HEIGHT,
+    DEFAULT_CAMERA_Z, SCALE_FACTOR,
+)
 
 
 class Scene:
-    def __init__(self, name="default", width=1920, height=1080):
+    def __init__(self, name="default", width=DEFAULT_PIXEL_WIDTH, height=DEFAULT_PIXEL_HEIGHT):
         self._ue = unreal.UEMotionScene()
         self._ue.initialize(name, width, height)
         self._name = name
@@ -22,6 +28,10 @@ class Scene:
         self._camera = Camera(self, self._ue.get_camera())
         self._render_callbacks = []
         self._bind_render_delegate()
+        self._frame_width = FRAME_WIDTH
+        self._frame_height = FRAME_HEIGHT
+        self._scale_factor = SCALE_FACTOR
+        self._setup_standard_2d_camera()
 
     def _bind_render_delegate(self):
         delegate = None
@@ -57,6 +67,27 @@ class Scene:
     @property
     def scene_world(self):
         return self._ue.get_scene_world()
+
+    @property
+    def frame_width(self):
+        return self._frame_width
+
+    @property
+    def frame_height(self):
+        return self._frame_height
+
+    @property
+    def center(self):
+        return ORIGIN
+
+    def get_corner(self, corner_name):
+        corners = {'UL': UL, 'UR': UR, 'DL': DL, 'DR': DR}
+        return corners.get(corner_name.upper(), ORIGIN)
+
+    def _setup_standard_2d_camera(self):
+        cam_z = DEFAULT_CAMERA_Z * self._scale_factor
+        self.camera.position = (0, 0, cam_z)
+        self.camera.look_at((0, 0, 0))
 
     def sphere(self, radius=50, color="white", location=None):
         obj = self._ue.create_sphere(radius)

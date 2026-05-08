@@ -21,10 +21,99 @@ PluginTest/
     │   ├── test_04_animation_move.py   # 移动动画测试
     │   └── ... (test_05 ~ test_16)
     └── uemotion/                       # Python API 封装
-        ├── scene.py                    # Scene 类
+        ├── constants.py                # ⭐ 坐标系常量定义
+        ├── scene.py                    # Scene 类（含坐标系支持）
         ├── camera.py                   # Camera 类
-        ├── mobject.py                  # Mobject 类
+        ├── mobject.py                  # Mobject 类（含便捷定位方法）
         └── animation.py                # Animation 类
+```
+
+---
+
+## Coordinate System Specification (1:1 Square)
+
+### Overview
+
+UEMotion 使用 **1:1 正方形坐标系**，灵感来自 Manim，专为数学可视化设计。
+
+```
+┌─────────────────────┐
+│                     │
+│    UL      ↑ UR     │  Q2 | Q1
+│         ↗ | ↘       │  (-,+)|(+,+)
+│    ←──────┼──────→  │
+│         ↙ | ↖       │  (-,-)|(+,-)
+│    DL      ↓ DR     │  Q3 | Q4
+│                     │
+└─────────────────────┘
+
+原点 (ORIGIN): 屏幕中心 (0, 0, 0)
+X 轴: 向右为正 (+)
+Y 轴: 向上为正 (+)
+帧尺寸: 8×8 UEMotion Units (正方形)
+分辨率: 1080×1080 像素 (默认)
+```
+
+### Key Constants
+
+| Constant | Value | Description |
+|----------|-------|-------------|
+| `FRAME_WIDTH` | 8.0 | Frame width (UEMotion units) |
+| `FRAME_HEIGHT` | 8.0 | Frame height (UEMotion units) |
+| `ASPECT_RATIO` | 1.0 | 1:1 square |
+| `ORIGIN` | (0, 0, 0) | Screen center |
+| `UP` | (0, 1, 0) | Y+ direction |
+| `DOWN` | (0, -1, 0) | Y- direction |
+| `LEFT` | (-1, 0, 0) | X- direction |
+| `RIGHT` | (1, 0, 0) | X+ direction |
+| `UL` | (-4, 4, 0) | Upper-left corner (Q2) |
+| `UR` | (4, 4, 0) | Upper-right corner (Q1) |
+| `DL` | (-4, -4, 0) | Lower-left corner (Q3) |
+| `DR` | (4, -4, 0) | Lower-right corner (Q4) |
+
+### Four Quadrants
+
+| Quadrant | Coordinates | Corner Constants | Sign |
+|----------|-------------|-------------------|------|
+| Q1 | x > 0, y > 0 | UR | (+, +) |
+| Q2 | x < 0, y > 0 | UL | (-, +) |
+| Q3 | x < 0, y < 0 | DL | (-, -) |
+| Q4 | x > 0, y < 0 | DR | (+, -) |
+
+### Unit Conversion
+
+```python
+SCALE_FACTOR = 50.0  # 1 UEMotion Unit = 50 UE cm
+
+# Examples:
+# ORIGIN (0,0,0) → UE (0, 0, 0) cm
+# UR (4,4,0) → UE (200, 200, 0) cm
+# DL (-4,-4,0) → UE (-200, -200, 0) cm
+```
+
+### API Quick Reference
+
+```python
+from uemotion import Scene
+from uemotion.constants import *
+
+s = Scene("demo")  # Default 1080x1080, auto-configured 2D camera
+
+# Position using constants
+box = s.cube(size=25, color="cyan", location=DL)     # Start at Q3
+box.move_to(ORIGIN, duration=2)                        # Animate to center
+box.move_to(UR, duration=2)                            # Animate to Q1
+
+# Convenience methods
+box.to_edge(RIGHT)           # Move to right edge
+box.next_to(other, UP)       # Place above another object
+box.shift(LEFT * 2)          # Move left by 2 units
+
+# Scene properties
+s.frame_width   # 8.0
+s.frame_height  # 8.0
+s.center        # (0, 0, 0)
+s.get_corner('UL')  # (-4, 4, 0)
 ```
 
 ---
@@ -39,26 +128,52 @@ PluginTest/
 
 ### What It Tests
 
-1. **Scene Creation**: 创建 3D 场景、灯光设置
-2. **Camera Setup**: 2D 俯视相机（top-down view at Z=800）
-3. **Object Animation**: Cube 沿 y=x 路径均匀移动（5 步，每步 10 单位）
-4. **Keyframe Recording**: Sequencer 关键帧记录与通道映射（Roll/Pitch/Yaw for UE5.7+）
-5. **MoviePipeline Rendering**: 渲染 151 帧 PNG 序列（1920x1080 @ 30fps）
-6. **Output Validation**: 文件数量、大小、格式验证
-7. **UE Shutdown**: 测试完成后自动关闭 UE Editor
+1. **Scene Creation**: 创建 3D 场景、灯光设置（使用标准坐标系）
+2. **Coordinate System**: 验证 1:1 正方形坐标系配置
+3. **Camera Setup**: 标准 2D 俯视相机（自动配置）
+4. **Object Animation**: Cube 从 Q3 (DL) 沿 y=x 路径移动到 Q1 (UR)，穿过原点
+5. **Keyframe Recording**: Sequencer 关键帧记录与通道映射（Roll/Pitch/Yaw for UE5.7+）
+6. **MoviePipeline Rendering**: 渲染 151 帧 PNG 序列（1080x1080 @ 30fps）
+7. **Output Validation**: 文件数量、大小、格式验证
+8. **UE Shutdown**: 测试完成后自动关闭 UE Editor
 
-### Test Parameters
+### Test Parameters (v2 - 1:1 Coordinate System)
 
 ```python
 Scene Name     : "y_equals_x"
-Resolution     : 1920x1080
+Resolution     : 1080x1080 (1:1 square)
+Frame Size     : 8×8 UEMotion Units
 Animation      : 5 steps × 1.0s = 5.0s total
 FPS            : 30
 Expected Frames: 151 (5.0s × 30 + 1)
-Path           : y=x from (0,0) to (50,50)
-Camera         : top-down at Z=800
-Lighting       : Directional + Point Light
-Cube           : Size=30, Color=Cyan, Z=0
+Path           : y=x from DL (-4,-4,Q3) to UR (4,4,Q1)
+Camera         : standard 2D top-down at Z=500
+Lighting       : Directional + Point Light at ORIGIN
+Cube           : Size=25 (0.5×SCALE), Color=Cyan, Z=0
+```
+
+### Visual Output
+
+```
+Cube trajectory: DL (-4,-4) → ORIGIN (0,0) → UR (4,4)
+
+┌─────────────────────┐
+│                     │
+│               ● END │  Q1 (+,+)  终点
+│            ●        │
+│         ●           │
+│      ●              │
+│   ● ORIGIN          │  中心穿越点
+│      ●              │
+│         ●           │
+│            ●        │
+│  START ●            │  Q3 (-,-)  起点
+│                     │
+└─────────────────────┘
+
+✓ Complete four-quadrant visualization
+✓ Mathematical coordinate system mapping
+✓ 1:1 aspect ratio preserves X/Y equality
 ```
 
 ### Execution
@@ -70,7 +185,7 @@ run_full_pipeline_test.bat
 
 # Expected Output:
 # [1/4] Creating scene...
-# [2/4] Creating cube and animating along y=x...
+# [2/4] Creating cube at DL (Q3) and animating along y=x to UR (Q1)...
 # [3/4] Rendering frames via MoviePipeline...
 # [4/4] Validating output images...
 # >>> RESULT: ALL CHECKS PASSED <<<
@@ -85,9 +200,11 @@ run_full_pipeline_test.bat
 
 ### Validation Criteria
 
-- ✅ Scene object created successfully
-- ✅ Camera position at Z=800 (top-down)
-- ✅ Cube final position = (50, 50, 0)
+- ✅ Scene object created with 1:1 frame dimensions
+- ✅ Frame width = 8.0, Frame height = 8.0
+- ✅ Camera at standard Z position (500 UE units)
+- ✅ Cube created at DL (-4, -4, 0) [Q3]
+- ✅ Cube final position = UR (4, 4, 0) [Q1]
 - ✅ MoviePipeline render callback success=True
 - ✅ Frame count = 151
 - ✅ File sizes in range [1MB, 3MB]
@@ -181,6 +298,11 @@ echo "Smoke test passed. Proceeding with commit..."
    - Use `.x/.y/.z` properties instead of `[0]/[1]/[2]`
    - Unreal Vector objects are not subscriptable in Python
 
+5. **Coordinate system issues**
+   - Ensure using constants from `uemotion.constants`
+   - Verify SCALE_FACTOR is correctly applied
+   - Check that Scene auto-configures camera in `_setup_standard_2d_camera()`
+
 ### Log Files
 
 ```
@@ -221,3 +343,16 @@ After any changes to:
 
 **Test Duration**: ~30-60 seconds (depending on hardware)
 **Required**: UE5.7+ Editor installed at `C:\Program Files\Epic Games\UE_5.7\`
+
+---
+
+## File Change Summary (Coordinate System Update)
+
+| File | Status | Description |
+|------|--------|-------------|
+| `Scripts/uemotion/constants.py` | **NEW** | Core coordinate system constants |
+| `Scripts/uemotion/__init__.py` | Updated | Export new symbols |
+| `Scripts/uemotion/scene.py` | Updated | Added coordinate properties & standard camera setup |
+| `Scripts/uemotion/mobject.py` | Updated | Added shift/to_edge/next_to methods |
+| `Scripts/run_full_pipeline_test.py` | **REWRITTEN** | Four-quadrant smoke test (DL→UR) |
+| `AGENTS.md` | Updated | This documentation |

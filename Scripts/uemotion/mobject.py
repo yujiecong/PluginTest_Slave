@@ -1,5 +1,12 @@
 import unreal
 from .colors import resolve_color
+from .constants import (
+    UP, DOWN, LEFT, RIGHT,
+    TOP, BOTTOM, LEFT_SIDE, RIGHT_SIDE,
+    UL, UR, DL, DR,
+    DEFAULT_MOBJECT_TO_EDGE_BUFF,
+    DEFAULT_MOBJECT_TO_MOBJECT_BUFF,
+)
 
 
 class Mobject:
@@ -67,6 +74,53 @@ class Mobject:
         anim.set_easing(easing)
         self._scene._pending_animations.append(anim)
         return self
+
+    def shift(self, vector, duration=1.0, easing="linear"):
+        current = self.location
+        target = (
+            current.x + vector[0],
+            current.y + vector[1],
+            current.z + vector[2] if len(vector) > 2 else current.z
+        )
+        return self.move_to(target, duration, easing)
+
+    def to_edge(self, edge, buff=DEFAULT_MOBJECT_TO_EDGE_BUFF):
+        edges = {
+            'UP': TOP,
+            'DOWN': BOTTOM,
+            'LEFT': LEFT_SIDE,
+            'RIGHT': RIGHT_SIDE,
+            'UL': UL,
+            'UR': UR,
+            'DL': DL,
+            'DR': DR,
+        }
+        target = edges.get(edge.upper(), (0, 0, 0))
+        if edge.upper() in ['UP', 'DOWN']:
+            target = (self.location.x, target[1], 0)
+        elif edge.upper() in ['LEFT', 'RIGHT']:
+            target = (target[0], self.location.y, 0)
+        if edge.upper() in ['UP', 'RIGHT', 'UR']:
+            target = (target[0] - buff, target[1] - buff, 0) if len(target) > 2 else (target[0] - buff, target[1] - buff)
+        elif edge.lower() in ['down', 'left', 'dl']:
+            target = (target[0] + buff, target[1] + buff, 0) if len(target) > 2 else (target[0] + buff, target[1] + buff)
+        return self.move_to(target)
+
+    def next_to(self, other, direction=RIGHT, buff=DEFAULT_MOBJECT_TO_MOBJECT_BUFF):
+        other_pos = other.location
+        dir_vec = {
+            'UP': UP, 'DOWN': DOWN,
+            'LEFT': LEFT, 'RIGHT': RIGHT
+        }.get(direction.upper(), RIGHT)
+        target = (
+            other_pos.x + dir_vec[0] * buff,
+            other_pos.y + dir_vec[1] * buff,
+            0
+        )
+        return self.move_to(target)
+
+    def align_to(self, other_or_edge, direction=UP):
+        pass
 
     def rotate(self, angle=360, axis=(0, 0, 1), duration=1.0, easing="ease_in_out"):
         anim = unreal.UEMotionRotateAnimation()

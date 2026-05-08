@@ -7,29 +7,25 @@ SCRIPTS_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPTS_DIR)
 
 from uemotion import Scene
+from uemotion.constants import *
 
 
 PROJECT_DIR = os.path.abspath(os.path.join(SCRIPTS_DIR, '..'))
 OUTPUT_BASE = os.path.join(PROJECT_DIR, "Saved", "UEMotionTest", "full_pipeline").replace("\\", "/")
 
 SCENE_NAME = "y_equals_x"
-RESOLUTION_W = 1920
-RESOLUTION_H = 1080
+RESOLUTION_W = DEFAULT_PIXEL_WIDTH
+RESOLUTION_H = DEFAULT_PIXEL_HEIGHT
 
 NUM_STEPS = 5
-STEP_SIZE = 10
-INITIAL_Z = 0.0
-FPS = 30
+STEP_SIZE = 1.0
 MOVE_DURATION = 1.0
-CUBE_SIZE = 30
+FPS = DEFAULT_FPS
+CUBE_SIZE = 0.5
 CUBE_COLOR = "cyan"
 
-CENTER_X = NUM_STEPS * STEP_SIZE / 2.0
-CENTER_Y = CENTER_X
-CAMERA_HEIGHT = 800.0
-LIGHT_INTENSITY = 3.0
-POINT_LIGHT_HEIGHT = 500.0
-POINT_LIGHT_INTENSITY = 2000.0
+START_POS = DL
+END_POS = UR
 
 TOTAL_DURATION = NUM_STEPS * MOVE_DURATION
 EXPECTED_FRAMES = int(TOTAL_DURATION * FPS) + 1
@@ -99,15 +95,16 @@ def shutdown_ue(exit_code=1):
         pass
 
 
-print_header("  UEMotion Full Pipeline Smoke Test")
+print_header("  UEMotion Full Pipeline Smoke Test (1:1 Coordinate System)")
 
 print(f"  Scene        : {SCENE_NAME}")
-print(f"  Resolution   : {RESOLUTION_W}x{RESOLUTION_H}")
+print(f"  Resolution   : {RESOLUTION_W}x{RESOLUTION_H} (1:1)")
+print(f"  Frame Size   : {FRAME_WIDTH} x {FRAME_HEIGHT} UEMotion units")
 print(f"  Animation    : {NUM_STEPS} steps x {MOVE_DURATION}s = {TOTAL_DURATION}s")
 print(f"  FPS          : {FPS}")
 print(f"  Expected     : {EXPECTED_FRAMES} frames")
-print(f"  Path         : y=x from (0,0) to ({NUM_STEPS*STEP_SIZE},{NUM_STEPS*STEP_SIZE})")
-print(f"  Camera       : top-down at Z={CAMERA_HEIGHT}")
+print(f"  Path         : y=x from {START_POS} (DL/Q3) to {END_POS} (UR/Q1)")
+print(f"  Camera       : standard 2D top-down at Z={DEFAULT_CAMERA_Z * SCALE_FACTOR}")
 print()
 
 try:
@@ -115,33 +112,33 @@ try:
     s = Scene(SCENE_NAME, RESOLUTION_W, RESOLUTION_H)
     check(s is not None, "Scene object created")
     check(s.name == SCENE_NAME, f"Scene name = '{SCENE_NAME}'")
+    check(abs(s.frame_width - FRAME_WIDTH) < 0.01, f"Frame width = {FRAME_WIDTH} (1:1)")
+    check(abs(s.frame_height - FRAME_HEIGHT) < 0.01, f"Frame height = {FRAME_HEIGHT} (1:1)")
 
-    s.directional_light(direction=(0, 0, -1), color="white", intensity=LIGHT_INTENSITY)
-    s.point_light(location=(CENTER_X, CENTER_Y, POINT_LIGHT_HEIGHT), color="white", intensity=POINT_LIGHT_INTENSITY)
+    s.directional_light(direction=(0, 0, -1), color="white", intensity=3.0)
+    s.point_light(location=ORIGIN, color="white", intensity=2000.0)
 
-    cam_pos = (CENTER_X, CENTER_Y, CAMERA_HEIGHT)
-    cam_look = (CENTER_X, CENTER_Y, INITIAL_Z)
-    s.camera.position = cam_pos
-    s.camera.look_at(cam_look)
-    check(abs(s.camera.position.z - CAMERA_HEIGHT) < 0.01, f"Camera Z = {CAMERA_HEIGHT} (top-down)")
+    cam_z_expected = DEFAULT_CAMERA_Z * SCALE_FACTOR
+    check(abs(s.camera.position.z - cam_z_expected) < 0.01,
+          f"Camera at standard Z = {cam_z_expected}")
 
-    print("[2/4] Creating cube and animating along y=x...")
-    box = s.cube(CUBE_SIZE, color=CUBE_COLOR, location=(0, 0, INITIAL_Z))
-    check(box is not None, "Cube Mobject created")
+    print("[2/4] Creating cube at DL (Q3) and animating along y=x to UR (Q1)...")
+    box = s.cube(CUBE_SIZE * SCALE_FACTOR, color=CUBE_COLOR, location=START_POS)
+    check(box is not None, f"Cube Mobject created at {START_POS} (DL/Q3)")
 
     for i in range(1, NUM_STEPS + 1):
-        target_x = i * STEP_SIZE
-        target_y = i * STEP_SIZE
-        box.move_to((target_x, target_y, INITIAL_Z), duration=MOVE_DURATION, easing="linear")
+        t = i / NUM_STEPS
+        target_x = START_POS[0] + t * (END_POS[0] - START_POS[0])
+        target_y = START_POS[1] + t * (END_POS[1] - START_POS[1])
+        box.move_to((target_x, target_y, 0.0), duration=MOVE_DURATION, easing="linear")
         s.play()
-        box.location = (target_x, target_y, INITIAL_Z)
+        box.location = (target_x, target_y, 0.0)
 
     final_pos = box.location
-    expected_final = (NUM_STEPS * STEP_SIZE, NUM_STEPS * STEP_SIZE, INITIAL_Z)
     check(
-        abs(final_pos.x - expected_final[0]) < 0.01
-        and abs(final_pos.y - expected_final[1]) < 0.01,
-        f"Cube final position = ({expected_final[0]}, {expected_final[1]}, {INITIAL_Z})"
+        abs(final_pos.x - END_POS[0]) < 0.01
+        and abs(final_pos.y - END_POS[1]) < 0.01,
+        f"Cube final position = {END_POS} (UR/Q1)"
     )
 
     print(f"  Animation: {NUM_STEPS} steps, {TOTAL_DURATION}s total, {EXPECTED_FRAMES} expected frames")
