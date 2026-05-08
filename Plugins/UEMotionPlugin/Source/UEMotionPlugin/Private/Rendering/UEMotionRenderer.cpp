@@ -9,6 +9,7 @@
 #include "MoviePipelineOutputSetting.h"
 #include "MoviePipelineImageSequenceOutput.h"
 #include "MoviePipelineAntiAliasingSetting.h"
+#include "MoviePipelineDeferredPasses.h"
 #include "MoviePipelinePIEExecutor.h"
 #include "MoviePipelineQueueSubsystem.h"
 
@@ -45,6 +46,11 @@ void UUEMotionRenderer::RenderSequence(ULevelSequence* Sequence, const FString& 
 	PipelineQueue->Modify();
 	PipelineQueue->DeleteAllJobs();
 
+	for (UMoviePipelineExecutorJob* ExistingJob : PipelineQueue->GetJobs())
+	{
+		PipelineQueue->DeleteJob(ExistingJob);
+	}
+
 	UMoviePipelineExecutorJob* Job = PipelineQueue->AllocateNewJob(UMoviePipelineExecutorJob::StaticClass());
 	if (!Job)
 	{
@@ -53,48 +59,34 @@ void UUEMotionRenderer::RenderSequence(ULevelSequence* Sequence, const FString& 
 		return;
 	}
 
-	Job->Modify();
+	Job->Sequence = FSoftObjectPath(Sequence);
 	Job->JobName = TEXT("UEMotionRender");
-	Job->Sequence = Sequence;
-
 	if (TargetWorld)
 	{
 		Job->Map = FSoftObjectPath(TargetWorld);
 	}
 
-	UMoviePipelinePrimaryConfig* Config = NewObject<UMoviePipelinePrimaryConfig>();
-	Job->SetConfiguration(Config);
+	UMoviePipelinePrimaryConfig* Config = Job->GetConfiguration();
 
 	UMoviePipelineOutputSetting* OutputSetting = Cast<UMoviePipelineOutputSetting>(
 		Config->FindOrAddSettingByClass(UMoviePipelineOutputSetting::StaticClass()));
 	if (OutputSetting)
 	{
 		OutputSetting->OutputDirectory.Path = OutputDirectory;
-		OutputSetting->FileNameFormat = TEXT("{frame_number}");
+		OutputSetting->FileNameFormat = TEXT("{sequence_name}.{frame_number}");
 		OutputSetting->OutputResolution = FIntPoint(ResolutionWidth, ResolutionHeight);
 		OutputSetting->bUseCustomFrameRate = true;
 		OutputSetting->OutputFrameRate = FFrameRate(FMath::RoundToInt(FPS), 1);
 		OutputSetting->bOverrideExistingOutput = true;
 		OutputSetting->ZeroPadFrameNumbers = 4;
+		OutputSetting->bFlushDiskWritesPerShot = true;
 	}
 
-	UMoviePipelineImageSequenceOutput_PNG* PNGOutput = Cast<UMoviePipelineImageSequenceOutput_PNG>(
-		Config->FindOrAddSettingByClass(UMoviePipelineImageSequenceOutput_PNG::StaticClass()));
-	if (PNGOutput)
-	{
-		PNGOutput->bWriteAlpha = false;
-	}
+	Config->FindOrAddSettingByClass(UMoviePipelineDeferredPassBase::StaticClass());
 
-	UMoviePipelineAntiAliasingSetting* AASetting = Cast<UMoviePipelineAntiAliasingSetting>(
-		Config->FindOrAddSettingByClass(UMoviePipelineAntiAliasingSetting::StaticClass()));
-	if (AASetting)
-	{
-		AASetting->bOverrideAntiAliasing = true;
-		AASetting->AntiAliasingMethod = EAntiAliasingMethod::AAM_TemporalAA;
-		AASetting->TemporalSampleCount = 4;
-		AASetting->SpatialSampleCount = 4;
-		AASetting->RenderWarmUpCount = 8;
-	}
+	Config->FindOrAddSettingByClass(UMoviePipelineImageSequenceOutput_PNG::StaticClass());
+
+	Config->InitializeTransientSettings();
 
 	UMoviePipelinePIEExecutor* Executor = NewObject<UMoviePipelinePIEExecutor>(QueueSubsystem);
 
@@ -106,8 +98,8 @@ void UUEMotionRenderer::RenderSequence(ULevelSequence* Sequence, const FString& 
 
 	ActiveExecutor = Executor;
 
-	UE_LOG(LogTemp, Log, TEXT("UEMotionRenderer: Starting render - OutputDir='%s', Resolution=%dx%d, FPS=%.0f"),
-		*OutputDirectory, ResolutionWidth, ResolutionHeight, FPS);
+	UE_LOG(LogTemp, Log, TEXT("UEMotionRenderer: Starting render - OutputDir='%s', Resolution=%dx%d, FPS=%.0f, Duration=%.2fs"),
+		*OutputDirectory, ResolutionWidth, ResolutionHeight, FPS, Duration);
 
 	QueueSubsystem->RenderQueueWithExecutorInstance(Executor);
 }

@@ -11,6 +11,7 @@
 #include "Anim/UEMotionWaitAnimation.h"
 #include "Rendering/UEMotionRenderer.h"
 #include "Actors/UEMotionSceneActor.h"
+#include "CineCameraActor.h"
 #include "Utils/UEMotionSequencerCompat.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
@@ -34,6 +35,7 @@
 #include "HAL/PlatformFileManager.h"
 #include "Editor/EditorEngine.h"
 #include "Subsystems/AssetEditorSubsystem.h"
+#include "Tracks/MovieSceneCameraCutTrack.h"
 
 FString UUEMotionScene::GetMapPath() const
 {
@@ -173,11 +175,31 @@ void UUEMotionScene::Initialize(const FString& InSceneName, int32 Width, int32 H
 	if (SceneActor)
 	{
 		SceneActor->SetOwnerScene(this);
+
+		FActorSpawnParameters CameraSpawnParams;
+		CameraSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		CineCamera = SceneWorld->SpawnActor<ACineCameraActor>(ACineCameraActor::StaticClass(), Location, Rotation, CameraSpawnParams);
+
 		Camera = NewObject<UUEMotionCamera>(this);
-		Camera->Init(SceneActor);
+		Camera->Init(CineCamera);
 		Camera->LookAt(FVector(0, 0, 0));
 
 		AddActorToSequencer(SceneActor);
+
+		FGuid CameraBinding = AddActorToSequencer(CineCamera);
+
+		if (CameraBinding.IsValid())
+		{
+			UMovieScene* MovieScene = LevelSequence->GetMovieScene();
+			UMovieSceneTrack* CamCutTrack = MovieScene->AddCameraCutTrack(UMovieSceneCameraCutTrack::StaticClass());
+			UMovieSceneCameraCutTrack* CutTrack = Cast<UMovieSceneCameraCutTrack>(CamCutTrack);
+			if (CutTrack)
+			{
+				FMovieSceneObjectBindingID BindingID = UE::MovieScene::FRelativeObjectBindingID(CameraBinding);
+				CutTrack->AddNewCameraCut(BindingID, FFrameNumber(0));
+				UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Camera Cut Track added for CineCamera"));
+			}
+		}
 
 		SetupDefaultLighting();
 		bInitialized = true;
@@ -353,16 +375,17 @@ TArray<UUEMotionMobject*> UUEMotionScene::GetAllMobjects() const
 	return Mobjects;
 }
 
-void UUEMotionScene::AddActorToSequencer(AActor* Actor)
+FGuid UUEMotionScene::AddActorToSequencer(AActor* Actor)
 {
-	if (!LevelSequence || !Actor) return;
+	if (!LevelSequence || !Actor) return FGuid();
 
 	UMovieScene* MovieScene = LevelSequence->GetMovieScene();
-	if (!MovieScene) return;
+	if (!MovieScene) return FGuid();
 
 	FGuid Binding = UEMotionCompat::FindOrAddPossessable(MovieScene, Actor, LevelSequence, SceneWorld);
 	UE_LOG(LogTemp, Log, TEXT("UEMotionScene: AddActorToSequencer '%s' -> Binding %s"),
 		*Actor->GetName(), Binding.IsValid() ? *Binding.ToString() : TEXT("INVALID"));
+	return Binding;
 }
 
 UMovieScene3DTransformTrack* UUEMotionScene::GetOrCreateTransformTrack(UUEMotionMobject* Mobject)
@@ -693,6 +716,12 @@ void UUEMotionScene::Destroy()
 	{
 		SceneActor->Destroy();
 		SceneActor = nullptr;
+	}
+
+	if (CineCamera)
+	{
+		CineCamera->Destroy();
+		CineCamera = nullptr;
 	}
 
 	if (Renderer)

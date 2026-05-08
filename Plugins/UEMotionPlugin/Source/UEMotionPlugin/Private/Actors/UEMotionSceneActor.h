@@ -5,7 +5,6 @@
 #include "UEMotionSceneActor.generated.h"
 
 class UUEMotionScene;
-class UCameraComponent;
 
 UCLASS()
 class AUEMotionSceneActor : public AActor
@@ -19,12 +18,6 @@ public:
 
 	void SetOwnerScene(UUEMotionScene* InScene);
 
-	UFUNCTION(BlueprintCallable, Category = "UEMotion")
-	UCameraComponent* GetCameraComponent() const { return CameraComponent; }
-
 private:
 	TWeakObjectPtr<UUEMotionScene> OwnerScene;
-
-	UPROPERTY()
-	UCameraComponent* CameraComponent;
 };

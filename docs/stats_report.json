@@ -1,0 +1,1186 @@
+{
+  "timestamp": "2026-05-08T04:53:27.850662",
+  "code_stats": {
+    "cpp_files": {
+      "count": 270,
+      "lines": 117501
+    },
+    "h_files": {
+      "count": 274,
+      "lines": 19828
+    },
+    "py_files": {
+      "count": 56,
+      "lines": 5874
+    },
+    "md_files": {
+      "count": 7,
+      "lines": 3622
+    }
+  },
+  "total_lines": 146825,
+  "total_files": 607,
+  "classes": {
+    "cpp_count": 57,
+    "python_count": 27,
+    "cpp_list": [
+      "EApplicationDirection",
+      "EObjectType",
+      "EPayloadsTrigger",
+      "EPrimUpdateType",
+      "ERootType",
+      "ETrackType",
+      "EWidgetLabelTypes",
+      "EWidgetType",
+      "FBindingView",
+      "FGeomPrimitiveCreateAssetsTaskChain",
+      "FGeometryCacheCreateAssetsTaskChain",
+      "FGeometryCacheUsdModule",
+      "FHideExportComponentMetadataCustomization",
+      "FLevelSequenceExportContext",
+      "FLevelSequenceHidingSpawnRegister",
+      "FMeshData",
+      "FMeshDescriptionWrapper",
+      "FMyUSDStageImporterModule",
+      "FMyUsdClassesEditorModule",
+      "FMyUsdExporterModule",
+      "FMyUsdGeomXformableCreateAssetsTaskChain",
+      "FMyUsdGroomCreateAssetsTaskChain",
+      "FMyUsdLayerEditColumn",
+      "FMyUsdLayerMutedColumn",
+      "FMyUsdLayerNameColumn",
+      "FMyUsdLevelSequenceHelperImpl",
+      "FMyUsdNaniteAssemblyCreateAssetsTaskChain",
+      "FMyUsdPreviewTreeImportColumn",
+      "FMyUsdPreviewTreeNameColumn",
+      "FMyUsdPreviewTreeTypeColumn",
+      "FMyUsdSchemasModule",
+      "FMyUsdStageEditorModule",
+      "FMyUsdStageEditorViewModelsModule",
+      "FMyUsdStageModule",
+      "FMyUsdStageNameColumn",
+      "FMyUsdStagePayloadColumn",
+      "FMyUsdStagePrimTypeColumn",
+      "FMyUsdStageVisibilityColumn",
+      "FMyUsdStreamDDCUtils",
+      "FMyUsdTestsModule",
+      "FMyUsdTransactorImpl",
+      "FRenderDataWrapper",
+      "FSkelRootCreateAssetsTaskChain",
+      "FSkelSkeletonCreateAssetsTaskChain",
+      "FStageNameOutlinerColumn",
+      "FUsdGeomXformableTranslator",
+      "FUsdGeometryCacheTranslator",
+      "FUsdSchemasModule",
+      "IMeshData",
+      "SLevelPickerList",
+      "SLevelPickerRow",
+      "SMyUsdObjectFieldRow",
+      "SMyUsdPrimLocatorEditorUI",
+      "SMyUsdSaveDialogRow",
+      "pxr"
+    ],
+    "python_list": [
+      "Animation",
+      "Camera",
+      "JsonReportRunner",
+      "Mobject",
+      "Scene",
+      "ScopedObjectEditTarget",
+      "TestBoundary",
+      "TestCamera",
+      "TestColorAnimation",
+      "TestEasing",
+      "TestFadeAnimation",
+      "TestFullPipeline",
+      "TestGroupAnimation",
+      "TestLight",
+      "TestMobject",
+      "TestMoveAnimation",
+      "TestPythonWrapper",
+      "TestRenderer",
+      "TestRotateAnimation",
+      "TestScaleAnimation",
+      "TestScene",
+      "TestWaitAnimation",
+      "UEMotionTestCase",
+      "UsdConversionContext",
+      "UsdExportContext",
+      "UsdScopedAnalyticsBlocker",
+      "UsdUniquePathScope"
+    ]
+  },
+  "todos": [
+    {
+      "type": "NOTE",
+      "content": "We use FLT_MAX on these functions because Usd.TimeCode.Default().GetValue() is actually a nan, and nan arguments are automatically\\n// sanitized to 0.0f. We manually convert the FLT_MAX value into Usd.TimeCode.Default().GetValue() within the functions though, so if you want the\\n// Default timecode just omit the argument We are also forced to copypaste the FLT_MAX value (3.402823466e+38F) in here as the default arguments\\n// are parsed before the preprocessor replaces the defines\\n\" },",
+      "file": "legacy\\MyUSDImporter\\Intermediate\\Build\\Win64\\UnrealEditor\\Inc\\MyUSDExporter\\UHT\\MyUSDConversionBlueprintContext.gen.cpp",
+      "line": 865
+    },
+    {
+      "type": "NOTE",
+      "content": "We use FLT_MAX on these functions because Usd.TimeCode.Default().GetValue() is actually a nan, and nan arguments are automatically\\nsanitized to 0.0f. We manually convert the FLT_MAX value into Usd.TimeCode.Default().GetValue() within the functions though, so if you want the\\nDefault timecode just omit the argument We are also forced to copypaste the FLT_MAX value (3.402823466e+38F) in here as the default arguments\\nare parsed before the preprocessor replaces the defines\" },",
+      "file": "legacy\\MyUSDImporter\\Intermediate\\Build\\Win64\\UnrealEditor\\Inc\\MyUSDExporter\\UHT\\MyUSDConversionBlueprintContext.gen.cpp",
+      "line": 870
+    },
+    {
+      "type": "NOTE",
+      "content": "You must remember to call Cleanup() when done, or else this object will permanently hold a reference to the opened stage!\\n\\x09 */\" },",
+      "file": "legacy\\MyUSDImporter\\Intermediate\\Build\\Win64\\UnrealEditor\\Inc\\MyUSDExporter\\UHT\\MyUSDConversionBlueprintContext.gen.cpp",
+      "line": 2320
+    },
+    {
+      "type": "NOTE",
+      "content": "You must remember to call Cleanup() when done, or else this object will permanently hold a reference to the opened stage!\" },",
+      "file": "legacy\\MyUSDImporter\\Intermediate\\Build\\Win64\\UnrealEditor\\Inc\\MyUSDExporter\\UHT\\MyUSDConversionBlueprintContext.gen.cpp",
+      "line": 2324
+    },
+    {
+      "type": "NOTE",
+      "content": "If this is set to ShowDialog, the call may create an Editor transaction.\\n\\x09 */\" },",
+      "file": "legacy\\MyUSDImporter\\Intermediate\\Build\\Win64\\UnrealEditor\\Inc\\MyUSDExporter\\UHT\\MyUSDConversionBlueprintLibrary.gen.cpp",
+      "line": 66
+    },
+    {
+      "type": "NOTE",
+      "content": "If this is set to ShowDialog, the call may create an Editor transaction.\" },",
+      "file": "legacy\\MyUSDImporter\\Intermediate\\Build\\Win64\\UnrealEditor\\Inc\\MyUSDExporter\\UHT\\MyUSDConversionBlueprintLibrary.gen.cpp",
+      "line": 75
+    },
+    {
+      "type": "NOTE",
+      "content": "If this is set to ShowDialog, the call may create an Editor transaction.\\n\\x09 */\" },",
+      "file": "legacy\\MyUSDImporter\\Intermediate\\Build\\Win64\\UnrealEditor\\Inc\\MyUSDExporter\\UHT\\MyUSDConversionBlueprintLibrary.gen.cpp",
+      "line": 184
+    },
+    {
+      "type": "NOTE",
+      "content": "If this is set to ShowDialog, the call may create an Editor transaction.\" },",
+      "file": "legacy\\MyUSDImporter\\Intermediate\\Build\\Win64\\UnrealEditor\\Inc\\MyUSDExporter\\UHT\\MyUSDConversionBlueprintLibrary.gen.cpp",
+      "line": 193
+    },
+    {
+      "type": "NOTE",
+      "content": "We use FLT_MAX on these functions because Usd.TimeCode.Default().GetValue() is actually a nan, and nan arguments are automatically\\n// sanitized to 0.0f. We manually convert the FLT_MAX value into Usd.TimeCode.Default().GetValue() within the functions though, so if you want the\\n// Default timecode just omit the argument We are also forced to copypaste the FLT_MAX value (3.402823466e+38F) in here as the default arguments\\n// are parsed before the preprocessor replaces the defines\\n\" },",
+      "file": "legacy\\MyUSDImporter\\Intermediate\\Build\\Win64\\UnrealEditor\\Inc\\USDExporter\\UHT\\USDConversionBlueprintContext.gen.cpp",
+      "line": 865
+    },
+    {
+      "type": "NOTE",
+      "content": "We use FLT_MAX on these functions because Usd.TimeCode.Default().GetValue() is actually a nan, and nan arguments are automatically\\nsanitized to 0.0f. We manually convert the FLT_MAX value into Usd.TimeCode.Default().GetValue() within the functions though, so if you want the\\nDefault timecode just omit the argument We are also forced to copypaste the FLT_MAX value (3.402823466e+38F) in here as the default arguments\\nare parsed before the preprocessor replaces the defines\" },",
+      "file": "legacy\\MyUSDImporter\\Intermediate\\Build\\Win64\\UnrealEditor\\Inc\\USDExporter\\UHT\\USDConversionBlueprintContext.gen.cpp",
+      "line": 870
+    },
+    {
+      "type": "NOTE",
+      "content": "You must remember to call Cleanup() when done, or else this object will permanently hold a reference to the opened stage!\\n\\x09 */\" },",
+      "file": "legacy\\MyUSDImporter\\Intermediate\\Build\\Win64\\UnrealEditor\\Inc\\USDExporter\\UHT\\USDConversionBlueprintContext.gen.cpp",
+      "line": 2320
+    },
+    {
+      "type": "NOTE",
+      "content": "You must remember to call Cleanup() when done, or else this object will permanently hold a reference to the opened stage!\" },",
+      "file": "legacy\\MyUSDImporter\\Intermediate\\Build\\Win64\\UnrealEditor\\Inc\\USDExporter\\UHT\\USDConversionBlueprintContext.gen.cpp",
+      "line": 2324
+    },
+    {
+      "type": "NOTE",
+      "content": "If this is set to ShowDialog, the call may create an Editor transaction.\\n\\x09 */\" },",
+      "file": "legacy\\MyUSDImporter\\Intermediate\\Build\\Win64\\UnrealEditor\\Inc\\USDExporter\\UHT\\USDConversionBlueprintLibrary.gen.cpp",
+      "line": 66
+    },
+    {
+      "type": "NOTE",
+      "content": "If this is set to ShowDialog, the call may create an Editor transaction.\" },",
+      "file": "legacy\\MyUSDImporter\\Intermediate\\Build\\Win64\\UnrealEditor\\Inc\\USDExporter\\UHT\\USDConversionBlueprintLibrary.gen.cpp",
+      "line": 75
+    },
+    {
+      "type": "NOTE",
+      "content": "If this is set to ShowDialog, the call may create an Editor transaction.\\n\\x09 */\" },",
+      "file": "legacy\\MyUSDImporter\\Intermediate\\Build\\Win64\\UnrealEditor\\Inc\\USDExporter\\UHT\\USDConversionBlueprintLibrary.gen.cpp",
+      "line": 184
+    },
+    {
+      "type": "NOTE",
+      "content": "If this is set to ShowDialog, the call may create an Editor transaction.\" },",
+      "file": "legacy\\MyUSDImporter\\Intermediate\\Build\\Win64\\UnrealEditor\\Inc\\USDExporter\\UHT\\USDConversionBlueprintLibrary.gen.cpp",
+      "line": 193
+    },
+    {
+      "type": "TODO",
+      "content": "I think this will likely be fine for most cases, but I could see it potentially being problematic in all cases to destroy",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDExporter\\Private\\LevelSequenceExporterUSD.cpp",
+      "line": 378
+    },
+    {
+      "type": "NOTE",
+      "content": "Now all sequencer bindings are possessables, even the old spawnables. This is why we loop",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDExporter\\Private\\LevelSequenceExporterUSD.cpp",
+      "line": 872
+    },
+    {
+      "type": "TODO",
+      "content": "Make the cache rebuild collect this info. Right now is not a good time for this as that would",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDSchemas\\Private\\MeshTranslationImpl.cpp",
+      "line": 798
+    },
+    {
+      "type": "NOTE",
+      "content": "This only works because we'll rebuild the cache when our material purpose/render context changes,",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDSchemas\\Private\\MeshTranslationImpl.cpp",
+      "line": 852
+    },
+    {
+      "type": "TODO",
+      "content": "We're overwriting some data even if we reuse the asset from the asset cache,",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDSchemas\\Private\\MyUSDGeometryCacheTranslator.cpp",
+      "line": 874
+    },
+    {
+      "type": "TODO",
+      "content": "Handle resetXformOp here",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDSchemas\\Private\\MyUSDGeomMeshTranslator.cpp",
+      "line": 391
+    },
+    {
+      "type": "TODO",
+      "content": "Handle resetXformOp here",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDSchemas\\Private\\MyUSDGeomMeshTranslator.cpp",
+      "line": 498
+    },
+    {
+      "type": "NOTE",
+      "content": "This may get rid of the entire mesh if it is all invalid",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDSchemas\\Private\\MyUSDGeomMeshTranslator.cpp",
+      "line": 675
+    },
+    {
+      "type": "NOTE",
+      "content": "UpdateElemBox also computes the convex hull indices",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDSchemas\\Private\\MyUSDGeomMeshTranslator.cpp",
+      "line": 1017
+    },
+    {
+      "type": "NOTE",
+      "content": "UpdateElemBox also computes the convex hull indices",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDSchemas\\Private\\MyUSDGeomMeshTranslator.cpp",
+      "line": 1306
+    },
+    {
+      "type": "TODO",
+      "content": "Handle the resetXformStack op for LOD parents",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDSchemas\\Private\\MyUSDGeomPointInstancerTranslator.cpp",
+      "line": 250
+    },
+    {
+      "type": "NOTE",
+      "content": "This branch is currently disabled as it seems no longer possible to setup these SoundWave assets",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDSchemas\\Private\\MyUSDMediaSpatialAudioTranslator.cpp",
+      "line": 60
+    },
+    {
+      "type": "NOTE",
+      "content": "This currently doesn't work for some reason: We end up with some crash downstream when",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDSchemas\\Private\\MyUSDMediaSpatialAudioTranslator.cpp",
+      "line": 155
+    },
+    {
+      "type": "TODO",
+      "content": "replace the linear searches here with table lookups of some kind",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDSchemas\\Private\\MyUSDNaniteAssemblyTranslator.cpp",
+      "line": 353
+    },
+    {
+      "type": "TODO",
+      "content": "We should probably add more control to the import options than just a bool (i.e. merge by index,",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDSchemas\\Private\\MyUSDNaniteAssemblyTranslator.cpp",
+      "line": 608
+    },
+    {
+      "type": "NOTE",
+      "content": "empty binding is expected for static meshes.",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDSchemas\\Private\\MyUSDNaniteAssemblyTranslator.cpp",
+      "line": 759
+    },
+    {
+      "type": "TODO",
+      "content": "Nanite-Assemblies-USD: Support importing assemblies with references to assemblies.",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDSchemas\\Private\\MyUSDNaniteAssemblyTranslator.cpp",
+      "line": 792
+    },
+    {
+      "type": "TODO",
+      "content": "Metadata? Material slot prims?",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDSchemas\\Private\\MyUSDNaniteAssemblyTranslator.cpp",
+      "line": 982
+    },
+    {
+      "type": "TODO",
+      "content": "Nanite-Assemblies-USD: This isn't going to do the right thing for assemblies. Needs to be done",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDSchemas\\Private\\MyUSDNaniteAssemblyTranslator.cpp",
+      "line": 987
+    },
+    {
+      "type": "HACK",
+      "content": "create a copy of the \"base skeletal mesh\" asset that was already created",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDSchemas\\Private\\MyUSDNaniteAssemblyTranslator.cpp",
+      "line": 1031
+    },
+    {
+      "type": "TODO",
+      "content": "we should be creating the child assets internally instead of relying on this translator running as a",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDSchemas\\Private\\MyUSDNaniteAssemblyTranslator.cpp",
+      "line": 1032
+    },
+    {
+      "type": "TODO",
+      "content": "Metadata? Material slot prims?",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDSchemas\\Private\\MyUSDNaniteAssemblyTranslator.cpp",
+      "line": 1056
+    },
+    {
+      "type": "TODO",
+      "content": "Stop relying on the prim link cache and initiate mesh asset creation by ourselves",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDSchemas\\Private\\MyUSDNaniteAssemblyTranslator.cpp",
+      "line": 1072
+    },
+    {
+      "type": "HACK",
+      "content": "This is a temporary work-around for a GIL deadlock. See UE-156489 and UE-156370 for more details, but",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDSchemas\\Private\\MyUSDSkelRootTranslator.cpp",
+      "line": 1827
+    },
+    {
+      "type": "TODO",
+      "content": "Does this even make any sense? To be a \"skinned prim\" it *must* have the SkelBindingAPI, no?",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDSchemas\\Private\\MyUSDSkelSkeletonTranslator.cpp",
+      "line": 511
+    },
+    {
+      "type": "TODO",
+      "content": "Find better way of handling LODs that doesn't require this mechanism.",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDSchemas\\Private\\MyUSDSkelSkeletonTranslator.cpp",
+      "line": 1379
+    },
+    {
+      "type": "HACK",
+      "content": "This is a temporary work-around for a GIL deadlock. See UE-156489 and UE-156370 for more details, but",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDSchemas\\Private\\MyUSDSkelSkeletonTranslator.cpp",
+      "line": 2133
+    },
+    {
+      "type": "NOTE",
+      "content": "This could become a performance issue if we have many large frames",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDSchemas\\Private\\MyUSDVolVolumeTranslator.cpp",
+      "line": 298
+    },
+    {
+      "type": "NOTE",
+      "content": "Some code in FNiagaraBakerRenderer::RenderSparseVolumeTexture suggests that this workflow wouldn't really work",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDSchemas\\Private\\MyUSDVolVolumeTranslator.cpp",
+      "line": 874
+    },
+    {
+      "type": "TODO",
+      "content": "Instead of layer identifier, use a struct with layer identifier + referencer prim path",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDStage\\Private\\MyUSDLevelSequenceHelper.cpp",
+      "line": 784
+    },
+    {
+      "type": "TODO",
+      "content": "This will need to change if we support multiple subsections for the same sequence",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDStage\\Private\\MyUSDLevelSequenceHelper.cpp",
+      "line": 868
+    },
+    {
+      "type": "TODO",
+      "content": "This was mostly used by a legacy way of guessing reference/payload offsets, and could maybe be removed?",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDStage\\Private\\MyUSDLevelSequenceHelper.cpp",
+      "line": 925
+    },
+    {
+      "type": "TODO",
+      "content": "Support multiple subsections of the same LevelSequence, which can happen e.g. when we have two referencer",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDStage\\Private\\MyUSDLevelSequenceHelper.cpp",
+      "line": 1552
+    },
+    {
+      "type": "TODO",
+      "content": "Use asset resolver here to fetch a real filesystem path. For now we're assuming ReferenceTarget already is one",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDStage\\Private\\MyUSDLevelSequenceHelper.cpp",
+      "line": 1641
+    },
+    {
+      "type": "TODO",
+      "content": "This will likely fail in edge cases where a layer is both a sublayer and a reference (or a reference and a payload, etc.)",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDStage\\Private\\MyUSDLevelSequenceHelper.cpp",
+      "line": 1968
+    },
+    {
+      "type": "TODO",
+      "content": "Improve this, as this is extremely inefficient since we'll be parsing this tree for the root down and repeatedly",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDStage\\Private\\MyUSDLevelSequenceHelper.cpp",
+      "line": 2373
+    },
+    {
+      "type": "TODO",
+      "content": "These may not be connected to the LevelSequence hierarchy in edge cases",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDStage\\Private\\MyUSDLevelSequenceHelper.cpp",
+      "line": 2531
+    },
+    {
+      "type": "NOTE",
+      "content": "We pull the audio directly from the info cache here, and not the component:",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDStage\\Private\\MyUSDLevelSequenceHelper.cpp",
+      "line": 3272
+    },
+    {
+      "type": "TODO",
+      "content": "Handle updates to subsections created due to references and payloads. We'd need the referencer prim path at this",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDStage\\Private\\MyUSDLevelSequenceHelper.cpp",
+      "line": 4114
+    },
+    {
+      "type": "TODO",
+      "content": "Handle updates to subsections created due to references and payloads. We'd need the referencer prim path at this",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDStage\\Private\\MyUSDLevelSequenceHelper.cpp",
+      "line": 4121
+    },
+    {
+      "type": "NOTE",
+      "content": "After this point, do not select or interact with the sequencer in any way, just observe it",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDStage\\Private\\MyUSDLevelSequenceHelper.cpp",
+      "line": 4194
+    },
+    {
+      "type": "TODO",
+      "content": "Change this to also use the LayersDidChange notice instead (see comments on UE-222371).",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDStage\\Private\\MyUSDLevelSequenceHelper.cpp",
+      "line": 4338
+    },
+    {
+      "type": "TODO",
+      "content": "Better support having multiple bindings for the same same on different sequences.",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDStage\\Private\\MyUSDLevelSequenceHelper.cpp",
+      "line": 4424
+    },
+    {
+      "type": "NOTE",
+      "content": "I'm not exactly sure what is supposed to be dragged and dropped here, as any drag operation seems to",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDStage\\Private\\MyUSDLocatorEditors.cpp",
+      "line": 101
+    },
+    {
+      "type": "NOTE",
+      "content": "Cannot have space after semicolon or else the parsing breaks on the Mac...",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDStage\\Private\\MyUSDStageActor.cpp",
+      "line": 998
+    },
+    {
+      "type": "TODO",
+      "content": "More nuanced info cache updates",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDStage\\Private\\MyUSDStageActor.cpp",
+      "line": 1471
+    },
+    {
+      "type": "TODO",
+      "content": "Better way of handling material override updates. Ideally we wouldn't be resyncing",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDStage\\Private\\MyUSDStageActor.cpp",
+      "line": 1518
+    },
+    {
+      "type": "NOTE",
+      "content": "UE::FSdfPath::GetPrefixes() does not return the pseudoroot path \"/\"!",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDStage\\Private\\MyUSDStageActor.cpp",
+      "line": 1621
+    },
+    {
+      "type": "NOTE",
+      "content": "We don't *reset* prims to update, because whatever assets/components we cleaned up we may also need to",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDStage\\Private\\MyUSDStageActor.cpp",
+      "line": 1785
+    },
+    {
+      "type": "NOTE",
+      "content": "CDO is an instance of a BlueprintGeneratedClass here and this is just a base class pointer. We're not changing the actual",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDStage\\Private\\MyUSDStageActor.cpp",
+      "line": 3354
+    },
+    {
+      "type": "TODO",
+      "content": "This check is broken... we care whether the stage actor has had a pending kill change,",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDStage\\Private\\MyUSDStageActor.cpp",
+      "line": 3718
+    },
+    {
+      "type": "NOTE",
+      "content": "We don't unload/load here, as that would wipe the spawned actors and components that were",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDStage\\Private\\MyUSDStageActor.cpp",
+      "line": 3768
+    },
+    {
+      "type": "TODO",
+      "content": "Allow writing out visibility without needing a prim twin",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDStage\\Private\\MyUSDStageActor.cpp",
+      "line": 4583
+    },
+    {
+      "type": "NOTE",
+      "content": "We could make it so that we fully stop tracking the asset if we're not going to delete it,",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDStage\\Private\\MyUSDStageActor.cpp",
+      "line": 5027
+    },
+    {
+      "type": "NOTE",
+      "content": "We never get this flag set to true when dealing with metadata, only properties (attributes and relationships)",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDStage\\Private\\MyUSDTransactor.cpp",
+      "line": 541
+    },
+    {
+      "type": "NOTE",
+      "content": "This is also a temp fix that prevents an ensure: When we're switching to a new stage,",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDStageEditor\\Private\\SMyUSDStage.cpp",
+      "line": 2979
+    },
+    {
+      "type": "NOTE",
+      "content": "We don't remove the old paths in here, as that lets us undo the rename and",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDStageEditor\\Private\\SMyUSDStageTreeView.cpp",
+      "line": 2063
+    },
+    {
+      "type": "NOTE",
+      "content": "Originally this was a proper check to see if UsdLayer was inside IsolatedStage's layer stack. However, this",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDStageEditorViewModels\\Private\\MyUSDLayersViewModel.cpp",
+      "line": 162
+    },
+    {
+      "type": "TODO",
+      "content": "Remove empty bindings too?",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDStageImporter\\Private\\MyUSDStageImporter.cpp",
+      "line": 870
+    },
+    {
+      "type": "TODO",
+      "content": "Maybe change this whole reimporting approach to just taking advantage of a population mask instead?",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDStageImporter\\Private\\MyUSDStageImporter.cpp",
+      "line": 2092
+    },
+    {
+      "type": "NOTE",
+      "content": "You must remember to call Cleanup() when done, or else this object will permanently hold a reference to the opened stage!",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDExporter\\Public\\MyUSDConversionBlueprintContext.h",
+      "line": 72
+    },
+    {
+      "type": "NOTE",
+      "content": "We use FLT_MAX on these functions because Usd.TimeCode.Default().GetValue() is actually a nan, and nan arguments are automatically",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDExporter\\Public\\MyUSDConversionBlueprintContext.h",
+      "line": 104
+    },
+    {
+      "type": "NOTE",
+      "content": "If this is set to ShowDialog, the call may create an Editor transaction.",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDExporter\\Public\\MyUSDConversionBlueprintLibrary.h",
+      "line": 109
+    },
+    {
+      "type": "NOTE",
+      "content": "If this is set to ShowDialog, the call may create an Editor transaction.",
+      "file": "legacy\\MyUSDImporter\\Source\\MyUSDExporter\\Public\\MyUSDConversionBlueprintLibrary.h",
+      "line": 136
+    },
+    {
+      "type": "NOTE",
+      "content": "treatAsPoint should not have the 'inputs:' prefix so we ignore it",
+      "file": "legacy\\MyUSDImporter\\Content\\Python\\usd_unreal\\update_lights_to_21_05.py",
+      "line": 94
+    }
+  ],
+  "test_results": {
+    "timestamp": "2026-05-07T21:25:13",
+    "total": 115,
+    "passed": 100,
+    "failed": 0,
+    "skipped": 15,
+    "duration_s": 8.04,
+    "tests": [
+      {
+        "name": "test_all_shapes (test_14_python_wrapper.TestPythonWrapper.test_all_shapes)",
+        "status": "skip",
+        "error": "uemotion Python wrapper module not available (Phase 4)"
+      },
+      {
+        "name": "test_camera (test_14_python_wrapper.TestPythonWrapper.test_camera)",
+        "status": "skip",
+        "error": "uemotion Python wrapper module not available (Phase 4)"
+      },
+      {
+        "name": "test_chain (test_14_python_wrapper.TestPythonWrapper.test_chain)",
+        "status": "skip",
+        "error": "uemotion Python wrapper module not available (Phase 4)"
+      },
+      {
+        "name": "test_change_color (test_14_python_wrapper.TestPythonWrapper.test_change_color)",
+        "status": "skip",
+        "error": "uemotion Python wrapper module not available (Phase 4)"
+      },
+      {
+        "name": "test_color_resolution (test_14_python_wrapper.TestPythonWrapper.test_color_resolution)",
+        "status": "skip",
+        "error": "uemotion Python wrapper module not available (Phase 4)"
+      },
+      {
+        "name": "test_cube (test_14_python_wrapper.TestPythonWrapper.test_cube)",
+        "status": "skip",
+        "error": "uemotion Python wrapper module not available (Phase 4)"
+      },
+      {
+        "name": "test_fade_in (test_14_python_wrapper.TestPythonWrapper.test_fade_in)",
+        "status": "skip",
+        "error": "uemotion Python wrapper module not available (Phase 4)"
+      },
+      {
+        "name": "test_fade_out (test_14_python_wrapper.TestPythonWrapper.test_fade_out)",
+        "status": "skip",
+        "error": "uemotion Python wrapper module not available (Phase 4)"
+      },
+      {
+        "name": "test_move_to (test_14_python_wrapper.TestPythonWrapper.test_move_to)",
+        "status": "skip",
+        "error": "uemotion Python wrapper module not available (Phase 4)"
+      },
+      {
+        "name": "test_rotate (test_14_python_wrapper.TestPythonWrapper.test_rotate)",
+        "status": "skip",
+        "error": "uemotion Python wrapper module not available (Phase 4)"
+      },
+      {
+        "name": "test_scale_to (test_14_python_wrapper.TestPythonWrapper.test_scale_to)",
+        "status": "skip",
+        "error": "uemotion Python wrapper module not available (Phase 4)"
+      },
+      {
+        "name": "test_scene_create (test_14_python_wrapper.TestPythonWrapper.test_scene_create)",
+        "status": "skip",
+        "error": "uemotion Python wrapper module not available (Phase 4)"
+      },
+      {
+        "name": "test_sphere (test_14_python_wrapper.TestPythonWrapper.test_sphere)",
+        "status": "skip",
+        "error": "uemotion Python wrapper module not available (Phase 4)"
+      },
+      {
+        "name": "test_vec (test_14_python_wrapper.TestPythonWrapper.test_vec)",
+        "status": "skip",
+        "error": "uemotion Python wrapper module not available (Phase 4)"
+      },
+      {
+        "name": "test_wait (test_14_python_wrapper.TestPythonWrapper.test_wait)",
+        "status": "skip",
+        "error": "uemotion Python wrapper module not available (Phase 4)"
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      },
+      {
+        "name": "",
+        "status": "pass",
+        "error": ""
+      }
+    ]
+  }
+}

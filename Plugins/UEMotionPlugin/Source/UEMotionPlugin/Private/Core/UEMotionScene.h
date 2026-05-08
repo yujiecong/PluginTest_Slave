@@ -11,6 +11,7 @@ class UUEMotionCamera;
 class UUEMotionAnimation;
 class UUEMotionRenderer;
 class AUEMotionSceneActor;
+class ACineCameraActor;
 class ULevelSequence;
 class UMovieScene;
 class UMovieScene3DTransformTrack;
@@ -128,6 +129,9 @@ private:
 	AUEMotionSceneActor* SceneActor = nullptr;
 
 	UPROPERTY()
+	ACineCameraActor* CineCamera = nullptr;
+
+	UPROPERTY()
 	UUEMotionCamera* Camera = nullptr;
 
 	UPROPERTY()
@@ -144,7 +148,7 @@ private:
 	void SetupDefaultLighting();
 	void OpenLevelSequenceInEditor();
 
-	void AddActorToSequencer(AActor* Actor);
+	FGuid AddActorToSequencer(AActor* Actor);
 	UMovieScene3DTransformTrack* GetOrCreateTransformTrack(UUEMotionMobject* Mobject);
 	UMovieSceneFloatTrack* GetOrCreateFloatTrack(UUEMotionMobject* Mobject, const FString& PropertyName);
 	void RecordTransformKey(UMovieScene3DTransformTrack* Track, int32 Frame, const FVector& Location, const FRotator& Rotation, const FVector& Scale);

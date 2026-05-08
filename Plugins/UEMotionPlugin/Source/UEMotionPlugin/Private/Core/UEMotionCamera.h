@@ -4,8 +4,7 @@
 #include "UObject/NoExportTypes.h"
 #include "UEMotionCamera.generated.h"
 
-class AUEMotionSceneActor;
-class UCameraComponent;
+class ACineCameraActor;
 
 UCLASS(BlueprintType)
 class UUEMotionCamera : public UObject
@@ -13,7 +12,7 @@ class UUEMotionCamera : public UObject
 	GENERATED_BODY()
 
 public:
-	void Init(AUEMotionSceneActor* InSceneActor);
+	void Init(ACineCameraActor* InCameraActor);
 
 	UFUNCTION(BlueprintCallable, Category = "UEMotion|Camera")
 	void SetPosition(float X, float Y, float Z);
@@ -41,5 +40,5 @@ public:
 
 private:
 	UPROPERTY()
-	TWeakObjectPtr<AUEMotionSceneActor> SceneActor;
+	TWeakObjectPtr<ACineCameraActor> CameraActor;
 };
