@@ -39,6 +39,7 @@ FRAMES_DIR_NAME = f"{SCENE_NAME}_frames"
 
 test_results = []
 test_failures = []
+s = None
 
 
 def check(condition, description):
@@ -93,23 +94,23 @@ def shutdown_ue(exit_code=1):
     except Exception:
         pass
     try:
-        unreal.SystemLibrary.quit_editor(unreal.QuitPreference.QUIT)
+        unreal.SystemLibrary.quit_editor()
     except Exception:
         pass
 
 
-def main():
-    print_header("  UEMotion Full Pipeline Smoke Test")
+print_header("  UEMotion Full Pipeline Smoke Test")
 
-    print(f"  Scene        : {SCENE_NAME}")
-    print(f"  Resolution   : {RESOLUTION_W}x{RESOLUTION_H}")
-    print(f"  Animation    : {NUM_STEPS} steps x {MOVE_DURATION}s = {TOTAL_DURATION}s")
-    print(f"  FPS          : {FPS}")
-    print(f"  Expected     : {EXPECTED_FRAMES} frames")
-    print(f"  Path         : y=x from (0,0) to ({NUM_STEPS*STEP_SIZE},{NUM_STEPS*STEP_SIZE})")
-    print(f"  Camera       : top-down at Z={CAMERA_HEIGHT}")
-    print()
+print(f"  Scene        : {SCENE_NAME}")
+print(f"  Resolution   : {RESOLUTION_W}x{RESOLUTION_H}")
+print(f"  Animation    : {NUM_STEPS} steps x {MOVE_DURATION}s = {TOTAL_DURATION}s")
+print(f"  FPS          : {FPS}")
+print(f"  Expected     : {EXPECTED_FRAMES} frames")
+print(f"  Path         : y=x from (0,0) to ({NUM_STEPS*STEP_SIZE},{NUM_STEPS*STEP_SIZE})")
+print(f"  Camera       : top-down at Z={CAMERA_HEIGHT}")
+print()
 
+try:
     print("[1/4] Creating scene...")
     s = Scene(SCENE_NAME, RESOLUTION_W, RESOLUTION_H)
     check(s is not None, "Scene object created")
@@ -204,11 +205,8 @@ def main():
     s._ue.render_frames(frames_dir, TOTAL_DURATION, FPS)
 
     print(f"  Rendering to: {frames_dir}")
-    print(f"  Waiting for MoviePipeline callback ({EXPECTED_FRAMES} frames expected)...")
+    print(f"  Waiting for MoviePipeline to finish ({EXPECTED_FRAMES} frames expected)...")
 
-
-try:
-    main()
 except Exception as e:
     print()
     print("=" * 64)
