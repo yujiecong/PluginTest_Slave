@@ -886,6 +886,27 @@ void UUEMotionScene::CleanupAssets()
 	}
 }
 
+void UUEMotionScene::UpdateCameraKey()
+{
+	if (!LevelSequence || !SceneActor || !bInitialized) return;
+
+	UMovieScene* MovieScene = LevelSequence->GetMovieScene();
+	if (!MovieScene) return;
+
+	FGuid CameraBinding = UEMotionCompat::FindObjectBinding(MovieScene, SceneActor);
+	if (!CameraBinding.IsValid()) return;
+
+	UMovieScene3DTransformTrack* CamTrack = UEMotionCompat::FindTransformTrack(MovieScene, CameraBinding);
+	if (!CamTrack) return;
+
+	int32 CurrentFrame = FMath::RoundToInt(CurrentTime * PlaybackFPS);
+	FVector CamLoc = SceneActor->GetActorLocation();
+	FRotator CamRot = SceneActor->GetActorRotation();
+	FVector CamScale = SceneActor->GetActorScale();
+
+	RecordTransformKey(CamTrack, CurrentFrame, CamLoc, CamRot, CamScale);
+}
+
 void UUEMotionScene::SetAutoCleanup(bool bCleanup)
 {
 	bAutoCleanup = bCleanup;

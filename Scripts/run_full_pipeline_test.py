@@ -7,77 +7,189 @@ sys.path.insert(0, SCRIPTS_DIR)
 
 from uemotion import Scene
 
+
 PROJECT_DIR = os.path.abspath(os.path.join(SCRIPTS_DIR, '..'))
 OUTPUT_BASE = os.path.join(PROJECT_DIR, "Saved", "UEMotionTest", "full_pipeline").replace("\\", "/")
 
+SCENE_NAME = "y_equals_x"
+RESOLUTION_W = 1920
+RESOLUTION_H = 1080
+
 NUM_STEPS = 5
 STEP_SIZE = 10
-INITIAL_Z = 50.0
+INITIAL_Z = 0.0
 FPS = 30
 MOVE_DURATION = 1.0
+CUBE_SIZE = 30
+CUBE_COLOR = "cyan"
 
-print("=" * 64)
-print("  UEMotion Full Pipeline Test")
-print(f"  Cube moves along y=x, step={STEP_SIZE} units, {NUM_STEPS} steps")
-print("=" * 64)
+CENTER_X = NUM_STEPS * STEP_SIZE / 2.0
+CENTER_Y = CENTER_X
+CAMERA_HEIGHT = 800.0
+LIGHT_INTENSITY = 3.0
+POINT_LIGHT_HEIGHT = 500.0
+POINT_LIGHT_INTENSITY = 2000.0
+
+TOTAL_DURATION = NUM_STEPS * MOVE_DURATION
+EXPECTED_FRAMES = int(TOTAL_DURATION * FPS) + 1
+EXPECTED_MIN_FILE_SIZE = 1_000_000
+EXPECTED_MAX_FILE_SIZE = 3_000_000
+FRAMES_DIR_NAME = f"{SCENE_NAME}_frames"
+
+test_results = []
+test_failures = []
+
+
+def check(condition, description):
+    status = "PASS" if condition else "FAIL"
+    test_results.append((status, description))
+    if not condition:
+        test_failures.append(description)
+    print(f"    [{status}] {description}")
+
+
+def print_header(title):
+    print()
+    print("=" * 64)
+    print(f"  {title}")
+    print("=" * 64)
+
+
+def print_summary():
+    passed = sum(1 for s, _ in test_results if s == "PASS")
+    failed = sum(1 for s, _ in test_results if s == "FAIL")
+    total = len(test_results)
+
+    print_header("  UEMotion Smoke Test - Final Report")
+
+    print(f"  Total Checks : {total}")
+    print(f"  Passed       : {passed}")
+    print(f"  Failed       : {failed}")
+    print()
+
+    if failed > 0:
+        print("  Failure Details:")
+        for i, desc in enumerate(test_failures, 1):
+            print(f"    {i}. {desc}")
+
+    print()
+
+    if failed == 0:
+        print(f"  >>> RESULT: ALL {total} CHECKS PASSED <<<")
+        print(f"  Output: {os.path.join(OUTPUT_BASE, FRAMES_DIR_NAME)}")
+        print("=" * 64)
+        return 0
+    else:
+        print(f"  >>> RESULT: {failed} CHECK(S) FAILED <<<")
+        print("=" * 64)
+        return 1
+
+
+print_header("  UEMotion Full Pipeline Smoke Test")
+
+print(f"  Scene        : {SCENE_NAME}")
+print(f"  Resolution   : {RESOLUTION_W}x{RESOLUTION_H}")
+print(f"  Animation    : {NUM_STEPS} steps x {MOVE_DURATION}s = {TOTAL_DURATION}s")
+print(f"  FPS          : {FPS}")
+print(f"  Expected     : {EXPECTED_FRAMES} frames")
+print(f"  Path         : y=x from (0,0) to ({NUM_STEPS*STEP_SIZE},{NUM_STEPS*STEP_SIZE})")
+print(f"  Camera       : top-down at Z={CAMERA_HEIGHT}")
 print()
 
 print("[1/4] Creating scene...")
-s = Scene("y_equals_x", 1920, 1080)
-s.directional_light(direction=(0, -1, -1), color="white", intensity=10)
-s.point_light(location=(0, 0, 400), color="white", intensity=3000)
-s.camera.position = (-300, -500, 400)
-s.camera.look_at((NUM_STEPS * STEP_SIZE / 2.0, NUM_STEPS * STEP_SIZE / 2.0, INITIAL_Z))
+s = Scene(SCENE_NAME, RESOLUTION_W, RESOLUTION_H)
+check(s is not None, "Scene object created")
+check(s.name == SCENE_NAME, f"Scene name = '{SCENE_NAME}'")
+
+s.directional_light(direction=(0, 0, -1), color="white", intensity=LIGHT_INTENSITY)
+s.point_light(location=(CENTER_X, CENTER_Y, POINT_LIGHT_HEIGHT), color="white", intensity=POINT_LIGHT_INTENSITY)
+
+cam_pos = (CENTER_X, CENTER_Y, CAMERA_HEIGHT)
+cam_look = (CENTER_X, CENTER_Y, INITIAL_Z)
+s.camera.position = cam_pos
+s.camera.look_at(cam_look)
+check(abs(s.camera.position.z - CAMERA_HEIGHT) < 0.01, f"Camera Z = {CAMERA_HEIGHT} (top-down)")
 
 print("[2/4] Creating cube and animating along y=x...")
-box = s.cube(30, color="cyan", location=(0, 0, INITIAL_Z))
+box = s.cube(CUBE_SIZE, color=CUBE_COLOR, location=(0, 0, INITIAL_Z))
+check(box is not None, "Cube Mobject created")
 
 for i in range(1, NUM_STEPS + 1):
     target_x = i * STEP_SIZE
     target_y = i * STEP_SIZE
     box.move_to((target_x, target_y, INITIAL_Z), duration=MOVE_DURATION, easing="linear")
     s.play()
+    box.location = (target_x, target_y, INITIAL_Z)
 
-total_duration = NUM_STEPS * MOVE_DURATION
-print(f"  Animation recorded: {NUM_STEPS} steps, {total_duration}s total")
-print(f"  LevelSequence tracks written to Sequencer timeline")
+final_pos = box.location
+expected_final = (NUM_STEPS * STEP_SIZE, NUM_STEPS * STEP_SIZE, INITIAL_Z)
+check(
+    abs(final_pos.x - expected_final[0]) < 0.01
+    and abs(final_pos.y - expected_final[1]) < 0.01,
+    f"Cube final position = ({expected_final[0]}, {expected_final[1]}, {INITIAL_Z})"
+)
 
-print()
+print(f"  Animation: {NUM_STEPS} steps, {TOTAL_DURATION}s total, {EXPECTED_FRAMES} expected frames")
+
 print("[3/4] Rendering frames via MoviePipeline...")
 
-frames_dir = os.path.join(OUTPUT_BASE, "y_equals_x_frames").replace("\\", "/")
+frames_dir = os.path.join(OUTPUT_BASE, FRAMES_DIR_NAME).replace("\\", "/")
 os.makedirs(frames_dir, exist_ok=True)
+check(os.path.isdir(frames_dir), f"Output directory exists: {frames_dir}")
+
 
 def on_render_done(success):
     print()
-    print("[4/4] Checking output images...")
+    print("[4/4] Validating output images...")
+
+    check(success, "MoviePipeline render callback: success=True")
 
     img_count = 0
+    min_size = None
+    max_size = None
+    png_files = []
+
     if os.path.isdir(frames_dir):
         png_files = sorted([f for f in os.listdir(frames_dir) if f.lower().endswith('.png')])
         img_count = len(png_files)
-        for f in png_files[:10]:
+
+        for f in png_files[:5]:
             fpath = os.path.join(frames_dir, f)
             fsize = os.path.getsize(fpath)
-            print(f"  -> {f} ({fsize} bytes)")
-        if len(png_files) > 10:
-            print(f"  ... and {len(png_files) - 10} more")
+            if min_size is None or fsize < min_size:
+                min_size = fsize
+            if max_size is None or fsize > max_size:
+                max_size = fsize
+            print(f"    -> {f} ({fsize:,} bytes)")
+        if len(png_files) > 5:
+            print(f"    ... and {len(png_files) - 5} more files")
     else:
-        print(f"  [MISSING] Directory not found: {frames_dir}")
+        check(False, f"Output directory missing after render: {frames_dir}")
 
-    print()
-    print("=" * 64)
-    if success and img_count > 0:
-        print(f"  RESULT: PASSED - {img_count} image(s) generated!")
-        print(f"  Output: {frames_dir}")
-    else:
-        print(f"  RESULT: {'FAILED (render error)' if not success else 'NO IMAGES'}")
-    print("=" * 64)
+    check(img_count == EXPECTED_FRAMES,
+          f"Frame count = {img_count} (expected {EXPECTED_FRAMES})")
+
+    if img_count > 0 and min_size is not None:
+        size_ok = EXPECTED_MIN_FILE_SIZE <= min_size <= EXPECTED_MAX_FILE_SIZE
+        check(size_ok,
+              f"File sizes valid: min={min_size:,} max={max_size:,} bytes "
+              f"(range [{EXPECTED_MIN_FILE_SIZE:,}, {EXPECTED_MAX_FILE_SIZE:,}])")
+
+    if png_files:
+        first_name = png_files[0]
+        last_name = png_files[-1]
+        check(first_name.endswith(".png"), f"First file name format OK: {first_name}")
+        check(last_name.endswith(".png"), f"Last file name format OK: {last_name}")
+
+    exit_code = print_summary()
 
     s.set_auto_cleanup(False)
 
+    sys.exit(exit_code)
+
+
 s.on_render_finished(on_render_done)
-s._ue.render_frames(frames_dir, total_duration, FPS)
+s._ue.render_frames(frames_dir, TOTAL_DURATION, FPS)
 
 print(f"  Rendering to: {frames_dir}")
-print("  Waiting for MoviePipeline callback...")
+print(f"  Waiting for MoviePipeline callback ({EXPECTED_FRAMES} frames expected)...")

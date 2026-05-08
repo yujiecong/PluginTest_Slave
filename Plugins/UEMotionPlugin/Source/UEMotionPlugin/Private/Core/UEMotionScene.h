@@ -104,6 +104,9 @@ public:
 	void CleanupAssets();
 
 	UFUNCTION(BlueprintCallable, Category = "UEMotion")
+	void UpdateCameraKey();
+
+	UFUNCTION(BlueprintCallable, Category = "UEMotion")
 	void SetAutoCleanup(bool bCleanup);
 
 	UFUNCTION(BlueprintCallable, Category = "UEMotion")

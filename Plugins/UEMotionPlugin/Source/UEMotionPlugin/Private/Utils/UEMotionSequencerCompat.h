@@ -128,9 +128,9 @@ namespace UEMotionCompat
 		DoubleChannels[0]->SetDefault(Location.X);
 		DoubleChannels[1]->SetDefault(Location.Y);
 		DoubleChannels[2]->SetDefault(Location.Z);
-		DoubleChannels[3]->SetDefault(RotDegrees.Pitch);
-		DoubleChannels[4]->SetDefault(RotDegrees.Yaw);
-		DoubleChannels[5]->SetDefault(RotDegrees.Roll);
+		DoubleChannels[3]->SetDefault(RotDegrees.Roll);
+		DoubleChannels[4]->SetDefault(RotDegrees.Pitch);
+		DoubleChannels[5]->SetDefault(RotDegrees.Yaw);
 		DoubleChannels[6]->SetDefault(Scale.X);
 		DoubleChannels[7]->SetDefault(Scale.Y);
 		DoubleChannels[8]->SetDefault(Scale.Z);
@@ -138,9 +138,9 @@ namespace UEMotionCompat
 		AddKeyToChannel(DoubleChannels[0], TickFrame, Location.X, EMovieSceneKeyInterpolation::Linear);
 		AddKeyToChannel(DoubleChannels[1], TickFrame, Location.Y, EMovieSceneKeyInterpolation::Linear);
 		AddKeyToChannel(DoubleChannels[2], TickFrame, Location.Z, EMovieSceneKeyInterpolation::Linear);
-		AddKeyToChannel(DoubleChannels[3], TickFrame, (double)RotDegrees.Pitch, EMovieSceneKeyInterpolation::Linear);
-		AddKeyToChannel(DoubleChannels[4], TickFrame, (double)RotDegrees.Yaw, EMovieSceneKeyInterpolation::Linear);
-		AddKeyToChannel(DoubleChannels[5], TickFrame, (double)RotDegrees.Roll, EMovieSceneKeyInterpolation::Linear);
+		AddKeyToChannel(DoubleChannels[3], TickFrame, (double)RotDegrees.Roll, EMovieSceneKeyInterpolation::Linear);
+		AddKeyToChannel(DoubleChannels[4], TickFrame, (double)RotDegrees.Pitch, EMovieSceneKeyInterpolation::Linear);
+		AddKeyToChannel(DoubleChannels[5], TickFrame, (double)RotDegrees.Yaw, EMovieSceneKeyInterpolation::Linear);
 		AddKeyToChannel(DoubleChannels[6], TickFrame, Scale.X, EMovieSceneKeyInterpolation::Linear);
 		AddKeyToChannel(DoubleChannels[7], TickFrame, Scale.Y, EMovieSceneKeyInterpolation::Linear);
 		AddKeyToChannel(DoubleChannels[8], TickFrame, Scale.Z, EMovieSceneKeyInterpolation::Linear);

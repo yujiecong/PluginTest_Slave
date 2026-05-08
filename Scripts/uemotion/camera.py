@@ -17,6 +17,7 @@ class Camera:
             self._ue.set_position(value[0], value[1], value[2])
         else:
             self._ue.set_position(value.x, value.y, value.z)
+        self._scene._ue.update_camera_key()
 
     @property
     def fov(self):
@@ -28,9 +29,11 @@ class Camera:
 
     def look_at(self, target):
         self._ue.look_at(vec(*target) if isinstance(target, (list, tuple)) else target)
+        self._scene._ue.update_camera_key()
 
     def orbit(self, center, radius, angle_deg, height=0):
         self._ue.orbit_around(
             vec(*center) if isinstance(center, (list, tuple)) else center,
             radius, angle_deg, height
         )
+        self._scene._ue.update_camera_key()
