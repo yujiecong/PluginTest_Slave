@@ -15,6 +15,7 @@ from .constants import (
     DEFAULT_CAMERA_Z, SCALE_FACTOR,
     ue_to_motion, motion_to_ue,
 )
+from .asset_library import AssetLibrary, AssetConfig, get_asset_library
 
 __all__ = [
     'Scene', 'Mobject', 'Camera', 'Animation',
@@ -29,4 +30,5 @@ __all__ = [
     'DEFAULT_PIXEL_WIDTH', 'DEFAULT_PIXEL_HEIGHT', 'DEFAULT_FPS',
     'DEFAULT_CAMERA_Z', 'SCALE_FACTOR',
     'ue_to_motion', 'motion_to_ue',
+    'AssetLibrary', 'AssetConfig', 'get_asset_library',
 ]

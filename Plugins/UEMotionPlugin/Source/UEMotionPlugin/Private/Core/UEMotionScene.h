@@ -10,6 +10,7 @@ class UUEMotionMobject;
 class UUEMotionCamera;
 class UUEMotionAnimation;
 class UUEMotionRenderer;
+class UUEMotionAssetFactory;
 class AUEMotionSceneActor;
 class ULevelSequence;
 class UMovieScene;
@@ -57,6 +58,34 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "UEMotion")
 	UUEMotionMobject* CreateTorus(float OuterRadius = 80.0f, float InnerRadius = 25.0f);
+
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Mobject")
+	UUEMotionMobject* CreateMobjectFromAsset(
+		const FString& BlueprintPath,
+		const FString& MeshType = TEXT("cube"),
+		float Size = 50.0f,
+		const FLinearColor& Color = FLinearColor::White,
+		float Metallic = 0.0f,
+		float Roughness = 0.5f,
+		float Opacity = 1.0f,
+		const FString& CustomMeshPath = TEXT("")
+	);
+
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Mobject")
+	UUEMotionMobject* CreateMobjectFromConfig(const FMotionAssetConfig& Config);
+
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Asset")
+	UUEMotionAssetFactory* GetAssetFactory();
+
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Asset")
+	FString CreateAndSaveBlueprintAsset(
+		const FMotionAssetConfig& Config,
+		const FString& AssetName,
+		const FString& OutPackagePath = TEXT("/Game/UEMotion/Assets/Blueprints")
+	);
+
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Asset")
+	static bool DoesAssetExist(const FString& AssetPath);
 
 	UFUNCTION(BlueprintCallable, Category = "UEMotion")
 	UUEMotionCamera* GetCamera();
@@ -141,6 +170,9 @@ private:
 
 	UPROPERTY()
 	UUEMotionRenderer* Renderer = nullptr;
+
+	UPROPERTY()
+	UUEMotionAssetFactory* AssetFactory = nullptr;
 
 	bool CreateSceneMap();
 	bool CreateLevelSequenceAsset();

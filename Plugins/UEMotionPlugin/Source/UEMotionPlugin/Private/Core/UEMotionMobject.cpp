@@ -235,6 +235,39 @@ void UUEMotionMobject::Destroy()
 	MaterialInstance = nullptr;
 }
 
+void UUEMotionMobject::InitializeFromSpawnedActor(AActor* SpawnedActor, UStaticMeshComponent* MeshComp)
+{
+	if (!SpawnedActor) return;
+
+	InternalActor = SpawnedActor;
+	MeshComponent = MeshComp;
+
+	if (MeshComp)
+	{
+		UMaterialInterface* CurrentMat = MeshComp->GetMaterial(0);
+		if (CurrentMat)
+		{
+			MaterialInstance = Cast<UMaterialInstanceDynamic>(CurrentMat);
+			if (MaterialInstance.IsValid())
+			{
+				FLinearColor OutColor;
+				if (MaterialInstance->GetVectorParameterValue(FName("BaseColor"), OutColor))
+				{
+					CurrentColor = OutColor;
+				}
+				float OutOpacity;
+				if (MaterialInstance->GetScalarParameterValue(FName("Opacity"), OutOpacity))
+				{
+					CurrentOpacity = OutOpacity;
+				}
+			}
+		}
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("UEMotionMobject: Initialized from spawned actor '%s' (AssetBased=%s)"),
+		*SpawnedActor->GetName(), bIsAssetBased ? TEXT("true") : TEXT("false"));
+}
+
 FString UUEMotionMobject::GetName() const
 {
 	return MobjectName;

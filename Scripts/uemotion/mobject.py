@@ -13,6 +13,25 @@ class Mobject:
     def __init__(self, scene, ue_mobject):
         self._scene = scene
         self._ue = ue_mobject
+        self._source_asset_path = ""
+        self._is_asset_based = False
+
+    @property
+    def source_asset_path(self):
+        if hasattr(self._ue, 'get_source_asset_path'):
+            return self._ue.get_source_asset_path()
+        return self._source_asset_path
+
+    @source_asset_path.setter
+    def source_asset_path(self, path):
+        self._source_asset_path = path
+        self._is_asset_based = bool(path)
+
+    @property
+    def is_asset_based(self):
+        if hasattr(self._ue, 'is_asset_based'):
+            return self._ue.is_asset_based()
+        return self._is_asset_based
 
     @property
     def location(self):

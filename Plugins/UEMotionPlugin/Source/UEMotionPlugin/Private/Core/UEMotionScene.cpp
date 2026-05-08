@@ -1,6 +1,7 @@
 #include "UEMotionScene.h"
 #include "UEMotionCamera.h"
 #include "UEMotionMobject.h"
+#include "UEMotionAssetFactory.h"
 #include "Anim/UEMotionAnimation.h"
 #include "Anim/UEMotionGroupAnimation.h"
 #include "Anim/UEMotionMoveAnimation.h"
@@ -374,6 +375,167 @@ UUEMotionMobject* UUEMotionScene::CreateTorus(float OuterRadius, float InnerRadi
 UUEMotionCamera* UUEMotionScene::GetCamera()
 {
 	return Camera;
+}
+
+UUEMotionAssetFactory* UUEMotionScene::GetAssetFactory()
+{
+	if (!AssetFactory)
+	{
+		AssetFactory = NewObject<UUEMotionAssetFactory>(this);
+		UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Created AssetFactory instance"));
+	}
+	return AssetFactory;
+}
+
+UUEMotionMobject* UUEMotionScene::CreateMobjectFromAsset(
+	const FString& BlueprintPath,
+	const FString& MeshType,
+	float Size,
+	const FLinearColor& Color,
+	float Metallic,
+	float Roughness,
+	float Opacity,
+	const FString& CustomMeshPath)
+{
+	if (!bInitialized || !SceneActor) return nullptr;
+
+	UUEMotionAssetFactory* Factory = GetAssetFactory();
+	if (!Factory) return nullptr;
+
+	AActor* SpawnedActor = Factory->SpawnFromBlueprintAsset(BlueprintPath);
+	if (!SpawnedActor)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("UEMotionScene: Failed to spawn from Blueprint '%s', falling back to mesh creation"), *BlueprintPath);
+
+		FMotionAssetConfig Config;
+		Config.MeshType = MeshType;
+		Config.Size = Size;
+		Config.BaseColor = Color;
+		Config.Metallic = Metallic;
+		Config.Roughness = Roughness;
+		Config.Opacity = Opacity;
+		Config.CustomMeshPath = CustomMeshPath;
+		return CreateMobjectFromConfig(Config);
+	}
+
+	UStaticMeshComponent* MeshComp = SpawnedActor->FindComponentByClass<UStaticMeshComponent>();
+	if (!MeshComp)
+	{
+		MeshComp = NewObject<UStaticMeshComponent>(SpawnedActor, TEXT("Mesh"));
+		MeshComp->RegisterComponent();
+		SpawnedActor->SetRootComponent(MeshComp);
+
+		FString MeshPath = CustomMeshPath.IsEmpty() ?
+			(MeshType == TEXT("sphere") ? TEXT("/Engine/BasicShapes/Sphere.Sphere") :
+			 MeshType == TEXT("cylinder") ? TEXT("/Engine/BasicShapes/Cylinder.Cylinder") :
+			 MeshType == TEXT("cone") ? TEXT("/Engine/BasicShapes/Cone.Cone") :
+			 MeshType == TEXT("plane") ? TEXT("/Engine/BasicShapes/Plane.Plane") :
+			 MeshType == TEXT("torus") ? TEXT("/Engine/BasicShapes/Torus.Torus") :
+			 TEXT("/Engine/BasicShapes/Cube.Cube"))
+			: CustomMeshPath;
+
+		UStaticMesh* Mesh = LoadObject<UStaticMesh>(nullptr, *MeshPath);
+		if (Mesh)
+		{
+			MeshComp->SetStaticMesh(Mesh);
+		}
+
+		UMaterialInstanceDynamic* MID = Factory->CreateDynamicMaterialFromConfig(
+			{MeshType, Size, Color, Metallic, Roughness, Opacity, TEXT(""), TEXT(""), false, CustomMeshPath});
+		if (MID && MeshComp)
+		{
+			MeshComp->SetMaterial(0, MID);
+		}
+
+		if (!FMath::IsNearlyEqual(Size / 50.0f, 1.0f))
+		{
+			SpawnedActor->SetActorScale3D(FVector(Size / 50.0f));
+		}
+	}
+
+	UUEMotionMobject* Obj = NewObject<UUEMotionMobject>(this);
+	if (Obj)
+	{
+		Obj->InitializeFromSpawnedActor(SpawnedActor, MeshComp);
+		Obj->SetSourceAssetPath(BlueprintPath);
+		Obj->SetMobjectName(MeshType);
+		Mobjects.Add(Obj);
+		AddActorToSequencer(SpawnedActor);
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Created Mobject from Blueprint '%s'"), *BlueprintPath);
+	return Obj;
+}
+
+UUEMotionMobject* UUEMotionScene::CreateMobjectFromConfig(const FMotionAssetConfig& Config)
+{
+	if (!bInitialized || !SceneActor) return nullptr;
+
+	UUEMotionAssetFactory* Factory = GetAssetFactory();
+
+	UWorld* World = SceneActor->GetWorld();
+	if (!World) return nullptr;
+
+	FActorSpawnParameters Params;
+	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	AActor* Actor = World->SpawnActor<AActor>(AActor::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params);
+	if (!Actor) return nullptr;
+
+	UStaticMeshComponent* MeshComp = NewObject<UStaticMeshComponent>(Actor, TEXT("Mesh"));
+	MeshComp->RegisterComponent();
+	Actor->SetRootComponent(MeshComp);
+
+	UStaticMesh* Mesh = LoadObject<UStaticMesh>(nullptr, *Config.GetMeshPath());
+	if (Mesh)
+	{
+		MeshComp->SetStaticMesh(Mesh);
+	}
+
+	UMaterialInstanceDynamic* MID = Factory ? Factory->CreateDynamicMaterialFromConfig(Config) : nullptr;
+	if (MID && MeshComp)
+	{
+		MeshComp->SetMaterial(0, MID);
+	}
+
+	float ScaleFactor = Config.Size / 50.0f;
+	if (!FMath::IsNearlyEqual(ScaleFactor, 1.0f))
+	{
+		Actor->SetActorScale3D(FVector(ScaleFactor));
+	}
+
+	UUEMotionMobject* Obj = NewObject<UUEMotionMobject>(this);
+	if (Obj)
+	{
+		Obj->InitializeFromSpawnedActor(Actor, MeshComp);
+		Obj->SetMobjectName(Config.MeshType);
+		Mobjects.Add(Obj);
+		AddActorToSequencer(Actor);
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Created Mobject from Config - Type='%s' Size=%.1f"),
+		*Config.MeshType, Config.Size);
+	return Obj;
+}
+
+FString UUEMotionScene::CreateAndSaveBlueprintAsset(
+	const FMotionAssetConfig& Config,
+	const FString& AssetName,
+	const FString& OutPackagePath)
+{
+	UUEMotionAssetFactory* Factory = GetAssetFactory();
+	if (!Factory) return TEXT("");
+
+	UClass* BPClass = Factory->CreateAndSaveBlueprintAsset(Config, AssetName, OutPackagePath);
+	if (!BPClass) return TEXT("");
+
+	FString FullPath = FString::Printf(TEXT("%s/%s"), *OutPackagePath, *AssetName);
+	UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Created and saved Blueprint Asset '%s'"), *FullPath);
+	return FullPath;
+}
+
+bool UUEMotionScene::DoesAssetExist(const FString& AssetPath)
+{
+	return UUEMotionAssetFactory::DoesAssetExist(AssetPath);
 }
 
 void UUEMotionScene::AddDirectionalLight(const FVector& Direction, const FLinearColor& Color, float Intensity)

@@ -31,7 +31,8 @@ public class UEMotionPlugin : ModuleRules
 			"Sequencer",
 			"TimeManagement",
 			"EditorScriptingUtilities",
-			"AssetTools"
+			"AssetTools",
+			"BlueprintGraph"
 		});
 
 		PrivateIncludePaths.AddRange(new string[] { "UEMotionPlugin/Private" });

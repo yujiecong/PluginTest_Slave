@@ -63,6 +63,14 @@ public:
 
 	AActor* GetInternalActor() const { return InternalActor.Get(); }
 
+	void InitializeFromSpawnedActor(AActor* SpawnedActor, UStaticMeshComponent* MeshComp);
+
+	void SetSourceAssetPath(const FString& Path) { SourceAssetPath = Path; bIsAssetBased = !Path.IsEmpty(); }
+
+	FString GetSourceAssetPath() const { return SourceAssetPath; }
+
+	bool IsAssetBased() const { return bIsAssetBased; }
+
 private:
 	void CreateStaticMeshActor(AUEMotionSceneActor* Owner, const FString& MeshPath, float InScale);
 	UMaterialInterface* GetOrCreateBaseMaterial();
@@ -83,4 +91,7 @@ private:
 
 	UPROPERTY()
 	UMaterialInterface* CachedBaseMaterial = nullptr;
+
+	FString SourceAssetPath;
+	bool bIsAssetBased = false;
 };

@@ -17,6 +17,14 @@ from .constants import (
 )
 
 
+def _color_to_rgb(linear_color):
+    if isinstance(linear_color, unreal.LinearColor):
+        return (linear_color.r, linear_color.g, linear_color.b)
+    if isinstance(linear_color, (list, tuple)):
+        return tuple(linear_color[:3])
+    return (1.0, 1.0, 1.0)
+
+
 class Scene:
     def __init__(self, name="default", width=DEFAULT_PIXEL_WIDTH, height=DEFAULT_PIXEL_HEIGHT):
         self._ue = unreal.UEMotionScene()
@@ -154,6 +162,57 @@ class Scene:
         if location:
             m.location = location
         return m
+
+    def from_asset(self, blueprint_path, mesh_type="cube", size=50, color="white",
+                   metallic=0.0, roughness=0.5, opacity=1.0, custom_mesh_path="",
+                   location=None):
+        obj = self._ue.create_mobject_from_asset(
+            blueprint_path, mesh_type, size,
+            resolve_color(color), metallic, roughness, opacity, custom_mesh_path
+        )
+        if obj is None:
+            return None
+        m = Mobject(self, obj)
+        if location:
+            m.location = location
+        return m
+
+    def from_config(self, mesh_type="cube", size=50, color="white",
+                    metallic=0.0, roughness=0.5, opacity=1.0,
+                    custom_mesh_path="", location=None):
+        from .asset_library import AssetConfig
+        config = AssetConfig(
+            mesh_type=mesh_type, size=size,
+            base_color=_color_to_rgb(resolve_color(color)),
+            metallic=metallic, roughness=roughness, opacity=opacity,
+            custom_mesh_path=custom_mesh_path,
+        )
+        obj = self._ue.create_mobject_from_config(config.to_ue_config())
+        if obj is None:
+            return None
+        m = Mobject(self, obj)
+        if location:
+            m.location = location
+        return m
+
+    def create_asset(self, mesh_type="cube", asset_name="CustomAsset",
+                     size=50, color="white", metallic=0.0, roughness=0.5,
+                     opacity=1.0, custom_mesh_path="",
+                     output_path="/Game/UEMotion/Assets/Blueprints"):
+        from .asset_library import AssetConfig
+        config = AssetConfig(
+            mesh_type=mesh_type, size=size,
+            base_color=_color_to_rgb(resolve_color(color)),
+            metallic=metallic, roughness=roughness, opacity=opacity,
+            custom_mesh_path=custom_mesh_path,
+        )
+        return self._ue.create_and_save_blueprint_asset(
+            config.to_ue_config(), asset_name, output_path
+        )
+
+    @staticmethod
+    def asset_exists(asset_path):
+        return unreal.UEMotionScene.does_asset_exist(asset_path)
 
     def directional_light(self, direction=(0, -1, -1), color="white", intensity=10):
         self._ue.add_directional_light(vec(*direction), resolve_color(color), intensity)
