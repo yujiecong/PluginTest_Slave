@@ -90,11 +90,7 @@ void UUEMotionRenderer::RenderSequence(ULevelSequence* Sequence, const FString& 
 
 	UMoviePipelinePIEExecutor* Executor = NewObject<UMoviePipelinePIEExecutor>(QueueSubsystem);
 
-#if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 7
 	Executor->OnExecutorFinished().AddUObject(this, &UUEMotionRenderer::OnRenderFinished);
-#else
-	Executor->OnExecutorFinished().AddUObject(this, &UUEMotionRenderer::OnRenderFinished);
-#endif
 
 	ActiveExecutor = Executor;
 

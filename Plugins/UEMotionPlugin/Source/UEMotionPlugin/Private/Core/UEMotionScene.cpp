@@ -11,7 +11,6 @@
 #include "Anim/UEMotionWaitAnimation.h"
 #include "Rendering/UEMotionRenderer.h"
 #include "Actors/UEMotionSceneActor.h"
-#include "CineCameraActor.h"
 #include "Utils/UEMotionSequencerCompat.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
@@ -176,17 +175,11 @@ void UUEMotionScene::Initialize(const FString& InSceneName, int32 Width, int32 H
 	{
 		SceneActor->SetOwnerScene(this);
 
-		FActorSpawnParameters CameraSpawnParams;
-		CameraSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		CineCamera = SceneWorld->SpawnActor<ACineCameraActor>(ACineCameraActor::StaticClass(), Location, Rotation, CameraSpawnParams);
-
 		Camera = NewObject<UUEMotionCamera>(this);
-		Camera->Init(CineCamera);
+		Camera->Init(SceneActor);
 		Camera->LookAt(FVector(0, 0, 0));
 
-		AddActorToSequencer(SceneActor);
-
-		FGuid CameraBinding = AddActorToSequencer(CineCamera);
+		FGuid CameraBinding = AddActorToSequencer(SceneActor);
 
 		if (CameraBinding.IsValid())
 		{
@@ -197,7 +190,7 @@ void UUEMotionScene::Initialize(const FString& InSceneName, int32 Width, int32 H
 			{
 				FMovieSceneObjectBindingID BindingID = UE::MovieScene::FRelativeObjectBindingID(CameraBinding);
 				CutTrack->AddNewCameraCut(BindingID, FFrameNumber(0));
-				UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Camera Cut Track added for CineCamera"));
+				UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Camera Cut Track added for SceneActor (CineCameraActor)"));
 			}
 		}
 
@@ -668,6 +661,8 @@ void UUEMotionScene::RenderFrames(const FString& OutputDirectory, float Duration
 		Renderer->OnRenderFinishedDelegate.AddDynamic(this, &UUEMotionScene::OnRendererFinished);
 	}
 
+	Renderer->BindCamera(SceneActor);
+
 	SaveAssets();
 
 	UE_LOG(LogTemp, Log, TEXT("UEMotionScene::RenderFrames: Starting MRQ render to '%s', Duration=%.2fs, FPS=%.0f"),
@@ -716,12 +711,6 @@ void UUEMotionScene::Destroy()
 	{
 		SceneActor->Destroy();
 		SceneActor = nullptr;
-	}
-
-	if (CineCamera)
-	{
-		CineCamera->Destroy();
-		CineCamera = nullptr;
 	}
 
 	if (Renderer)
@@ -805,10 +794,5 @@ bool UUEMotionScene::GetAutoCleanup() const
 
 void UUEMotionScene::OnRendererFinished(bool bSuccess)
 {
-	if (Renderer)
-	{
-		Renderer->OnRenderFinishedDelegate.RemoveDynamic(this, &UUEMotionScene::OnRendererFinished);
-	}
-
 	OnRenderFinished.Broadcast(this, bSuccess);
 }

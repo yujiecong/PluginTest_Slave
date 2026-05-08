@@ -1,18 +1,18 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "CineCameraActor.h"
 #include "UEMotionSceneActor.generated.h"
 
 class UUEMotionScene;
 
 UCLASS()
-class AUEMotionSceneActor : public AActor
+class AUEMotionSceneActor : public ACineCameraActor
 {
 	GENERATED_BODY()
 
 public:
-	AUEMotionSceneActor();
+	AUEMotionSceneActor(const FObjectInitializer& ObjectInitializer);
 
 	virtual void Tick(float DeltaTime) override;
 

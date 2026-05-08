@@ -52,5 +52,6 @@ private:
 	int32 ResolutionHeight = 1080;
 	bool bIsRendering = false;
 
+	UFUNCTION()
 	void OnRenderFinished(UMoviePipelineExecutorBase* InExecutor, bool bSuccess);
 };

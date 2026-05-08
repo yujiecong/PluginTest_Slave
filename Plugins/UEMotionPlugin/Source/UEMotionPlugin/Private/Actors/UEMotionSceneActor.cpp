@@ -1,7 +1,8 @@
 #include "UEMotionSceneActor.h"
 #include "Core/UEMotionScene.h"
 
-AUEMotionSceneActor::AUEMotionSceneActor()
+AUEMotionSceneActor::AUEMotionSceneActor(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;

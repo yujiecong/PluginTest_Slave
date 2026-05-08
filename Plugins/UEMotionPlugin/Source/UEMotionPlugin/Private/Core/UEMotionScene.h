@@ -11,7 +11,6 @@ class UUEMotionCamera;
 class UUEMotionAnimation;
 class UUEMotionRenderer;
 class AUEMotionSceneActor;
-class ACineCameraActor;
 class ULevelSequence;
 class UMovieScene;
 class UMovieScene3DTransformTrack;
@@ -127,9 +126,6 @@ private:
 
 	UPROPERTY()
 	AUEMotionSceneActor* SceneActor = nullptr;
-
-	UPROPERTY()
-	ACineCameraActor* CineCamera = nullptr;
 
 	UPROPERTY()
 	UUEMotionCamera* Camera = nullptr;
