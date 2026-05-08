@@ -72,15 +72,29 @@ public:
 	);
 
 	UFUNCTION(BlueprintCallable, Category = "UEMotion|Mobject")
-	UUEMotionMobject* CreateMobjectFromConfig(const FMotionAssetConfig& Config);
+	UUEMotionMobject* CreateMobjectFromParams(
+		const FString& MeshType = TEXT("cube"),
+		float Size = 50.0f,
+		const FLinearColor& Color = FLinearColor::White,
+		float Metallic = 0.0f,
+		float Roughness = 0.5f,
+		float Opacity = 1.0f,
+		const FString& CustomMeshPath = TEXT("")
+	);
 
 	UFUNCTION(BlueprintCallable, Category = "UEMotion|Asset")
 	UUEMotionAssetFactory* GetAssetFactory();
 
 	UFUNCTION(BlueprintCallable, Category = "UEMotion|Asset")
 	FString CreateAndSaveBlueprintAsset(
-		const FMotionAssetConfig& Config,
-		const FString& AssetName,
+		const FString& MeshType = TEXT("cube"),
+		float Size = 50.0f,
+		const FLinearColor& Color = FLinearColor::White,
+		float Metallic = 0.0f,
+		float Roughness = 0.5f,
+		float Opacity = 1.0f,
+		const FString& CustomMeshPath = TEXT(""),
+		const FString& AssetName = TEXT("BP_Cube_50"),
 		const FString& OutPackagePath = TEXT("/Game/UEMotion/Assets/Blueprints")
 	);
 

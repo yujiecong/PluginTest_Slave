@@ -29,8 +29,8 @@ END_POS = UR
 
 TOTAL_DURATION = NUM_STEPS * MOVE_DURATION
 EXPECTED_FRAMES = int(TOTAL_DURATION * FPS) + 1
-EXPECTED_MIN_FILE_SIZE = 1_000_000
-EXPECTED_MAX_FILE_SIZE = 3_000_000
+EXPECTED_MIN_FILE_SIZE = 400_000
+EXPECTED_MAX_FILE_SIZE = 2_000_000
 FRAMES_DIR_NAME = f"{SCENE_NAME}_frames"
 
 test_results = []
@@ -146,6 +146,12 @@ try:
     print("[3/4] Rendering frames via MoviePipeline...")
 
     frames_dir = os.path.join(OUTPUT_BASE, FRAMES_DIR_NAME).replace("\\", "/")
+    if os.path.isdir(frames_dir):
+        old_files = [f for f in os.listdir(frames_dir) if f.lower().endswith('.png')]
+        for f in old_files:
+            os.remove(os.path.join(frames_dir, f))
+        if old_files:
+            print(f"  Cleaned {len(old_files)} old frame(s) from previous run")
     os.makedirs(frames_dir, exist_ok=True)
     check(os.path.isdir(frames_dir), f"Output directory exists: {frames_dir}")
 

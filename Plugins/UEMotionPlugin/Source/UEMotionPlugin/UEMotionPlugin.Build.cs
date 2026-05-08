@@ -32,7 +32,8 @@ public class UEMotionPlugin : ModuleRules
 			"TimeManagement",
 			"EditorScriptingUtilities",
 			"AssetTools",
-			"BlueprintGraph"
+			"BlueprintGraph",
+			"Kismet"
 		});
 
 		PrivateIncludePaths.AddRange(new string[] { "UEMotionPlugin/Private" });

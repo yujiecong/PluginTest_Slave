@@ -98,70 +98,22 @@ class Scene:
         self.camera.look_at((0, 0, 0))
 
     def sphere(self, radius=50, color="white", location=None):
-        obj = self._ue.create_sphere(radius)
-        if obj is None:
-            return None
-        m = Mobject(self, obj)
-        if color:
-            m.color = color
-        if location:
-            m.location = location
-        return m
+        return self.from_config(mesh_type="sphere", size=radius, color=color, location=location)
 
     def cube(self, size=50, color="white", location=None):
-        obj = self._ue.create_cube(size)
-        if obj is None:
-            return None
-        m = Mobject(self, obj)
-        if color:
-            m.color = color
-        if location:
-            m.location = location
-        return m
+        return self.from_config(mesh_type="cube", size=size, color=color, location=location)
 
     def cylinder(self, radius=50, height=100, color="white", location=None):
-        obj = self._ue.create_cylinder(radius, height)
-        if obj is None:
-            return None
-        m = Mobject(self, obj)
-        if color:
-            m.color = color
-        if location:
-            m.location = location
-        return m
+        return self.from_config(mesh_type="cylinder", size=radius, color=color, location=location)
 
     def cone(self, radius=50, height=100, color="white", location=None):
-        obj = self._ue.create_cone(radius, height)
-        if obj is None:
-            return None
-        m = Mobject(self, obj)
-        if color:
-            m.color = color
-        if location:
-            m.location = location
-        return m
+        return self.from_config(mesh_type="cone", size=radius, color=color, location=location)
 
     def plane(self, width=500, height=500, color="white", location=None):
-        obj = self._ue.create_plane(width, height)
-        if obj is None:
-            return None
-        m = Mobject(self, obj)
-        if color:
-            m.color = color
-        if location:
-            m.location = location
-        return m
+        return self.from_config(mesh_type="plane", size=width, color=color, location=location)
 
     def torus(self, outer_radius=80, inner_radius=25, color="white", location=None):
-        obj = self._ue.create_torus(outer_radius, inner_radius)
-        if obj is None:
-            return None
-        m = Mobject(self, obj)
-        if color:
-            m.color = color
-        if location:
-            m.location = location
-        return m
+        return self.from_config(mesh_type="torus", size=outer_radius, color=color, location=location)
 
     def from_asset(self, blueprint_path, mesh_type="cube", size=50, color="white",
                    metallic=0.0, roughness=0.5, opacity=1.0, custom_mesh_path="",
@@ -180,14 +132,10 @@ class Scene:
     def from_config(self, mesh_type="cube", size=50, color="white",
                     metallic=0.0, roughness=0.5, opacity=1.0,
                     custom_mesh_path="", location=None):
-        from .asset_library import AssetConfig
-        config = AssetConfig(
-            mesh_type=mesh_type, size=size,
-            base_color=_color_to_rgb(resolve_color(color)),
-            metallic=metallic, roughness=roughness, opacity=opacity,
-            custom_mesh_path=custom_mesh_path,
+        obj = self._ue.create_mobject_from_params(
+            mesh_type, size,
+            resolve_color(color), metallic, roughness, opacity, custom_mesh_path
         )
-        obj = self._ue.create_mobject_from_config(config.to_ue_config())
         if obj is None:
             return None
         m = Mobject(self, obj)
@@ -199,15 +147,10 @@ class Scene:
                      size=50, color="white", metallic=0.0, roughness=0.5,
                      opacity=1.0, custom_mesh_path="",
                      output_path="/Game/UEMotion/Assets/Blueprints"):
-        from .asset_library import AssetConfig
-        config = AssetConfig(
-            mesh_type=mesh_type, size=size,
-            base_color=_color_to_rgb(resolve_color(color)),
-            metallic=metallic, roughness=roughness, opacity=opacity,
-            custom_mesh_path=custom_mesh_path,
-        )
         return self._ue.create_and_save_blueprint_asset(
-            config.to_ue_config(), asset_name, output_path
+            mesh_type, size, resolve_color(color),
+            metallic, roughness, opacity, custom_mesh_path,
+            asset_name, output_path
         )
 
     @staticmethod

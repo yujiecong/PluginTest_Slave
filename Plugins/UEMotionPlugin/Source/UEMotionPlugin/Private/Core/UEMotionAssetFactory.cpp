@@ -5,9 +5,6 @@
 #include "Materials/MaterialInstanceConstant.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Materials/Material.h"
-#include "Materials/MaterialExpressionVectorParameter.h"
-#include "Materials/MaterialExpressionScalarParameter.h"
-#include "Materials/MaterialExpressionConstant.h"
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "AssetToolsModule.h"
 #include "EditorAssetLibrary.h"
@@ -18,6 +15,11 @@
 #include "Kismet/GameplayStatics.h"
 #include "Engine/Blueprint.h"
 #include "Factories/BlueprintFactory.h"
+#include "Engine/SimpleConstructionScript.h"
+#include "Engine/SCS_Node.h"
+#include "Kismet2/KismetEditorUtilities.h"
+#include "EditorFramework/AssetImportData.h"
+#include "PackageHelperFunctions.h"
 
 FString UUEMotionAssetFactory::ResolveAssetPath(const FString& PackagePath, const FString& AssetName) const
 {
@@ -28,68 +30,8 @@ UMaterialInterface* UUEMotionAssetFactory::GetOrCreateBaseMaterial()
 {
 	if (CachedBaseMaterial) return CachedBaseMaterial;
 
-	UMaterial* Material = NewObject<UMaterial>(GetTransientPackage(), TEXT("M_UEMotionAssetBase"), RF_Transient | RF_Public);
-	if (!Material)
-	{
-		CachedBaseMaterial = LoadObject<UMaterialInterface>(
-			nullptr, TEXT("/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"));
-		return CachedBaseMaterial;
-	}
-
-	Material->BlendMode = EBlendMode::BLEND_Translucent;
-	Material->TwoSided = 1;
-
-	UMaterialExpressionVectorParameter* ColorExpr = NewObject<UMaterialExpressionVectorParameter>(Material);
-	ColorExpr->ParameterName = FName("BaseColor");
-	ColorExpr->DefaultValue = FLinearColor(0.5f, 0.5f, 0.5f, 1.0f);
-	Material->GetExpressionCollection().AddExpression(ColorExpr);
-
-	UMaterialExpressionScalarParameter* OpacityExpr = NewObject<UMaterialExpressionScalarParameter>(Material);
-	OpacityExpr->ParameterName = FName("Opacity");
-	OpacityExpr->DefaultValue = 1.0f;
-	Material->GetExpressionCollection().AddExpression(OpacityExpr);
-
-	UMaterialExpressionScalarParameter* MetallicExpr = NewObject<UMaterialExpressionScalarParameter>(Material);
-	MetallicExpr->ParameterName = FName("Metallic");
-	MetallicExpr->DefaultValue = 0.0f;
-	Material->GetExpressionCollection().AddExpression(MetallicExpr);
-
-	UMaterialExpressionScalarParameter* RoughnessExpr = NewObject<UMaterialExpressionScalarParameter>(Material);
-	RoughnessExpr->ParameterName = FName("Roughness");
-	RoughnessExpr->DefaultValue = 0.5f;
-	Material->GetExpressionCollection().AddExpression(RoughnessExpr);
-
-	UMaterialExpressionScalarParameter* EmissiveExpr = NewObject<UMaterialExpressionScalarParameter>(Material);
-	EmissiveExpr->ParameterName = FName("EmissiveStrength");
-	EmissiveExpr->DefaultValue = 0.0f;
-	Material->GetExpressionCollection().AddExpression(EmissiveExpr);
-
-	UMaterialExpressionVectorParameter* EmissiveColorExpr = NewObject<UMaterialExpressionVectorParameter>(Material);
-	EmissiveColorExpr->ParameterName = FName("EmissiveColor");
-	EmissiveColorExpr->DefaultValue = FLinearColor::Black;
-	Material->GetExpressionCollection().AddExpression(EmissiveColorExpr);
-
-	UMaterialEditorOnlyData* EditorData = Material->GetEditorOnlyData();
-	if (EditorData)
-	{
-		EditorData->BaseColor.Expression = ColorExpr;
-		EditorData->BaseColor.OutputIndex = 0;
-		EditorData->Opacity.Expression = OpacityExpr;
-		EditorData->Opacity.OutputIndex = 0;
-		EditorData->Metallic.Expression = MetallicExpr;
-		EditorData->Metallic.OutputIndex = 0;
-		EditorData->Roughness.Expression = RoughnessExpr;
-		EditorData->Roughness.OutputIndex = 0;
-		EditorData->EmissiveColor.Expression = EmissiveColorExpr;
-		EditorData->EmissiveColor.OutputIndex = 0;
-	}
-
-	Material->MarkPackageDirty();
-#if WITH_EDITOR
-	Material->PostEditChange();
-#endif
-
-	CachedBaseMaterial = Material;
+	CachedBaseMaterial = LoadObject<UMaterialInterface>(
+		nullptr, TEXT("/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"));
 	return CachedBaseMaterial;
 }
 
@@ -97,36 +39,37 @@ bool UUEMotionAssetFactory::SaveAssetToObject(UObject* Asset, const FString& Pac
 {
 	if (!Asset) return false;
 
-	UPackage* Package = Asset->GetOutermost();
+	UPackage* Package = Cast<UPackage>(Asset->GetOuter());
+	if (!Package)
+	{
+		Package = Asset->GetOutermost();
+	}
 	if (!Package) return false;
 
-	FString FullAssetPath = ResolveAssetPath(PackagePath, AssetName);
-
-	if (UEditorAssetLibrary::DoesAssetExist(FullAssetPath))
-	{
-		UEditorAssetLibrary::DeleteAsset(FullAssetPath);
-		UE_LOG(LogTemp, Log, TEXT("UEMotionAssetFactory: Deleted existing asset '%s'"), *FullAssetPath);
-	}
-
+	Asset->SetFlags(RF_Public | RF_Standalone);
 	Package->MarkPackageDirty();
 
 #if WITH_EDITOR
 	Asset->PostEditChange();
+	Package->MarkPackageDirty();
 #endif
 
-	FAssetRegistryModule::AssetCreated(Asset);
+	FString PackageName = Package->GetName();
+	FString Filename = FPackageName::LongPackageNameToFilename(PackageName, FPackageName::GetAssetPackageExtension());
 
-	FString Filename = FPackageName::LongPackageNameToFilename(Package->GetName(), FPackageName::GetAssetPackageExtension());
 	FSavePackageArgs SaveArgs;
-	SaveArgs.TopLevelFlags = EObjectFlags::RF_Public | EObjectFlags::RF_Standalone;
+	SaveArgs.TopLevelFlags = RF_Public | RF_Standalone;
+
 	bool bSaved = UPackage::SavePackage(Package, Asset, *Filename, SaveArgs);
 	if (bSaved)
 	{
-		UE_LOG(LogTemp, Log, TEXT("UEMotionAssetFactory: Saved asset '%s' to disk"), *FullAssetPath);
+		FAssetRegistryModule::AssetCreated(Asset);
+		FString FullAssetPath = ResolveAssetPath(PackagePath, AssetName);
+		UE_LOG(LogTemp, Log, TEXT("UEMotionAssetFactory: Saved asset '%s'"), *FullAssetPath);
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("UEMotionAssetFactory: Failed to save asset '%s'"), *FullAssetPath);
+		UE_LOG(LogTemp, Warning, TEXT("UEMotionAssetFactory: Failed to save asset '%s'"), *AssetName);
 	}
 
 	return bSaved;
@@ -147,40 +90,31 @@ UMaterialInstanceConstant* UUEMotionAssetFactory::CreateAndSaveMaterialAsset(
 		UMaterialInstanceConstant* Existing = LoadObject<UMaterialInstanceConstant>(nullptr, *FullAssetPath);
 		if (Existing)
 		{
-			UE_LOG(LogTemp, Log, TEXT("UEMotionAssetFactory: Material '%s' already exists, returning cached"), *FullAssetPath);
 			return Existing;
 		}
-		UEditorAssetLibrary::DeleteAsset(FullAssetPath);
 	}
 
 	UPackage* Package = CreatePackage(*FullAssetPath);
 	if (!Package) return nullptr;
 
 	FName MaterialName = FName(*AssetName);
-	UMaterialInstanceConstant* MIC = NewObject<UMaterialInstanceConstant>(Package, MaterialName, RF_Public | RF_Standalone | RF_Transactional);
+	UMaterialInstanceConstant* MIC = NewObject<UMaterialInstanceConstant>(Package, MaterialName, RF_Public | RF_Standalone);
 	if (!MIC) return nullptr;
 
 	MIC->SetParentEditorOnly(BaseMaterial);
 
 #if WITH_EDITOR
-	{
-		TArray<FMaterialParameterInfo> ParameterInfos;
-		TArray<FGuid> ParameterIds;
-		MIC->GetAllScalarParameterInfo(ParameterInfos, ParameterIds);
-		MIC->SetScalarParameterValueEditorOnly(FName("Opacity"), Config.Opacity);
-		MIC->SetScalarParameterValueEditorOnly(FName("Metallic"), Config.Metallic);
-		MIC->SetScalarParameterValueEditorOnly(FName("Roughness"), Config.Roughness);
-		MIC->SetScalarParameterValueEditorOnly(FName("EmissiveStrength"), 0.0f);
-		MIC->SetVectorParameterValueEditorOnly(FName("BaseColor"), Config.BaseColor);
-		MIC->SetVectorParameterValueEditorOnly(FName("EmissiveColor"), FLinearColor::Black);
-	}
+	MIC->SetScalarParameterValueEditorOnly(FName("Opacity"), Config.Opacity);
+	MIC->SetScalarParameterValueEditorOnly(FName("Metallic"), Config.Metallic);
+	MIC->SetScalarParameterValueEditorOnly(FName("Roughness"), Config.Roughness);
+	MIC->SetScalarParameterValueEditorOnly(FName("EmissiveStrength"), 0.0f);
+	MIC->SetVectorParameterValueEditorOnly(FName("BaseColor"), Config.BaseColor);
+	MIC->SetVectorParameterValueEditorOnly(FName("EmissiveColor"), FLinearColor::Black);
 #endif
 
 	SaveAssetToObject(MIC, OutPackagePath, AssetName);
 
-	UE_LOG(LogTemp, Log, TEXT("UEMotionAssetFactory: Created MaterialInstance '%s' - Color(%s) Metal(%.2f) Rough(%.2f)"),
-		*AssetName, *Config.BaseColor.ToString(), Config.Metallic, Config.Roughness);
-
+	UE_LOG(LogTemp, Log, TEXT("UEMotionAssetFactory: Created MaterialInstance '%s'"), *AssetName);
 	return MIC;
 }
 
@@ -194,13 +128,16 @@ UClass* UUEMotionAssetFactory::CreateAndSaveBlueprintAsset(
 	if (UEditorAssetLibrary::DoesAssetExist(FullAssetPath))
 	{
 		UBlueprint* ExistingBP = LoadObject<UBlueprint>(nullptr, *FullAssetPath);
-		if (ExistingBP)
+		if (ExistingBP && ExistingBP->GeneratedClass)
 		{
-			UE_LOG(LogTemp, Log, TEXT("UEMotionAssetFactory: Blueprint '%s' already exists, returning cached"), *FullAssetPath);
+			UE_LOG(LogTemp, Log, TEXT("UEMotionAssetFactory: Blueprint '%s' already exists, reusing"), *FullAssetPath);
 			return ExistingBP->GeneratedClass;
 		}
-		UEditorAssetLibrary::DeleteAsset(FullAssetPath);
 	}
+
+	FString MaterialAssetName = FString::Printf(TEXT("MI_%s"), *AssetName);
+	FString MaterialPackagePath = OutPackagePath.Replace(TEXT("Blueprints"), TEXT("Materials"));
+	UMaterialInstanceConstant* MIC = CreateAndSaveMaterialAsset(Config, MaterialAssetName, MaterialPackagePath);
 
 	UPackage* Package = CreatePackage(*FullAssetPath);
 	if (!Package) return nullptr;
@@ -210,28 +147,49 @@ UClass* UUEMotionAssetFactory::CreateAndSaveBlueprintAsset(
 
 	UBlueprint* NewBP = Cast<UBlueprint>(BPFactory->FactoryCreateNew(
 		UBlueprint::StaticClass(), Package, *AssetName,
-		RF_Public | RF_Standalone | RF_Transactional, nullptr, GWarn));
+		RF_Public | RF_Standalone, nullptr, GWarn));
 	if (!NewBP)
 	{
 		UE_LOG(LogTemp, Error, TEXT("UEMotionAssetFactory: Failed to create Blueprint '%s'"), *AssetName);
 		return nullptr;
 	}
 
-	FAssetRegistryModule::AssetCreated(NewBP);
-	NewBP->MarkPackageDirty();
+	USimpleConstructionScript* SCS = NewBP->SimpleConstructionScript;
+	if (SCS)
+	{
+		USCS_Node* RootNode = SCS->CreateNode(USceneComponent::StaticClass(), TEXT("DefaultSceneRoot"));
+		SCS->AddNode(RootNode);
 
-#if WITH_EDITOR
-	NewBP->PostEditChange();
-#endif
+		USCS_Node* MeshNode = SCS->CreateNode(UStaticMeshComponent::StaticClass(), TEXT("Mesh"));
+		RootNode->AddChildNode(MeshNode);
 
-	FString Filename = FPackageName::LongPackageNameToFilename(Package->GetName(), FPackageName::GetAssetPackageExtension());
-	FSavePackageArgs SaveArgs;
-	SaveArgs.TopLevelFlags = EObjectFlags::RF_Public | EObjectFlags::RF_Standalone;
-	UPackage::SavePackage(Package, NewBP, *Filename, SaveArgs);
+		UStaticMeshComponent* MeshTemplate = Cast<UStaticMeshComponent>(MeshNode->ComponentTemplate);
+		if (MeshTemplate)
+		{
+			UStaticMesh* Mesh = LoadObject<UStaticMesh>(nullptr, *Config.GetMeshPath());
+			if (Mesh)
+			{
+				MeshTemplate->SetStaticMesh(Mesh);
+			}
 
-	UE_LOG(LogTemp, Log, TEXT("UEMotionAssetFactory: Created Blueprint '%s' with mesh '%s'"),
-		*AssetName, *Config.GetMeshPath());
+			if (MIC)
+			{
+				MeshTemplate->SetMaterial(0, MIC);
+			}
 
+			float ScaleFactor = Config.Size / 50.0f;
+			if (!FMath::IsNearlyEqual(ScaleFactor, 1.0f))
+			{
+				MeshTemplate->SetRelativeScale3D(FVector(ScaleFactor));
+			}
+		}
+	}
+
+	FKismetEditorUtilities::CompileBlueprint(NewBP);
+
+	SaveAssetToObject(NewBP, OutPackagePath, AssetName);
+
+	UE_LOG(LogTemp, Log, TEXT("UEMotionAssetFactory: Created Blueprint '%s'"), *AssetName);
 	return NewBP->GeneratedClass;
 }
 
@@ -248,42 +206,33 @@ AActor* UUEMotionAssetFactory::SpawnFromBlueprintAsset(
 		return nullptr;
 	}
 
-	UBlueprint* BP = LoadObject<UBlueprint>(nullptr, *BlueprintPath);
-	if (!BP)
-	{
-		UClass* LoadedClass = LoadObject<UClass>(nullptr, *BlueprintPath);
-		if (!LoadedClass)
-		{
-			UE_LOG(LogTemp, Error, TEXT("UEMotionAssetFactory: Failed to load Blueprint at '%s'"), *BlueprintPath);
-			return nullptr;
-		}
+	UClass* SpawnClass = nullptr;
 
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		AActor* Actor = World->SpawnActor<AActor>(LoadedClass, Location, Rotation, SpawnParams);
-		if (Actor && !Scale.Equals(FVector(1, 1, 1)))
-		{
-			Actor->SetActorScale3D(Scale);
-		}
-		return Actor;
+	UBlueprint* BP = LoadObject<UBlueprint>(nullptr, *BlueprintPath);
+	if (BP && BP->GeneratedClass)
+	{
+		SpawnClass = BP->GeneratedClass;
+	}
+	else
+	{
+		SpawnClass = LoadObject<UClass>(nullptr, *BlueprintPath);
 	}
 
-	UClass* GeneratedClass = BP->GeneratedClass;
-	if (!GeneratedClass)
+	if (!SpawnClass)
 	{
-		UE_LOG(LogTemp, Error, TEXT("UEMotionAssetFactory: Blueprint '%s' has no generated class"), *BlueprintPath);
+		UE_LOG(LogTemp, Error, TEXT("UEMotionAssetFactory: Failed to load class from '%s'"), *BlueprintPath);
 		return nullptr;
 	}
 
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	AActor* Actor = World->SpawnActor<AActor>(GeneratedClass, Location, Rotation, SpawnParams);
+	AActor* Actor = World->SpawnActor<AActor>(SpawnClass, Location, Rotation, SpawnParams);
 	if (Actor && !Scale.Equals(FVector(1, 1, 1)))
 	{
 		Actor->SetActorScale3D(Scale);
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("UEMotionAssetFactory: Spawned actor from '%s' at (%s)"), *BlueprintPath, *Location.ToString());
+	UE_LOG(LogTemp, Log, TEXT("UEMotionAssetFactory: Spawned actor from '%s'"), *BlueprintPath);
 	return Actor;
 }
 

@@ -277,31 +277,14 @@ UUEMotionMobject* UUEMotionScene::CreateSphere(float Radius)
 {
 	if (!bInitialized || !SceneActor) return nullptr;
 	if (Radius <= 0.0f) Radius = 1.0f;
-
-	UUEMotionMobject* Obj = NewObject<UUEMotionMobject>(this);
-	if (Obj)
-	{
-		Obj->InitializeAsSphere(SceneActor, Radius);
-		Mobjects.Add(Obj);
-		AddActorToSequencer(Obj->GetInternalActor());
-	}
-	return Obj;
+	return CreateMobjectFromParams(TEXT("sphere"), Radius);
 }
 
 UUEMotionMobject* UUEMotionScene::CreateCube(float Size)
 {
 	if (!bInitialized || !SceneActor) return nullptr;
 	if (Size <= 0.0f) Size = 1.0f;
-
-	UUEMotionMobject* Obj = NewObject<UUEMotionMobject>(this);
-	if (Obj)
-	{
-		Obj->InitializeAsMesh(SceneActor, TEXT("/Engine/BasicShapes/Cube.Cube"), Size);
-		Obj->SetMobjectName(TEXT("Cube"));
-		Mobjects.Add(Obj);
-		AddActorToSequencer(Obj->GetInternalActor());
-	}
-	return Obj;
+	return CreateMobjectFromParams(TEXT("cube"), Size);
 }
 
 UUEMotionMobject* UUEMotionScene::CreateCylinder(float Radius, float Height)
@@ -309,16 +292,7 @@ UUEMotionMobject* UUEMotionScene::CreateCylinder(float Radius, float Height)
 	if (!bInitialized || !SceneActor) return nullptr;
 	if (Radius <= 0.0f) Radius = 1.0f;
 	if (Height <= 0.0f) Height = 1.0f;
-
-	UUEMotionMobject* Obj = NewObject<UUEMotionMobject>(this);
-	if (Obj)
-	{
-		Obj->InitializeAsMesh(SceneActor, TEXT("/Engine/BasicShapes/Cylinder.Cylinder"), Radius);
-		Obj->SetMobjectName(TEXT("Cylinder"));
-		Mobjects.Add(Obj);
-		AddActorToSequencer(Obj->GetInternalActor());
-	}
-	return Obj;
+	return CreateMobjectFromParams(TEXT("cylinder"), Radius);
 }
 
 UUEMotionMobject* UUEMotionScene::CreateCone(float Radius, float Height)
@@ -326,16 +300,7 @@ UUEMotionMobject* UUEMotionScene::CreateCone(float Radius, float Height)
 	if (!bInitialized || !SceneActor) return nullptr;
 	if (Radius <= 0.0f) Radius = 1.0f;
 	if (Height <= 0.0f) Height = 1.0f;
-
-	UUEMotionMobject* Obj = NewObject<UUEMotionMobject>(this);
-	if (Obj)
-	{
-		Obj->InitializeAsMesh(SceneActor, TEXT("/Engine/BasicShapes/Cone.Cone"), Radius);
-		Obj->SetMobjectName(TEXT("Cone"));
-		Mobjects.Add(Obj);
-		AddActorToSequencer(Obj->GetInternalActor());
-	}
-	return Obj;
+	return CreateMobjectFromParams(TEXT("cone"), Radius);
 }
 
 UUEMotionMobject* UUEMotionScene::CreatePlane(float Width, float Height)
@@ -343,16 +308,7 @@ UUEMotionMobject* UUEMotionScene::CreatePlane(float Width, float Height)
 	if (!bInitialized || !SceneActor) return nullptr;
 	if (Width <= 0.0f) Width = 1.0f;
 	if (Height <= 0.0f) Height = 1.0f;
-
-	UUEMotionMobject* Obj = NewObject<UUEMotionMobject>(this);
-	if (Obj)
-	{
-		Obj->InitializeAsMesh(SceneActor, TEXT("/Engine/BasicShapes/Plane.Plane"), Width);
-		Obj->SetMobjectName(TEXT("Plane"));
-		Mobjects.Add(Obj);
-		AddActorToSequencer(Obj->GetInternalActor());
-	}
-	return Obj;
+	return CreateMobjectFromParams(TEXT("plane"), Width);
 }
 
 UUEMotionMobject* UUEMotionScene::CreateTorus(float OuterRadius, float InnerRadius)
@@ -360,16 +316,7 @@ UUEMotionMobject* UUEMotionScene::CreateTorus(float OuterRadius, float InnerRadi
 	if (!bInitialized || !SceneActor) return nullptr;
 	if (OuterRadius <= 0.0f) OuterRadius = 1.0f;
 	if (InnerRadius <= 0.0f) InnerRadius = 1.0f;
-
-	UUEMotionMobject* Obj = NewObject<UUEMotionMobject>(this);
-	if (Obj)
-	{
-		Obj->InitializeAsMesh(SceneActor, TEXT("/Engine/BasicShapes/Torus.Torus"), OuterRadius);
-		Obj->SetMobjectName(TEXT("Torus"));
-		Mobjects.Add(Obj);
-		AddActorToSequencer(Obj->GetInternalActor());
-	}
-	return Obj;
+	return CreateMobjectFromParams(TEXT("torus"), OuterRadius);
 }
 
 UUEMotionCamera* UUEMotionScene::GetCamera()
@@ -400,58 +347,20 @@ UUEMotionMobject* UUEMotionScene::CreateMobjectFromAsset(
 	if (!bInitialized || !SceneActor) return nullptr;
 
 	UUEMotionAssetFactory* Factory = GetAssetFactory();
-	if (!Factory) return nullptr;
+	if (!Factory)
+	{
+		UE_LOG(LogTemp, Error, TEXT("UEMotionScene: AssetFactory is null"));
+		return nullptr;
+	}
 
 	AActor* SpawnedActor = Factory->SpawnFromBlueprintAsset(BlueprintPath);
 	if (!SpawnedActor)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("UEMotionScene: Failed to spawn from Blueprint '%s', falling back to mesh creation"), *BlueprintPath);
-
-		FMotionAssetConfig Config;
-		Config.MeshType = MeshType;
-		Config.Size = Size;
-		Config.BaseColor = Color;
-		Config.Metallic = Metallic;
-		Config.Roughness = Roughness;
-		Config.Opacity = Opacity;
-		Config.CustomMeshPath = CustomMeshPath;
-		return CreateMobjectFromConfig(Config);
+		UE_LOG(LogTemp, Error, TEXT("UEMotionScene: Failed to spawn from Blueprint '%s'"), *BlueprintPath);
+		return nullptr;
 	}
 
 	UStaticMeshComponent* MeshComp = SpawnedActor->FindComponentByClass<UStaticMeshComponent>();
-	if (!MeshComp)
-	{
-		MeshComp = NewObject<UStaticMeshComponent>(SpawnedActor, TEXT("Mesh"));
-		MeshComp->RegisterComponent();
-		SpawnedActor->SetRootComponent(MeshComp);
-
-		FString MeshPath = CustomMeshPath.IsEmpty() ?
-			(MeshType == TEXT("sphere") ? TEXT("/Engine/BasicShapes/Sphere.Sphere") :
-			 MeshType == TEXT("cylinder") ? TEXT("/Engine/BasicShapes/Cylinder.Cylinder") :
-			 MeshType == TEXT("cone") ? TEXT("/Engine/BasicShapes/Cone.Cone") :
-			 MeshType == TEXT("plane") ? TEXT("/Engine/BasicShapes/Plane.Plane") :
-			 MeshType == TEXT("torus") ? TEXT("/Engine/BasicShapes/Torus.Torus") :
-			 TEXT("/Engine/BasicShapes/Cube.Cube"))
-			: CustomMeshPath;
-
-		UStaticMesh* Mesh = LoadObject<UStaticMesh>(nullptr, *MeshPath);
-		if (Mesh)
-		{
-			MeshComp->SetStaticMesh(Mesh);
-		}
-
-		UMaterialInstanceDynamic* MID = Factory->CreateDynamicMaterialFromConfig(
-			{MeshType, Size, Color, Metallic, Roughness, Opacity, TEXT(""), TEXT(""), false, CustomMeshPath});
-		if (MID && MeshComp)
-		{
-			MeshComp->SetMaterial(0, MID);
-		}
-
-		if (!FMath::IsNearlyEqual(Size / 50.0f, 1.0f))
-		{
-			SpawnedActor->SetActorScale3D(FVector(Size / 50.0f));
-		}
-	}
 
 	UUEMotionMobject* Obj = NewObject<UUEMotionMobject>(this);
 	if (Obj)
@@ -467,63 +376,93 @@ UUEMotionMobject* UUEMotionScene::CreateMobjectFromAsset(
 	return Obj;
 }
 
-UUEMotionMobject* UUEMotionScene::CreateMobjectFromConfig(const FMotionAssetConfig& Config)
+UUEMotionMobject* UUEMotionScene::CreateMobjectFromParams(
+	const FString& MeshType,
+	float Size,
+	const FLinearColor& Color,
+	float Metallic,
+	float Roughness,
+	float Opacity,
+	const FString& CustomMeshPath)
 {
 	if (!bInitialized || !SceneActor) return nullptr;
 
 	UUEMotionAssetFactory* Factory = GetAssetFactory();
-
-	UWorld* World = SceneActor->GetWorld();
-	if (!World) return nullptr;
-
-	FActorSpawnParameters Params;
-	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	AActor* Actor = World->SpawnActor<AActor>(AActor::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params);
-	if (!Actor) return nullptr;
-
-	UStaticMeshComponent* MeshComp = NewObject<UStaticMeshComponent>(Actor, TEXT("Mesh"));
-	MeshComp->RegisterComponent();
-	Actor->SetRootComponent(MeshComp);
-
-	UStaticMesh* Mesh = LoadObject<UStaticMesh>(nullptr, *Config.GetMeshPath());
-	if (Mesh)
+	if (!Factory)
 	{
-		MeshComp->SetStaticMesh(Mesh);
+		UE_LOG(LogTemp, Error, TEXT("UEMotionScene: AssetFactory is null, cannot create Mobject"));
+		return nullptr;
 	}
 
-	UMaterialInstanceDynamic* MID = Factory ? Factory->CreateDynamicMaterialFromConfig(Config) : nullptr;
-	if (MID && MeshComp)
+	FMotionAssetConfig Config;
+	Config.MeshType = MeshType;
+	Config.Size = Size;
+	Config.BaseColor = Color;
+	Config.Metallic = Metallic;
+	Config.Roughness = Roughness;
+	Config.Opacity = Opacity;
+	Config.CustomMeshPath = CustomMeshPath;
+
+	FString AssetName = FString::Printf(TEXT("BP_%s_%d"),
+		*(Config.MeshType.Left(1).ToUpper() + Config.MeshType.RightChop(1)),
+		static_cast<int32>(Config.Size));
+
+	FString BlueprintPath = CreateAndSaveBlueprintAsset(
+		Config.MeshType, Config.Size, Config.BaseColor,
+		Config.Metallic, Config.Roughness, Config.Opacity,
+		Config.CustomMeshPath, AssetName);
+	if (BlueprintPath.IsEmpty())
 	{
-		MeshComp->SetMaterial(0, MID);
+		UE_LOG(LogTemp, Error, TEXT("UEMotionScene: Failed to create Blueprint Asset for '%s'"), *AssetName);
+		return nullptr;
 	}
 
-	float ScaleFactor = Config.Size / 50.0f;
-	if (!FMath::IsNearlyEqual(ScaleFactor, 1.0f))
+	AActor* SpawnedActor = Factory->SpawnFromBlueprintAsset(BlueprintPath);
+	if (!SpawnedActor)
 	{
-		Actor->SetActorScale3D(FVector(ScaleFactor));
+		UE_LOG(LogTemp, Error, TEXT("UEMotionScene: Failed to spawn from Blueprint '%s'"), *BlueprintPath);
+		return nullptr;
 	}
+
+	UStaticMeshComponent* MeshComp = SpawnedActor->FindComponentByClass<UStaticMeshComponent>();
 
 	UUEMotionMobject* Obj = NewObject<UUEMotionMobject>(this);
 	if (Obj)
 	{
-		Obj->InitializeFromSpawnedActor(Actor, MeshComp);
+		Obj->InitializeFromSpawnedActor(SpawnedActor, MeshComp);
+		Obj->SetSourceAssetPath(BlueprintPath);
 		Obj->SetMobjectName(Config.MeshType);
 		Mobjects.Add(Obj);
-		AddActorToSequencer(Actor);
+		AddActorToSequencer(SpawnedActor);
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Created Mobject from Config - Type='%s' Size=%.1f"),
-		*Config.MeshType, Config.Size);
+	UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Created Mobject from Params (Asset-Based) - Type='%s' Size=%.1f BP='%s'"),
+		*Config.MeshType, Config.Size, *BlueprintPath);
 	return Obj;
 }
 
 FString UUEMotionScene::CreateAndSaveBlueprintAsset(
-	const FMotionAssetConfig& Config,
+	const FString& MeshType,
+	float Size,
+	const FLinearColor& Color,
+	float Metallic,
+	float Roughness,
+	float Opacity,
+	const FString& CustomMeshPath,
 	const FString& AssetName,
 	const FString& OutPackagePath)
 {
 	UUEMotionAssetFactory* Factory = GetAssetFactory();
 	if (!Factory) return TEXT("");
+
+	FMotionAssetConfig Config;
+	Config.MeshType = MeshType;
+	Config.Size = Size;
+	Config.BaseColor = Color;
+	Config.Metallic = Metallic;
+	Config.Roughness = Roughness;
+	Config.Opacity = Opacity;
+	Config.CustomMeshPath = CustomMeshPath;
 
 	UClass* BPClass = Factory->CreateAndSaveBlueprintAsset(Config, AssetName, OutPackagePath);
 	if (!BPClass) return TEXT("");
