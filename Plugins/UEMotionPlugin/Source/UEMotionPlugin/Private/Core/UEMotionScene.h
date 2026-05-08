@@ -149,6 +149,8 @@ private:
 	UMovieSceneFloatTrack* GetOrCreateFloatTrack(UUEMotionMobject* Mobject, const FString& PropertyName);
 	void RecordTransformKey(UMovieScene3DTransformTrack* Track, int32 Frame, const FVector& Location, const FRotator& Rotation, const FVector& Scale);
 	void RecordFloatKey(UMovieSceneFloatTrack* Track, int32 Frame, float Value);
+	void UpdateCameraCutRange(int32 EndFrame);
+	void UpdateCameraTransformRange(int32 EndFrame);
 
 	UFUNCTION()
 	void OnRendererFinished(bool bSuccess);

@@ -35,6 +35,7 @@
 #include "Editor/EditorEngine.h"
 #include "Subsystems/AssetEditorSubsystem.h"
 #include "Tracks/MovieSceneCameraCutTrack.h"
+#include "Sections/MovieSceneCameraCutSection.h"
 
 FString UUEMotionScene::GetMapPath() const
 {
@@ -184,13 +185,56 @@ void UUEMotionScene::Initialize(const FString& InSceneName, int32 Width, int32 H
 		if (CameraBinding.IsValid())
 		{
 			UMovieScene* MovieScene = LevelSequence->GetMovieScene();
-			UMovieSceneTrack* CamCutTrack = MovieScene->AddCameraCutTrack(UMovieSceneCameraCutTrack::StaticClass());
+
+			UMovieSceneTrack* CamCutTrack = MovieScene->GetCameraCutTrack();
+			if (!CamCutTrack)
+			{
+				CamCutTrack = MovieScene->AddCameraCutTrack(UMovieSceneCameraCutTrack::StaticClass());
+			}
 			UMovieSceneCameraCutTrack* CutTrack = Cast<UMovieSceneCameraCutTrack>(CamCutTrack);
 			if (CutTrack)
 			{
+				UMovieSceneCameraCutSection* CamCutSection = NewObject<UMovieSceneCameraCutSection>(CutTrack, NAME_None, RF_Transactional);
+
 				FMovieSceneObjectBindingID BindingID = UE::MovieScene::FRelativeObjectBindingID(CameraBinding);
-				CutTrack->AddNewCameraCut(BindingID, FFrameNumber(0));
-				UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Camera Cut Track added for SceneActor (CineCameraActor)"));
+				CamCutSection->SetCameraBindingID(BindingID);
+
+				FFrameRate DisplayRate = MovieScene->GetDisplayRate();
+				int32 DefaultEndFrame = FMath::RoundToInt(2.0f * PlaybackFPS);
+				FFrameNumber StartFrame = UEMotionCompat::DisplayFrameToTick(MovieScene, 0);
+				FFrameNumber EndFrame = UEMotionCompat::DisplayFrameToTick(MovieScene, DefaultEndFrame);
+				CamCutSection->SetRange(TRange<FFrameNumber>(StartFrame, EndFrame));
+
+				CutTrack->AddSection(*CamCutSection);
+
+				UE_LOG(LogTemp, Log, TEXT("UEMotionScene: CameraCutSection added - BindingID=%s, Range=[%d, %d)"),
+					*CameraBinding.ToString(), StartFrame.Value, EndFrame.Value);
+			}
+
+			UMovieScene3DTransformTrack* CamTransformTrack = Cast<UMovieScene3DTransformTrack>(
+				MovieScene->AddTrack<UMovieScene3DTransformTrack>(CameraBinding));
+			if (CamTransformTrack)
+			{
+				UMovieSceneSection* CamSection = UEMotionCompat::CreateAndAddSection(CamTransformTrack);
+				if (CamSection)
+				{
+					FFrameNumber StartFrame = UEMotionCompat::DisplayFrameToTick(MovieScene, 0);
+					int32 DefaultEndFrame = FMath::RoundToInt(2.0f * PlaybackFPS);
+					FFrameNumber EndFrame = UEMotionCompat::DisplayFrameToTick(MovieScene, DefaultEndFrame);
+					CamSection->SetRange(TRange<FFrameNumber>(StartFrame, EndFrame));
+
+					FVector CamLoc = SceneActor->GetActorLocation();
+					FRotator CamRot = SceneActor->GetActorRotation();
+					FVector CamScale = SceneActor->GetActorScale();
+					UMovieScene3DTransformSection* TransformSection = Cast<UMovieScene3DTransformSection>(CamSection);
+					if (TransformSection)
+					{
+						UEMotionCompat::RecordTransformKeys(MovieScene, TransformSection, 0, CamLoc, CamRot, CamScale);
+					}
+
+					UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Camera TransformTrack created - Range=[%d, %d), InitialKey at frame 0"),
+						StartFrame.Value, EndFrame.Value);
+				}
 			}
 		}
 
@@ -493,6 +537,53 @@ void UUEMotionScene::RecordFloatKey(UMovieSceneFloatTrack* Track, int32 Frame, f
 	Section->SetRange(TRange<FFrameNumber>(MinTick, MaxTick));
 }
 
+void UUEMotionScene::UpdateCameraCutRange(int32 EndFrame)
+{
+	if (!LevelSequence) return;
+	UMovieScene* MovieScene = LevelSequence->GetMovieScene();
+	if (!MovieScene) return;
+
+	UMovieSceneTrack* CamCutTrack = MovieScene->GetCameraCutTrack();
+	if (!CamCutTrack) return;
+
+	FFrameNumber StartTick = UEMotionCompat::DisplayFrameToTick(MovieScene, 0);
+	FFrameNumber EndTick = UEMotionCompat::DisplayFrameToTick(MovieScene, EndFrame);
+
+	for (UMovieSceneSection* Section : CamCutTrack->GetAllSections())
+	{
+		if (Section)
+		{
+			Section->SetRange(TRange<FFrameNumber>(StartTick, EndTick));
+		}
+	}
+}
+
+void UUEMotionScene::UpdateCameraTransformRange(int32 EndFrame)
+{
+	if (!LevelSequence || !SceneActor) return;
+	UMovieScene* MovieScene = LevelSequence->GetMovieScene();
+	if (!MovieScene) return;
+
+	FGuid CameraBinding = UEMotionCompat::FindObjectBinding(MovieScene, SceneActor);
+	if (!CameraBinding.IsValid()) return;
+
+	UMovieScene3DTransformTrack* CamTrack = UEMotionCompat::FindTransformTrack(MovieScene, CameraBinding);
+	if (!CamTrack) return;
+
+	FFrameNumber StartTick = UEMotionCompat::DisplayFrameToTick(MovieScene, 0);
+	FFrameNumber EndTick = UEMotionCompat::DisplayFrameToTick(MovieScene, EndFrame);
+
+	for (UMovieSceneSection* Section : CamTrack->GetAllSections())
+	{
+		if (Section)
+		{
+			TRange<FFrameNumber> CurrentRange = Section->GetRange();
+			FFrameNumber CurrentEnd = CurrentRange.GetUpperBound().IsOpen() ? EndTick : FMath::Max(CurrentRange.GetUpperBoundValue(), EndTick);
+			Section->SetRange(TRange<FFrameNumber>(StartTick, CurrentEnd));
+		}
+	}
+}
+
 void UUEMotionScene::Play(UUEMotionAnimation* Animation)
 {
 	if (!Animation || !bInitialized) return;
@@ -606,6 +697,8 @@ void UUEMotionScene::Play(UUEMotionAnimation* Animation)
 		MovieScene->SetPlaybackRange(TRange<FFrameNumber>(0, TotalFrames), true);
 		MovieScene->SetWorkingRange(0.0, CurrentTime + 1.0);
 		MovieScene->SetViewRange(0.0, CurrentTime + 1.0);
+		UpdateCameraCutRange(TotalFrames);
+		UpdateCameraTransformRange(TotalFrames);
 	}
 }
 
@@ -620,6 +713,8 @@ void UUEMotionScene::Wait(float Duration)
 		MovieScene->SetPlaybackRange(TRange<FFrameNumber>(0, TotalFrames), true);
 		MovieScene->SetWorkingRange(0.0, CurrentTime + 1.0);
 		MovieScene->SetViewRange(0.0, CurrentTime + 1.0);
+		UpdateCameraCutRange(TotalFrames);
+		UpdateCameraTransformRange(TotalFrames);
 	}
 }
 
