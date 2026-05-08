@@ -74,6 +74,7 @@ def on_render_done(success):
         print(f"  RESULT: {'FAILED (render error)' if not success else 'NO IMAGES'}")
     print("=" * 64)
 
+    s.set_auto_cleanup(False)
     s.destroy()
 
 s.on_render_finished(on_render_done)
