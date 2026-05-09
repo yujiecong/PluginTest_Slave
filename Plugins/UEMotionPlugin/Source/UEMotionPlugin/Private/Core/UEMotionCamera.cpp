@@ -1,5 +1,6 @@
 #include "UEMotionCamera.h"
 #include "CineCameraActor.h"
+#include "CineCameraComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 
@@ -132,4 +133,31 @@ void UUEMotionCamera::SetOrthoFarClipPlane(float FarClip)
 	{
 		CamComp->SetOrthoFarClipPlane(FarClip);
 	}
+}
+
+void UUEMotionCamera::SetSensorAspectRatio(float AspectRatio, float SensorWidth)
+{
+	if (!CameraActor.IsValid()) return;
+	UCineCameraComponent* CineComp = Cast<UCineCameraComponent>(CameraActor->GetCameraComponent());
+	if (CineComp)
+	{
+		float SafeRatio = FMath::Max(AspectRatio, 0.1f);
+		float SafeWidth = FMath::Max(SensorWidth, 1.0f);
+		CineComp->Filmback.SensorWidth = SafeWidth;
+		CineComp->Filmback.SensorHeight = SafeWidth / SafeRatio;
+	}
+}
+
+float UUEMotionCamera::GetSensorAspectRatio() const
+{
+	if (!CameraActor.IsValid()) return 1.0f;
+	UCineCameraComponent* CineComp = Cast<UCineCameraComponent>(CameraActor->GetCameraComponent());
+	if (CineComp)
+	{
+		if (CineComp->Filmback.SensorHeight > 0.0f)
+		{
+			return CineComp->Filmback.SensorWidth / CineComp->Filmback.SensorHeight;
+		}
+	}
+	return 1.0f;
 }

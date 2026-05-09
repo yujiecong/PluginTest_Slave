@@ -1,6 +1,6 @@
 import unreal
 from .colors import vec
-from .constants import PROJECTION_PERSPECTIVE, PROJECTION_ORTHOGRAPHIC
+from .constants import PROJECTION_PERSPECTIVE, PROJECTION_ORTHOGRAPHIC, DEFAULT_SENSOR_WIDTH, DEFAULT_CAMERA_ASPECT_RATIO
 
 
 class Camera:
@@ -52,6 +52,15 @@ class Camera:
     @ortho_width.setter
     def ortho_width(self, value):
         self._ue.set_ortho_width(float(value))
+        self._scene._ue.update_camera_key()
+
+    @property
+    def aspect_ratio(self):
+        return self._ue.get_sensor_aspect_ratio()
+
+    @aspect_ratio.setter
+    def aspect_ratio(self, value):
+        self._ue.set_sensor_aspect_ratio(float(value), DEFAULT_SENSOR_WIDTH)
         self._scene._ue.update_camera_key()
 
     def look_at(self, target):

@@ -18,6 +18,7 @@ from .constants import (
     DEFAULT_CAMERA_Z, SCALE_FACTOR,
     DEFAULT_CUBE_SIDE, DEFAULT_SPHERE_RADIUS,
     DEFAULT_DOT_RADIUS,
+    DEFAULT_CAMERA_ASPECT_RATIO, DEFAULT_SENSOR_WIDTH,
     PROJECTION_PERSPECTIVE, PROJECTION_ORTHOGRAPHIC,
     motion_to_ue, ue_to_motion, motion_to_ue_vec, ue_to_motion_vec,
 )
@@ -32,7 +33,8 @@ def _color_to_rgb(linear_color):
 
 
 class Scene:
-    def __init__(self, name="default", width=DEFAULT_PIXEL_WIDTH, height=DEFAULT_PIXEL_HEIGHT, mode="2d"):
+    def __init__(self, name="default", width=DEFAULT_PIXEL_WIDTH, height=DEFAULT_PIXEL_HEIGHT, mode="2d",
+                 aspect_ratio=DEFAULT_CAMERA_ASPECT_RATIO):
         self._ue = unreal.UEMotionScene()
         self._ue.initialize(name, width, height)
         self._name = name
@@ -51,6 +53,8 @@ class Scene:
             self._setup_standard_2d_camera()
         else:
             self._setup_3d_camera()
+
+        self.camera.aspect_ratio = aspect_ratio
 
     def _bind_render_delegate(self):
         delegate = None

@@ -17,7 +17,7 @@ print("UEMotion Cube Basic Animations Showcase (2D Orthographic)")
 print(f"Animation Duration: {FRAME_DURATION}s ({FPS} frames @ {FPS}fps)")
 print("=" * 60)
 
-cube = s.cube(0.2, color="#3498db", location=ORIGIN)
+cube = s.cube(color="#3498db", location=ORIGIN)
 
 print("\n[1/6] MOVE_TO: Moving cube from center to RIGHT")
 cube.move_to(RIGHT * 3, duration=FRAME_DURATION, easing="ease_in_out")

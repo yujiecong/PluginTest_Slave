@@ -13,6 +13,10 @@
 #include "Rendering/UEMotionRenderer.h"
 #include "Actors/UEMotionSceneActor.h"
 #include "Utils/UEMotionSequencerCompat.h"
+#include "UEMotionAssetFactory.h"
+#include "Materials/MaterialParameterCollection.h"
+#include "Tracks/MovieSceneMaterialParameterCollectionTrack.h"
+#include "Sections/MovieSceneParameterSection.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "Engine/DirectionalLight.h"
@@ -766,17 +770,71 @@ void UUEMotionScene::Play(UUEMotionAnimation* Animation)
 	}
 	else if (UUEMotionFadeAnimation* FadeAnim = Cast<UUEMotionFadeAnimation>(Animation))
 	{
-		UUEMotionMobject* FadeTarget = FadeAnim->GetTargetMobject();
-		if (FadeTarget)
+		static const FString MPCPath = TEXT("/Game/UEMotion/Materials/MPC_UEMotionFade");
+		UMaterialParameterCollection* MPC = LoadObject<UMaterialParameterCollection>(nullptr, *MPCPath);
+		if (MPC)
 		{
-			UMovieSceneFloatTrack* Track = GetOrCreateFloatTrack(FadeTarget, TEXT("Opacity"));
-			if (Track)
+			UMovieScene* MovieScene = LevelSequence->GetMovieScene();
+			if (MovieScene)
 			{
-				float StartOpacity = FadeAnim->IsFadeOut() ? 1.0f : 0.0f;
-				float EndOpacity = FadeAnim->IsFadeOut() ? 0.0f : 1.0f;
+				UMovieSceneMaterialParameterCollectionTrack* MPCTrack = nullptr;
 
-				RecordFloatKey(Track, StartFrame, StartOpacity);
-				RecordFloatKey(Track, EndFrame, EndOpacity);
+				for (UMovieSceneTrack* Track : MovieScene->GetTracks())
+				{
+					UMovieSceneMaterialParameterCollectionTrack* CandidateTrack =
+						Cast<UMovieSceneMaterialParameterCollectionTrack>(Track);
+					if (CandidateTrack && CandidateTrack->MPC == MPC)
+					{
+						MPCTrack = CandidateTrack;
+						break;
+					}
+				}
+
+				if (!MPCTrack)
+				{
+					MPCTrack = MovieScene->AddTrack<UMovieSceneMaterialParameterCollectionTrack>();
+					if (MPCTrack)
+					{
+						MPCTrack->MPC = MPC;
+					}
+				}
+
+				if (MPCTrack)
+				{
+					UMovieSceneParameterSection* Section = Cast<UMovieSceneParameterSection>(
+						MPCTrack->GetAllSections().Num() > 0 ? MPCTrack->GetAllSections()[0] : nullptr);
+					if (!Section)
+					{
+						Section = Cast<UMovieSceneParameterSection>(MPCTrack->CreateNewSection());
+						if (Section)
+						{
+							Section->SetRange(TRange<FFrameNumber>::All());
+							MPCTrack->AddSection(*Section);
+						}
+					}
+
+					if (Section)
+					{
+						float StartOpacity = FadeAnim->IsFadeOut() ? 1.0f : 0.0f;
+						float EndOpacity = FadeAnim->IsFadeOut() ? 0.0f : 1.0f;
+
+						FFrameNumber StartTick = UEMotionCompat::DisplayFrameToTick(MovieScene, StartFrame);
+						FFrameNumber EndTick = UEMotionCompat::DisplayFrameToTick(MovieScene, EndFrame);
+
+						Section->AddScalarParameterKey(FName("Opacity"), StartTick, StartOpacity);
+						Section->AddScalarParameterKey(FName("Opacity"), EndTick, EndOpacity);
+
+						TRange<FFrameNumber> CurrentRange = Section->GetRange();
+						FFrameNumber MinTick = CurrentRange.GetLowerBound().IsOpen() ? StartTick :
+							FMath::Min(CurrentRange.GetLowerBoundValue(), StartTick);
+						FFrameNumber MaxTick = CurrentRange.GetUpperBound().IsOpen() ? EndTick :
+							FMath::Max(CurrentRange.GetUpperBoundValue(), EndTick);
+						Section->SetRange(TRange<FFrameNumber>(MinTick, MaxTick));
+
+						UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Recorded MPC fade keys - Start=%f Frame=%d End=%f Frame=%d"),
+							StartOpacity, StartFrame, EndOpacity, EndFrame);
+					}
+				}
 			}
 		}
 	}

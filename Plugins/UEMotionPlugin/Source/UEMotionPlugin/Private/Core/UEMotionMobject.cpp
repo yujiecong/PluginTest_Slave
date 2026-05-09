@@ -9,6 +9,9 @@
 #include "Materials/MaterialExpressionVectorParameter.h"
 #include "Materials/MaterialExpressionScalarParameter.h"
 #include "Materials/MaterialExpressionConstant.h"
+#include "Materials/MaterialExpressionCollectionParameter.h"
+#include "Materials/MaterialExpressionMultiply.h"
+#include "Materials/MaterialParameterCollection.h"
 #include "UObject/ConstructorHelpers.h"
 
 UMaterialInterface* UUEMotionMobject::GetOrCreateBaseMaterial()
@@ -44,6 +47,28 @@ UMaterialInterface* UUEMotionMobject::GetOrCreateBaseMaterial()
 	OpacityExpr->DefaultValue = 1.0f;
 	Material->GetExpressionCollection().AddExpression(OpacityExpr);
 
+	static const FString MPCPath = TEXT("/Game/UEMotion/Materials/MPC_UEMotionFade");
+	UMaterialParameterCollection* MPC = LoadObject<UMaterialParameterCollection>(nullptr, *MPCPath);
+
+	UMaterialExpression* OpacityOutput = OpacityExpr;
+
+	if (MPC)
+	{
+		UMaterialExpressionCollectionParameter* MPCNode = NewObject<UMaterialExpressionCollectionParameter>(Material);
+		MPCNode->Collection = MPC;
+		MPCNode->ParameterName = FName("Opacity");
+		Material->GetExpressionCollection().AddExpression(MPCNode);
+
+		UMaterialExpressionMultiply* MultiplyNode = NewObject<UMaterialExpressionMultiply>(Material);
+		MultiplyNode->A.Expression = OpacityExpr;
+		MultiplyNode->A.OutputIndex = 0;
+		MultiplyNode->B.Expression = MPCNode;
+		MultiplyNode->B.OutputIndex = 0;
+		Material->GetExpressionCollection().AddExpression(MultiplyNode);
+
+		OpacityOutput = MultiplyNode;
+	}
+
 	UMaterialExpressionConstant* RoughnessConst = NewObject<UMaterialExpressionConstant>(Material);
 	RoughnessConst->R = 0.5f;
 	Material->GetExpressionCollection().AddExpression(RoughnessConst);
@@ -57,7 +82,7 @@ UMaterialInterface* UUEMotionMobject::GetOrCreateBaseMaterial()
 	{
 		EditorData->BaseColor.Expression = ColorExpr;
 		EditorData->BaseColor.OutputIndex = 0;
-		EditorData->Opacity.Expression = OpacityExpr;
+		EditorData->Opacity.Expression = OpacityOutput;
 		EditorData->Opacity.OutputIndex = 0;
 		EditorData->Roughness.Expression = RoughnessConst;
 		EditorData->Roughness.OutputIndex = 0;

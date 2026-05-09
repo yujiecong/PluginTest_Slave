@@ -56,6 +56,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "UEMotion|Camera")
 	void SetOrthoFarClipPlane(float FarClip);
 
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Camera")
+	void SetSensorAspectRatio(float AspectRatio, float SensorWidth = 24.0f);
+
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Camera")
+	float GetSensorAspectRatio() const;
+
 private:
 	UPROPERTY()
 	TWeakObjectPtr<ACineCameraActor> CameraActor;

@@ -20,7 +20,7 @@ for i in range(num_points):
     x = x_start + (x_range / (num_points - 1)) * i
     t = (x - x_start) / x_range
     y = 2.0 * math.sin(t * 2 * math.pi)
-    sp = s.dot(radius=0.08, color="cyan", location=MVector(x, y, 0))
+    sp = s.dot(color="cyan", location=MVector(x, y, 0))
     if sp:
         spheres.append(sp)
 
