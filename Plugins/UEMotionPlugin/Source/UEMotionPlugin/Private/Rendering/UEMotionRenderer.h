@@ -35,6 +35,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "UEMotion|Renderer")
 	float GetProgress() const;
 
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Renderer")
+	void SetUseUnlit(bool bUnlit);
+
+	UFUNCTION(BlueprintPure, Category = "UEMotion|Renderer")
+	bool IsUsingUnlit() const;
+
 private:
 	UPROPERTY()
 	UWorld* TargetWorld = nullptr;
@@ -51,6 +57,7 @@ private:
 	int32 ResolutionWidth = 1920;
 	int32 ResolutionHeight = 1080;
 	bool bIsRendering = false;
+	bool bUseUnlitMode = true;
 
 	UFUNCTION()
 	void OnRenderFinished(UMoviePipelineExecutorBase* InExecutor, bool bSuccess);

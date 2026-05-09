@@ -179,15 +179,6 @@ public:
 	UFUNCTION(BlueprintPure, Category = "UEMotion|Scene")
 	bool IsUsingUnlit() const;
 
-private:
-	bool bInitialized = false;
-	FString SceneName;
-	int32 ResolutionWidth = 1920;
-	int32 ResolutionHeight = 1080;
-	bool bAutoCleanup = true;
-	float CurrentTime = 0.0f;
-	float PlaybackFPS = 30.0f;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UEMotion|Scene")
 	FLinearColor BackgroundColor = FLinearColor(0.02f, 0.02f, 0.04f, 1.0f);
 
@@ -199,6 +190,15 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UEMotion|Scene")
 	bool bUseUnlitMode = true;
+
+private:
+	bool bInitialized = false;
+	FString SceneName;
+	int32 ResolutionWidth = 1920;
+	int32 ResolutionHeight = 1080;
+	bool bAutoCleanup = true;
+	float CurrentTime = 0.0f;
+	float PlaybackFPS = 30.0f;
 
 	UPROPERTY()
 	UWorld* SceneWorld = nullptr;

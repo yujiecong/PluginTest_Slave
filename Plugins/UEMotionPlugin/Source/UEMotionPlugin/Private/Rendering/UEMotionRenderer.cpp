@@ -82,7 +82,10 @@ void UUEMotionRenderer::RenderSequence(ULevelSequence* Sequence, const FString& 
 		OutputSetting->bFlushDiskWritesPerShot = true;
 	}
 
-	Config->FindOrAddSettingByClass(UMoviePipelineDeferredPassBase::StaticClass());
+	if (!bUseUnlitMode)
+	{
+		Config->FindOrAddSettingByClass(UMoviePipelineDeferredPassBase::StaticClass());
+	}
 
 	Config->FindOrAddSettingByClass(UMoviePipelineImageSequenceOutput_PNG::StaticClass());
 
@@ -126,4 +129,14 @@ void UUEMotionRenderer::OnRenderFinished(UMoviePipelineExecutorBase* InExecutor,
 	}
 
 	OnRenderFinishedDelegate.Broadcast(bSuccess);
+}
+
+void UUEMotionRenderer::SetUseUnlit(bool bUnlit)
+{
+	bUseUnlitMode = bUnlit;
+}
+
+bool UUEMotionRenderer::IsUsingUnlit() const
+{
+	return bUseUnlitMode;
 }

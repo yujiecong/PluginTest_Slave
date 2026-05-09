@@ -21,6 +21,8 @@
 #include "EngineUtils.h"
 #include "Engine/DirectionalLight.h"
 #include "Engine/PointLight.h"
+#include "Engine/StaticMesh.h"
+#include "GameFramework/WorldSettings.h"
 #include "Components/DirectionalLightComponent.h"
 #include "Components/PointLightComponent.h"
 #include "LevelSequence.h"
@@ -39,6 +41,7 @@
 #include "HAL/PlatformFileManager.h"
 #include "Editor/EditorEngine.h"
 #include "Subsystems/AssetEditorSubsystem.h"
+#include "FileHelpers.h"
 #include "Tracks/MovieSceneCameraCutTrack.h"
 #include "Sections/MovieSceneCameraCutSection.h"
 
@@ -56,11 +59,29 @@ bool UUEMotionScene::CreateSceneMap()
 {
 	if (!GEditor) return false;
 
+	static const FString DefaultMapPath = TEXT("/Game/UEMotion/Maps/M_UEMotionDefault");
 	FString MapPath = GetMapPath();
+
+	if (UEditorAssetLibrary::DoesAssetExist(DefaultMapPath))
+	{
+		if (MapPath != DefaultMapPath)
+		{
+			if (UEditorAssetLibrary::DoesAssetExist(MapPath))
+			{
+				UEditorAssetLibrary::DeleteAsset(MapPath);
+			}
+		}
+	}
 
 	if (UEditorAssetLibrary::DoesAssetExist(MapPath))
 	{
-		UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Map '%s' already exists, deleting it"), *MapPath);
+		UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Map '%s' already exists, loading it"), *MapPath);
+		if (FEditorFileUtils::LoadMap(*MapPath))
+		{
+			SceneWorld = GEditor->GetEditorWorldContext().World();
+			return SceneWorld != nullptr;
+		}
+		UE_LOG(LogTemp, Warning, TEXT("UEMotionScene: Failed to load existing map '%s', recreating"), *MapPath);
 		UEditorAssetLibrary::DeleteAsset(MapPath);
 	}
 
@@ -70,12 +91,33 @@ bool UUEMotionScene::CreateSceneMap()
 	SceneWorld = GEditor->GetEditorWorldContext().World();
 	if (!SceneWorld) return false;
 
-	if (!UEditorLoadingAndSavingUtils::SaveMap(SceneWorld, MapPath))
+	for (TActorIterator<AActor> It(SceneWorld); It; ++It)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("UEMotionScene: Failed to save map to '%s'"), *MapPath);
+		AActor* Actor = *It;
+		if (Actor && Actor->GetClass() != AWorldSettings::StaticClass() && !Actor->GetName().Contains(TEXT("PlayerStart")))
+		{
+			Actor->Destroy();
+		}
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Map created and saved to '%s'"), *MapPath);
+	AWorldSettings* WS = SceneWorld->GetWorldSettings();
+	if (WS)
+	{
+		WS->bEnableWorldBoundsChecks = false;
+	}
+
+	if (MapPath == DefaultMapPath || !UEditorAssetLibrary::DoesAssetExist(DefaultMapPath))
+	{
+		if (!UEditorLoadingAndSavingUtils::SaveMap(SceneWorld, MapPath))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("UEMotionScene: Failed to save map to '%s'"), *MapPath);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Created and saved default map to '%s'"), *MapPath);
+		}
+	}
+
 	return true;
 }
 
@@ -125,6 +167,12 @@ void UUEMotionScene::SetupDefaultLighting()
 {
 	if (!SceneWorld) return;
 
+	if (bUseUnlitMode)
+	{
+		UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Skipping default lighting (Unlit mode)"));
+		return;
+	}
+
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
@@ -138,6 +186,63 @@ void UUEMotionScene::SetupDefaultLighting()
 			LightComp->SetLightColor(FLinearColor::White);
 		}
 	}
+}
+
+void UUEMotionScene::SetupCoordinateAxes()
+{
+	if (!SceneWorld || !bShowCoordinateAxes) return;
+
+	static const FString GizmoMeshPath = TEXT("/Engine/InteractiveToolsFramework/Meshes/GizmoArrowHandle.GizmoArrowHandle");
+	UStaticMesh* GizmoMesh = LoadObject<UStaticMesh>(nullptr, *GizmoMeshPath);
+	if (!GizmoMesh)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("UEMotionScene: Failed to load GizmoArrowHandle mesh from '%s'"), *GizmoMeshPath);
+		return;
+	}
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	SpawnParams.bNoFail = true;
+
+	float Len = CoordinateAxisLength;
+
+	AActor* XAxisActor = SceneWorld->SpawnActor<AActor>(AActor::StaticClass(), FVector(0, 0, 0), FRotator(0, 0, -90), SpawnParams);
+	if (XAxisActor)
+	{
+		UStaticMeshComponent* XMeshComp = NewObject<UStaticMeshComponent>(XAxisActor, TEXT("XAxisMesh"));
+		XMeshComp->SetStaticMesh(GizmoMesh);
+		XMeshComp->RegisterComponent();
+		XMeshComp->SetWorldScale3D(FVector(Len / 60.0f, Len / 60.0f, 1.0f));
+		XAxisActor->SetRootComponent(XMeshComp);
+
+		UMaterialInterface* BaseMat = XMeshComp->GetMaterial(0);
+		if (BaseMat)
+		{
+			UMaterialInstanceDynamic* XMat = UMaterialInstanceDynamic::Create(BaseMat, this);
+			XMat->SetVectorParameterValue(FName("BaseColor"), FLinearColor::Red);
+			XMeshComp->SetMaterial(0, XMat);
+		}
+	}
+
+	AActor* YAxisActor = SceneWorld->SpawnActor<AActor>(AActor::StaticClass(), FVector(0, 0, 0), FRotator(0, 0, 0), SpawnParams);
+	if (YAxisActor)
+	{
+		UStaticMeshComponent* YMeshComp = NewObject<UStaticMeshComponent>(YAxisActor, TEXT("YAxisMesh"));
+		YMeshComp->SetStaticMesh(GizmoMesh);
+		YMeshComp->RegisterComponent();
+		YMeshComp->SetWorldScale3D(FVector(Len / 60.0f, Len / 60.0f, 1.0f));
+		YAxisActor->SetRootComponent(YMeshComp);
+
+		UMaterialInterface* BaseMat = YMeshComp->GetMaterial(0);
+		if (BaseMat)
+		{
+			UMaterialInstanceDynamic* YMat = UMaterialInstanceDynamic::Create(BaseMat, this);
+			YMat->SetVectorParameterValue(FName("BaseColor"), FLinearColor::Green);
+			YMeshComp->SetMaterial(0, YMat);
+		}
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Coordinate axes created (X=Red, Y=Green, Length=%.0f)"), Len);
 }
 
 void UUEMotionScene::OpenLevelSequenceInEditor()
@@ -247,6 +352,7 @@ void UUEMotionScene::Initialize(const FString& InSceneName, int32 Width, int32 H
 		}
 
 		SetupDefaultLighting();
+		SetupCoordinateAxes();
 		bInitialized = true;
 
 		UEditorLoadingAndSavingUtils::SaveMap(SceneWorld, GetMapPath());
@@ -921,6 +1027,7 @@ void UUEMotionScene::RenderFrames(const FString& OutputDirectory, float Duration
 	{
 		Renderer = NewObject<UUEMotionRenderer>(this);
 		Renderer->Initialize(SceneWorld, ResolutionWidth, ResolutionHeight);
+		Renderer->SetUseUnlit(bUseUnlitMode);
 		Renderer->OnRenderFinishedDelegate.AddDynamic(this, &UUEMotionScene::OnRendererFinished);
 	}
 
@@ -1074,6 +1181,46 @@ void UUEMotionScene::SetAutoCleanup(bool bCleanup)
 bool UUEMotionScene::GetAutoCleanup() const
 {
 	return bAutoCleanup;
+}
+
+void UUEMotionScene::SetBackgroundColor(const FLinearColor& Color)
+{
+	BackgroundColor = Color;
+}
+
+FLinearColor UUEMotionScene::GetBackgroundColor() const
+{
+	return BackgroundColor;
+}
+
+void UUEMotionScene::SetShowCoordinateAxes(bool bShow)
+{
+	bShowCoordinateAxes = bShow;
+}
+
+bool UUEMotionScene::GetShowCoordinateAxes() const
+{
+	return bShowCoordinateAxes;
+}
+
+void UUEMotionScene::SetCoordinateAxisLength(float Length)
+{
+	CoordinateAxisLength = FMath::Max(Length, 10.0f);
+}
+
+float UUEMotionScene::GetCoordinateAxisLength() const
+{
+	return CoordinateAxisLength;
+}
+
+void UUEMotionScene::SetUseUnlit(bool bUnlit)
+{
+	bUseUnlitMode = bUnlit;
+}
+
+bool UUEMotionScene::IsUsingUnlit() const
+{
+	return bUseUnlitMode;
 }
 
 void UUEMotionScene::OnRendererFinished(bool bSuccess)

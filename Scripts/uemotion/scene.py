@@ -34,7 +34,11 @@ def _color_to_rgb(linear_color):
 
 class Scene:
     def __init__(self, name="default", width=DEFAULT_PIXEL_WIDTH, height=DEFAULT_PIXEL_HEIGHT, mode="2d",
-                 aspect_ratio=DEFAULT_CAMERA_ASPECT_RATIO):
+                 aspect_ratio=DEFAULT_CAMERA_ASPECT_RATIO,
+                 background_color="#050508",
+                 show_axes=True,
+                 axis_length=4.0,
+                 unlit=True):
         self._ue = unreal.UEMotionScene()
         self._ue.initialize(name, width, height)
         self._name = name
@@ -48,6 +52,11 @@ class Scene:
         self._frame_width = FRAME_WIDTH
         self._frame_height = FRAME_HEIGHT
         self._scale_factor = SCALE_FACTOR
+
+        self._ue.set_background_color(resolve_color(background_color))
+        self._ue.set_show_coordinate_axes(show_axes)
+        self._ue.set_coordinate_axis_length(axis_length * SCALE_FACTOR)
+        self._ue.set_use_unlit(unlit)
 
         if self._mode == "2d":
             self._setup_standard_2d_camera()
