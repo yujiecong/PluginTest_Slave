@@ -1,11 +1,15 @@
 import unreal
-from .colors import resolve_color
+from .colors import resolve_color, vec
+from .vector import MVector, to_mvector
 from .constants import (
     UP, DOWN, LEFT, RIGHT,
     TOP, BOTTOM, LEFT_SIDE, RIGHT_SIDE,
-    UL, UR, DL, DR,
+    UL, UR, DL, DR, ORIGIN,
     DEFAULT_MOBJECT_TO_EDGE_BUFF,
     DEFAULT_MOBJECT_TO_MOBJECT_BUFF,
+    SCALE_FACTOR,
+    ue_to_motion, ue_to_motion_vec,
+    motion_to_ue, motion_to_ue_vec,
 )
 
 
@@ -35,12 +39,25 @@ class Mobject:
 
     @property
     def location(self):
-        return self._ue.get_location()
+        ue_loc = self._ue.get_location()
+        return ue_to_motion_vec(ue_loc)
 
     @location.setter
     def location(self, value):
-        from .colors import vec
-        self._ue.set_location(vec(*value) if isinstance(value, (list, tuple)) else value)
+        v = to_mvector(value)
+        ue_v = motion_to_ue_vec(v)
+        self._ue.set_location(vec(ue_v.x, ue_v.y, ue_v.z))
+
+    @property
+    def raw_location(self):
+        return self._ue.get_location()
+
+    @raw_location.setter
+    def raw_location(self, value):
+        if isinstance(value, (list, tuple)):
+            self._ue.set_location(vec(*value))
+        else:
+            self._ue.set_location(value)
 
     @property
     def color(self):
@@ -59,8 +76,8 @@ class Mobject:
         if isinstance(value, (int, float)):
             self._ue.set_scale(unreal.Vector(value, value, value))
         else:
-            from .colors import vec
-            self._ue.set_scale(vec(*value) if isinstance(value, (list, tuple)) else value)
+            v = to_mvector(value)
+            self._ue.set_scale(vec(v.x, v.y, v.z))
 
     @property
     def rotation(self):
@@ -84,68 +101,123 @@ class Mobject:
     def visible(self, value):
         self._ue.set_visibility(bool(value))
 
-    def move_to(self, target, duration=1.0, easing="ease_in_out"):
+    def get_bounding_box(self):
+        origin, extent = self._ue.get_bounds()
+        center = ue_to_motion_vec(origin)
+        half = ue_to_motion_vec(extent)
+        return {
+            'min': center - half,
+            'mid': center,
+            'max': center + half,
+        }
+
+    def get_bounding_box_point(self, direction):
+        bb = self.get_bounding_box()
+        d = to_mvector(direction)
+        return MVector(
+            bb['min'].x * (1 - d.x) / 2 + bb['max'].x * (1 + d.x) / 2,
+            bb['min'].y * (1 - d.y) / 2 + bb['max'].y * (1 + d.y) / 2,
+            bb['min'].z * (1 - d.z) / 2 + bb['max'].z * (1 + d.z) / 2,
+        )
+
+    def get_center(self):
+        return self.get_bounding_box_point(ORIGIN)
+
+    def get_top(self):
+        return self.get_bounding_box_point(UP)
+
+    def get_bottom(self):
+        return self.get_bounding_box_point(DOWN)
+
+    def get_left(self):
+        return self.get_bounding_box_point(LEFT)
+
+    def get_right(self):
+        return self.get_bounding_box_point(RIGHT)
+
+    def get_corner(self, direction):
+        return self.get_bounding_box_point(direction)
+
+    @property
+    def width(self):
+        bb = self.get_bounding_box()
+        return bb['max'].x - bb['min'].x
+
+    @property
+    def height(self):
+        bb = self.get_bounding_box()
+        return bb['max'].y - bb['min'].y
+
+    def move_to(self, target, aligned_edge=None, duration=1.0, easing="ease_in_out"):
+        if aligned_edge is None:
+            aligned_edge = ORIGIN
+
+        if isinstance(target, Mobject):
+            target_point = target.get_bounding_box_point(aligned_edge)
+        else:
+            target_point = to_mvector(target)
+
+        current_point = self.get_bounding_box_point(aligned_edge)
+        shift_vec = target_point - current_point
+        return self.shift(shift_vec, duration=duration, easing=easing)
+
+    def shift(self, vector, duration=1.0, easing="linear"):
+        v = to_mvector(vector)
+        current = self.location
+        target = current + v
+        ue_target = motion_to_ue_vec(target)
         anim = unreal.UEMotionMoveAnimation()
         anim.set_target_mobject(self._ue)
-        from .colors import vec
-        anim.set_target(vec(*target) if isinstance(target, (list, tuple)) else target)
+        anim.set_target(vec(ue_target.x, ue_target.y, ue_target.z))
         anim.set_duration(duration)
         anim.set_easing(easing)
         self._scene._pending_animations.append(anim)
         return self
 
-    def shift(self, vector, duration=1.0, easing="linear"):
-        current = self.location
-        target = (
-            current.x + vector[0],
-            current.y + vector[1],
-            current.z + vector[2] if len(vector) > 2 else current.z
-        )
-        return self.move_to(target, duration, easing)
-
     def to_edge(self, edge, buff=DEFAULT_MOBJECT_TO_EDGE_BUFF):
-        edges = {
-            'UP': TOP,
-            'DOWN': BOTTOM,
-            'LEFT': LEFT_SIDE,
-            'RIGHT': RIGHT_SIDE,
-            'UL': UL,
-            'UR': UR,
-            'DL': DL,
-            'DR': DR,
-        }
-        target = edges.get(edge.upper(), (0, 0, 0))
-        if edge.upper() in ['UP', 'DOWN']:
-            target = (self.location.x, target[1], 0)
-        elif edge.upper() in ['LEFT', 'RIGHT']:
-            target = (target[0], self.location.y, 0)
-        if edge.upper() in ['UP', 'RIGHT', 'UR']:
-            target = (target[0] - buff, target[1] - buff, 0) if len(target) > 2 else (target[0] - buff, target[1] - buff)
-        elif edge.lower() in ['down', 'left', 'dl']:
-            target = (target[0] + buff, target[1] + buff, 0) if len(target) > 2 else (target[0] + buff, target[1] + buff)
-        return self.move_to(target)
+        d = to_mvector(edge)
+        frame_edge_point = self._scene.get_bounding_box_point(d)
+        self_anchor = self.get_bounding_box_point(d)
+        neg_d = -d
+        shift_vec = frame_edge_point - self_anchor + neg_d * buff
+        return self.shift(shift_vec)
 
-    def next_to(self, other, direction=RIGHT, buff=DEFAULT_MOBJECT_TO_MOBJECT_BUFF):
-        other_pos = other.location
-        dir_vec = {
-            'UP': UP, 'DOWN': DOWN,
-            'LEFT': LEFT, 'RIGHT': RIGHT
-        }.get(direction.upper(), RIGHT)
-        target = (
-            other_pos.x + dir_vec[0] * buff,
-            other_pos.y + dir_vec[1] * buff,
-            0
-        )
-        return self.move_to(target)
+    def next_to(self, other, direction=RIGHT, buff=DEFAULT_MOBJECT_TO_MOBJECT_BUFF, aligned_edge=None):
+        d = to_mvector(direction)
+        if isinstance(other, Mobject):
+            target_anchor = other.get_bounding_box_point(d)
+        else:
+            target_anchor = to_mvector(other)
+
+        neg_d = -d
+        self_anchor = self.get_bounding_box_point(neg_d)
+        shift_vec = target_anchor - self_anchor + d * buff
+        return self.shift(shift_vec)
 
     def align_to(self, other_or_edge, direction=UP):
-        pass
+        d = to_mvector(direction)
+        if isinstance(other_or_edge, Mobject):
+            target = other_or_edge.get_bounding_box_point(d)
+        elif isinstance(other_or_edge, str):
+            corner = self._scene.get_corner(other_or_edge)
+            target = to_mvector(corner)
+        else:
+            target = to_mvector(other_or_edge)
+
+        current = self.get_bounding_box_point(d)
+        shift_vec = target - current
+        mask = MVector(abs(d.x), abs(d.y), abs(d.z))
+        shift_vec = MVector(
+            shift_vec.x * mask.x if mask.x > 0.01 else 0,
+            shift_vec.y * mask.y if mask.y > 0.01 else 0,
+            shift_vec.z * mask.z if mask.z > 0.01 else 0,
+        )
+        return self.shift(shift_vec)
 
     def rotate(self, angle=360, axis=(0, 0, 1), duration=1.0, easing="ease_in_out"):
         anim = unreal.UEMotionRotateAnimation()
         anim.set_target_mobject(self._ue)
         anim.set_rotation_angle(angle)
-        from .colors import vec
         anim.set_axis(vec(*axis) if isinstance(axis, (list, tuple)) else axis)
         anim.set_duration(duration)
         anim.set_easing(easing)
@@ -159,9 +231,9 @@ class Mobject:
             anim.set_start_scale(self._ue.get_scale())
             anim.set_end_scale(unreal.Vector(target_scale, target_scale, target_scale))
         else:
-            from .colors import vec
+            v = to_mvector(target_scale)
             anim.set_start_scale(self._ue.get_scale())
-            anim.set_end_scale(vec(*target_scale) if isinstance(target_scale, (list, tuple)) else target_scale)
+            anim.set_end_scale(vec(v.x, v.y, v.z))
         anim.set_duration(duration)
         anim.set_easing(easing)
         self._scene._pending_animations.append(anim)

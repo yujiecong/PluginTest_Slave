@@ -1,10 +1,14 @@
 #include "UEMotionAssetFactory.h"
+#include "Actors/UEMotionMobjectActor.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
 #include "Components/StaticMeshComponent.h"
 #include "Materials/MaterialInstanceConstant.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Materials/Material.h"
+#include "Materials/MaterialExpressionVectorParameter.h"
+#include "Materials/MaterialExpressionScalarParameter.h"
+#include "Materials/MaterialExpressionConstant.h"
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "AssetToolsModule.h"
 #include "EditorAssetLibrary.h"
@@ -21,14 +25,85 @@
 #include "EditorFramework/AssetImportData.h"
 #include "PackageHelperFunctions.h"
 
+const FString UUEMotionAssetFactory::TranslucentMaterialPath = TEXT("/Game/UEMotion/Materials/M_UEMotionBaseTranslucent");
+
 FString UUEMotionAssetFactory::ResolveAssetPath(const FString& PackagePath, const FString& AssetName) const
 {
 	return FString::Printf(TEXT("%s/%s"), *PackagePath, *AssetName);
 }
 
+UMaterialInterface* UUEMotionAssetFactory::EnsureBaseTranslucentMaterial()
+{
+	if (UEditorAssetLibrary::DoesAssetExist(TranslucentMaterialPath))
+	{
+		UMaterialInterface* Existing = LoadObject<UMaterialInterface>(nullptr, *TranslucentMaterialPath);
+		if (Existing) return Existing;
+	}
+
+	FString PackageName = TranslucentMaterialPath;
+	UPackage* Package = CreatePackage(*PackageName);
+	if (!Package) return nullptr;
+
+	UMaterial* Material = NewObject<UMaterial>(Package, FName(TEXT("M_UEMotionBaseTranslucent")), RF_Public | RF_Standalone);
+	if (!Material) return nullptr;
+
+	Material->BlendMode = EBlendMode::BLEND_Translucent;
+	Material->TwoSided = 1;
+
+	UMaterialExpressionVectorParameter* ColorExpr = NewObject<UMaterialExpressionVectorParameter>(Material);
+	ColorExpr->ParameterName = FName("BaseColor");
+	ColorExpr->DefaultValue = FLinearColor(0.5f, 0.5f, 0.5f, 1.0f);
+	Material->GetExpressionCollection().AddExpression(ColorExpr);
+
+	UMaterialExpressionScalarParameter* OpacityExpr = NewObject<UMaterialExpressionScalarParameter>(Material);
+	OpacityExpr->ParameterName = FName("Opacity");
+	OpacityExpr->DefaultValue = 1.0f;
+	Material->GetExpressionCollection().AddExpression(OpacityExpr);
+
+	UMaterialExpressionConstant* RoughnessConst = NewObject<UMaterialExpressionConstant>(Material);
+	RoughnessConst->R = 0.5f;
+	Material->GetExpressionCollection().AddExpression(RoughnessConst);
+
+	UMaterialExpressionConstant* MetallicConst = NewObject<UMaterialExpressionConstant>(Material);
+	MetallicConst->R = 0.0f;
+	Material->GetExpressionCollection().AddExpression(MetallicConst);
+
+	UMaterialEditorOnlyData* EditorData = Material->GetEditorOnlyData();
+	if (EditorData)
+	{
+		EditorData->BaseColor.Expression = ColorExpr;
+		EditorData->BaseColor.OutputIndex = 0;
+		EditorData->Opacity.Expression = OpacityExpr;
+		EditorData->Opacity.OutputIndex = 0;
+		EditorData->Roughness.Expression = RoughnessConst;
+		EditorData->Roughness.OutputIndex = 0;
+		EditorData->Metallic.Expression = MetallicConst;
+		EditorData->Metallic.OutputIndex = 0;
+	}
+
+	SaveAssetToObject(Material, TEXT("/Game/UEMotion/Materials"), TEXT("M_UEMotionBaseTranslucent"));
+
+	UE_LOG(LogTemp, Log, TEXT("UEMotionAssetFactory: Created persistent translucent base material '%s'"), *TranslucentMaterialPath);
+
+	FAssetRegistryModule::AssetCreated(Material);
+	Material->MarkPackageDirty();
+#if WITH_EDITOR
+	Material->PostEditChange();
+#endif
+
+	return Material;
+}
+
 UMaterialInterface* UUEMotionAssetFactory::GetOrCreateBaseMaterial()
 {
 	if (CachedBaseMaterial) return CachedBaseMaterial;
+
+	UMaterialInterface* TranslucentMat = EnsureBaseTranslucentMaterial();
+	if (TranslucentMat)
+	{
+		CachedBaseMaterial = TranslucentMat;
+		return CachedBaseMaterial;
+	}
 
 	CachedBaseMaterial = LoadObject<UMaterialInterface>(
 		nullptr, TEXT("/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"));
@@ -143,7 +218,7 @@ UClass* UUEMotionAssetFactory::CreateAndSaveBlueprintAsset(
 	if (!Package) return nullptr;
 
 	UBlueprintFactory* BPFactory = NewObject<UBlueprintFactory>();
-	BPFactory->ParentClass = AActor::StaticClass();
+	BPFactory->ParentClass = AUEMotionMobjectActor::StaticClass();
 
 	UBlueprint* NewBP = Cast<UBlueprint>(BPFactory->FactoryCreateNew(
 		UBlueprint::StaticClass(), Package, *AssetName,

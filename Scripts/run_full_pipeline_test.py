@@ -8,6 +8,7 @@ sys.path.insert(0, SCRIPTS_DIR)
 
 from uemotion import Scene
 from uemotion.constants import *
+from uemotion import MVector
 
 
 PROJECT_DIR = os.path.abspath(os.path.join(SCRIPTS_DIR, '..'))
@@ -21,7 +22,7 @@ NUM_STEPS = 5
 STEP_SIZE = 1.0
 MOVE_DURATION = 1.0
 FPS = DEFAULT_FPS
-CUBE_SIZE = 0.5
+CUBE_SIZE = DEFAULT_CUBE_SIDE
 CUBE_COLOR = "cyan"
 
 START_POS = DL
@@ -95,7 +96,7 @@ def shutdown_ue(exit_code=1):
         pass
 
 
-print_header("  UEMotion Full Pipeline Smoke Test (1:1 Coordinate System)")
+print_header("  UEMotion Full Pipeline Smoke Test (2D Orthographic)")
 
 print(f"  Scene        : {SCENE_NAME}")
 print(f"  Resolution   : {RESOLUTION_W}x{RESOLUTION_H} (1:1)")
@@ -104,42 +105,62 @@ print(f"  Animation    : {NUM_STEPS} steps x {MOVE_DURATION}s = {TOTAL_DURATION}
 print(f"  FPS          : {FPS}")
 print(f"  Expected     : {EXPECTED_FRAMES} frames")
 print(f"  Path         : y=x from {START_POS} (DL/Q3) to {END_POS} (UR/Q1)")
-print(f"  Camera       : standard 2D top-down at Z={DEFAULT_CAMERA_Z * SCALE_FACTOR}")
+print(f"  Camera       : orthographic, OrthoWidth={FRAME_WIDTH * SCALE_FACTOR}")
+print(f"  Cube Size    : {CUBE_SIZE} UEMotion units ({CUBE_SIZE * SCALE_FACTOR} UE cm)")
 print()
 
 try:
-    print("[1/4] Creating scene...")
-    s = Scene(SCENE_NAME, RESOLUTION_W, RESOLUTION_H)
+    print("[1/4] Creating scene (2D orthographic mode)...")
+    s = Scene(SCENE_NAME, RESOLUTION_W, RESOLUTION_H, mode="2d")
     check(s is not None, "Scene object created")
     check(s.name == SCENE_NAME, f"Scene name = '{SCENE_NAME}'")
     check(abs(s.frame_width - FRAME_WIDTH) < 0.01, f"Frame width = {FRAME_WIDTH} (1:1)")
     check(abs(s.frame_height - FRAME_HEIGHT) < 0.01, f"Frame height = {FRAME_HEIGHT} (1:1)")
+    check(s.mode == "2d", "Scene mode = '2d'")
+
+    check(s.camera.projection_mode == PROJECTION_ORTHOGRAPHIC,
+          f"Camera projection = orthographic (mode={s.camera.projection_mode})")
+
+    expected_ortho_width = FRAME_WIDTH * SCALE_FACTOR
+    check(abs(s.camera.ortho_width - expected_ortho_width) < 1.0,
+          f"Ortho width = {expected_ortho_width} (actual={s.camera.ortho_width:.1f})")
 
     s.directional_light(direction=(0, 0, -1), color="white", intensity=3.0)
     s.point_light(location=ORIGIN, color="white", intensity=2000.0)
 
-    cam_z_expected = DEFAULT_CAMERA_Z * SCALE_FACTOR
+    cam_z_expected = motion_to_ue(DEFAULT_CAMERA_Z)
     check(abs(s.camera.position.z - cam_z_expected) < 0.01,
-          f"Camera at standard Z = {cam_z_expected}")
+          f"Camera at Z = {cam_z_expected}")
 
     print("[2/4] Creating cube at DL (Q3) and animating along y=x to UR (Q1)...")
-    box = s.cube(CUBE_SIZE * SCALE_FACTOR, color=CUBE_COLOR, location=START_POS)
+    box = s.cube(CUBE_SIZE, color=CUBE_COLOR, location=START_POS)
     check(box is not None, f"Cube Mobject created at {START_POS} (DL/Q3)")
+
+    box_loc = box.location
+    check(isinstance(box_loc, MVector), "Mobject.location returns MVector")
+    check(abs(box_loc.x - START_POS.x) < 0.01 and abs(box_loc.y - START_POS.y) < 0.01,
+          f"Cube location = {START_POS} (UEMotion units)")
 
     for i in range(1, NUM_STEPS + 1):
         t = i / NUM_STEPS
-        target_x = START_POS[0] + t * (END_POS[0] - START_POS[0])
-        target_y = START_POS[1] + t * (END_POS[1] - START_POS[1])
-        box.move_to((target_x, target_y, 0.0), duration=MOVE_DURATION, easing="linear")
+        target_x = START_POS.x + t * (END_POS.x - START_POS.x)
+        target_y = START_POS.y + t * (END_POS.y - START_POS.y)
+        box.move_to(MVector(target_x, target_y, 0.0), duration=MOVE_DURATION, easing="linear")
         s.play()
-        box.location = (target_x, target_y, 0.0)
+        box.location = MVector(target_x, target_y, 0.0)
 
     final_pos = box.location
     check(
-        abs(final_pos.x - END_POS[0]) < 0.01
-        and abs(final_pos.y - END_POS[1]) < 0.01,
+        abs(final_pos.x - END_POS.x) < 0.01
+        and abs(final_pos.y - END_POS.y) < 0.01,
         f"Cube final position = {END_POS} (UR/Q1)"
     )
+
+    bb = box.get_bounding_box()
+    check(bb is not None and 'min' in bb and 'max' in bb,
+          "Mobject.get_bounding_box() works")
+    check(isinstance(box.width, float) and box.width > 0,
+          f"Mobject.width = {box.width:.4f} UEMotion units")
 
     print(f"  Animation: {NUM_STEPS} steps, {TOTAL_DURATION}s total, {EXPECTED_FRAMES} expected frames")
 

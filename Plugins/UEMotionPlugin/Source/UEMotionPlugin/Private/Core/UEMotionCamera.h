@@ -38,6 +38,24 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "UEMotion|Camera")
 	void OrbitAround(const FVector& Center, float Radius, float AngleDegrees, float Height = 0.0f);
 
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Camera")
+	void SetProjectionMode(int32 Mode);
+
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Camera")
+	int32 GetProjectionMode() const;
+
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Camera")
+	void SetOrthoWidth(float Width);
+
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Camera")
+	float GetOrthoWidth() const;
+
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Camera")
+	void SetOrthoNearClipPlane(float NearClip);
+
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Camera")
+	void SetOrthoFarClipPlane(float FarClip);
+
 private:
 	UPROPERTY()
 	TWeakObjectPtr<ACineCameraActor> CameraActor;

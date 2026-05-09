@@ -3,22 +3,20 @@ import sys
 import os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from uemotion import Scene, Animation
+from uemotion import Scene, ORIGIN, LEFT, RIGHT, Animation
 
-s = Scene("geometry_transform", 1920, 1080)
+s = Scene("geometry_transform", 1920, 1080, mode="2d")
 s.directional_light(direction=(0, -1, -1), color="white", intensity=10)
-s.camera.position = (-400, -500, 300)
-s.camera.look_at((0, 0, 0))
 
-shape_a = s.sphere(40, color="red", location=(-200, 0, 50))
-shape_b = s.cube(50, color="blue", location=(200, 0, 50))
+shape_a = s.sphere(0.8, color="red", location=LEFT * 4)
+shape_b = s.cube(1.0, color="blue", location=RIGHT * 4)
 
-shape_a.move_to((0, 0, 50), duration=2, easing="ease_in_out")
-shape_b.move_to((0, 0, 50), duration=2, easing="ease_in_out")
+shape_a.move_to(ORIGIN, duration=2, easing="ease_in_out")
+shape_b.move_to(ORIGIN, duration=2, easing="ease_in_out")
 
 s.play()
 
-merged = s.sphere(60, color="purple", location=(0, 0, 50))
+merged = s.sphere(1.2, color="purple", location=ORIGIN)
 merged.fade_in(duration=1, easing="ease_out")
 
 shape_a.fade_out(duration=0.8, easing="ease_in")

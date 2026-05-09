@@ -9,11 +9,17 @@ from .mobject import Mobject
 from .camera import Camera
 from .animation import Animation
 from .colors import resolve_color, vec
+from .vector import MVector, to_mvector
 from .constants import (
     FRAME_WIDTH, FRAME_HEIGHT,
+    FRAME_X_RADIUS, FRAME_Y_RADIUS,
     ORIGIN, UL, UR, DL, DR,
     DEFAULT_PIXEL_WIDTH, DEFAULT_PIXEL_HEIGHT,
     DEFAULT_CAMERA_Z, SCALE_FACTOR,
+    DEFAULT_CUBE_SIDE, DEFAULT_SPHERE_RADIUS,
+    DEFAULT_DOT_RADIUS,
+    PROJECTION_PERSPECTIVE, PROJECTION_ORTHOGRAPHIC,
+    motion_to_ue, ue_to_motion, motion_to_ue_vec, ue_to_motion_vec,
 )
 
 
@@ -26,12 +32,13 @@ def _color_to_rgb(linear_color):
 
 
 class Scene:
-    def __init__(self, name="default", width=DEFAULT_PIXEL_WIDTH, height=DEFAULT_PIXEL_HEIGHT):
+    def __init__(self, name="default", width=DEFAULT_PIXEL_WIDTH, height=DEFAULT_PIXEL_HEIGHT, mode="2d"):
         self._ue = unreal.UEMotionScene()
         self._ue.initialize(name, width, height)
         self._name = name
         self._width = width
         self._height = height
+        self._mode = mode.lower()
         self._pending_animations = []
         self._camera = Camera(self, self._ue.get_camera())
         self._render_callbacks = []
@@ -39,7 +46,11 @@ class Scene:
         self._frame_width = FRAME_WIDTH
         self._frame_height = FRAME_HEIGHT
         self._scale_factor = SCALE_FACTOR
-        self._setup_standard_2d_camera()
+
+        if self._mode == "2d":
+            self._setup_standard_2d_camera()
+        else:
+            self._setup_3d_camera()
 
     def _bind_render_delegate(self):
         delegate = None
@@ -88,48 +99,89 @@ class Scene:
     def center(self):
         return ORIGIN
 
+    @property
+    def mode(self):
+        return self._mode
+
     def get_corner(self, corner_name):
         corners = {'UL': UL, 'UR': UR, 'DL': DL, 'DR': DR}
         return corners.get(corner_name.upper(), ORIGIN)
 
+    def get_bounding_box(self):
+        return {
+            'min': MVector(-FRAME_X_RADIUS, -FRAME_Y_RADIUS, 0),
+            'mid': MVector(0, 0, 0),
+            'max': MVector(FRAME_X_RADIUS, FRAME_Y_RADIUS, 0),
+        }
+
+    def get_bounding_box_point(self, direction):
+        bb = self.get_bounding_box()
+        d = to_mvector(direction)
+        return MVector(
+            bb['min'].x * (1 - d.x) / 2 + bb['max'].x * (1 + d.x) / 2,
+            bb['min'].y * (1 - d.y) / 2 + bb['max'].y * (1 + d.y) / 2,
+            bb['min'].z * (1 - d.z) / 2 + bb['max'].z * (1 + d.z) / 2,
+        )
+
     def _setup_standard_2d_camera(self):
-        cam_z = DEFAULT_CAMERA_Z * self._scale_factor
+        cam_z = motion_to_ue(DEFAULT_CAMERA_Z)
         self.camera.position = (0, 0, cam_z)
         self.camera.look_at((0, 0, 0))
 
-    def sphere(self, radius=50, color="white", location=None):
-        return self.from_config(mesh_type="sphere", size=radius, color=color, location=location)
+        ortho_width = self._frame_width * self._scale_factor
+        self.camera.set_orthographic(ortho_width=ortho_width)
+        self.camera._ue.set_ortho_near_clip_plane(0.0)
+        self.camera._ue.set_ortho_far_clip_plane(cam_z * 2.0)
+        self._ue.update_camera_key()
 
-    def cube(self, size=50, color="white", location=None):
-        return self.from_config(mesh_type="cube", size=size, color=color, location=location)
+    def _setup_3d_camera(self):
+        import math
+        cam_z = motion_to_ue(DEFAULT_CAMERA_Z)
+        self.camera.position = (0, 0, cam_z)
+        self.camera.look_at((0, 0, 0))
 
-    def cylinder(self, radius=50, height=100, color="white", location=None):
-        return self.from_config(mesh_type="cylinder", size=radius, color=color, location=location)
+        desired_half = FRAME_Y_RADIUS * self._scale_factor
+        fov = 2.0 * math.degrees(math.atan(desired_half / cam_z))
+        self.camera.fov = fov
+        self._ue.update_camera_key()
 
-    def cone(self, radius=50, height=100, color="white", location=None):
-        return self.from_config(mesh_type="cone", size=radius, color=color, location=location)
+    def dot(self, radius=DEFAULT_DOT_RADIUS, color="white", location=None):
+        return self.from_config(mesh_type="sphere", size=radius * SCALE_FACTOR, color=color, location=location)
 
-    def plane(self, width=500, height=500, color="white", location=None):
-        return self.from_config(mesh_type="plane", size=width, color=color, location=location)
+    def sphere(self, radius=DEFAULT_SPHERE_RADIUS, color="white", location=None):
+        return self.from_config(mesh_type="sphere", size=radius * SCALE_FACTOR, color=color, location=location)
 
-    def torus(self, outer_radius=80, inner_radius=25, color="white", location=None):
-        return self.from_config(mesh_type="torus", size=outer_radius, color=color, location=location)
+    def cube(self, size=DEFAULT_CUBE_SIDE, color="white", location=None):
+        return self.from_config(mesh_type="cube", size=size * SCALE_FACTOR, color=color, location=location)
 
-    def from_asset(self, blueprint_path, mesh_type="cube", size=50, color="white",
+    def cylinder(self, radius=0.5, height=1.0, color="white", location=None):
+        return self.from_config(mesh_type="cylinder", size=radius * SCALE_FACTOR, color=color, location=location)
+
+    def cone(self, radius=0.5, height=1.0, color="white", location=None):
+        return self.from_config(mesh_type="cone", size=radius * SCALE_FACTOR, color=color, location=location)
+
+    def plane(self, width=1.0, height=1.0, color="white", location=None):
+        return self.from_config(mesh_type="plane", size=width * SCALE_FACTOR, color=color, location=location)
+
+    def torus(self, outer_radius=0.5, inner_radius=0.2, color="white", location=None):
+        return self.from_config(mesh_type="torus", size=outer_radius * SCALE_FACTOR, color=color, location=location)
+
+    def from_asset(self, blueprint_path, mesh_type="cube", size=DEFAULT_CUBE_SIDE, color="white",
                    metallic=0.0, roughness=0.5, opacity=1.0, custom_mesh_path="",
                    location=None):
+        ue_size = size * SCALE_FACTOR
         obj = self._ue.create_mobject_from_asset(
-            blueprint_path, mesh_type, size,
+            blueprint_path, mesh_type, ue_size,
             resolve_color(color), metallic, roughness, opacity, custom_mesh_path
         )
         if obj is None:
             return None
         m = Mobject(self, obj)
-        if location:
+        if location is not None:
             m.location = location
         return m
 
-    def from_config(self, mesh_type="cube", size=50, color="white",
+    def from_config(self, mesh_type="cube", size=DEFAULT_CUBE_SIDE * SCALE_FACTOR, color="white",
                     metallic=0.0, roughness=0.5, opacity=1.0,
                     custom_mesh_path="", location=None):
         obj = self._ue.create_mobject_from_params(
@@ -139,16 +191,17 @@ class Scene:
         if obj is None:
             return None
         m = Mobject(self, obj)
-        if location:
+        if location is not None:
             m.location = location
         return m
 
     def create_asset(self, mesh_type="cube", asset_name="CustomAsset",
-                     size=50, color="white", metallic=0.0, roughness=0.5,
+                     size=DEFAULT_CUBE_SIDE, color="white", metallic=0.0, roughness=0.5,
                      opacity=1.0, custom_mesh_path="",
                      output_path="/Game/UEMotion/Assets/Blueprints"):
+        ue_size = size * SCALE_FACTOR
         return self._ue.create_and_save_blueprint_asset(
-            mesh_type, size, resolve_color(color),
+            mesh_type, ue_size, resolve_color(color),
             metallic, roughness, opacity, custom_mesh_path,
             asset_name, output_path
         )
@@ -158,10 +211,13 @@ class Scene:
         return unreal.UEMotionScene.does_asset_exist(asset_path)
 
     def directional_light(self, direction=(0, -1, -1), color="white", intensity=10):
-        self._ue.add_directional_light(vec(*direction), resolve_color(color), intensity)
+        d = to_mvector(direction)
+        self._ue.add_directional_light(vec(d.x, d.y, d.z), resolve_color(color), intensity)
 
     def point_light(self, location=(0, 0, 200), color="white", intensity=5000):
-        self._ue.add_point_light(vec(*location), resolve_color(color), intensity)
+        loc = to_mvector(location)
+        ue_loc = motion_to_ue_vec(loc)
+        self._ue.add_point_light(vec(ue_loc.x, ue_loc.y, ue_loc.z), resolve_color(color), intensity)
 
     def play(self, *animations):
         all_ue_anims = list(self._pending_animations)

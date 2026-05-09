@@ -5,8 +5,10 @@
 #include "UEMotionMobject.generated.h"
 
 class AUEMotionSceneActor;
+class AUEMotionMobjectActor;
 class UProceduralMeshComponent;
 class UMaterialInterface;
+class UMaterialInstanceDynamic;
 
 UCLASS(BlueprintType)
 class UUEMotionMobject : public UObject
@@ -58,6 +60,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "UEMotion|Mobject")
 	FString GetName() const;
+
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Mobject")
+	void GetBounds(FVector& OutOrigin, FVector& OutBoxExtent) const;
 
 	void SetMobjectName(const FString& Name) { MobjectName = Name; }
 

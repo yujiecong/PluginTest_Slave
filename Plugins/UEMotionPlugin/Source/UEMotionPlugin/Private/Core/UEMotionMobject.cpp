@@ -1,5 +1,6 @@
 #include "UEMotionMobject.h"
 #include "Actors/UEMotionSceneActor.h"
+#include "Actors/UEMotionMobjectActor.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
@@ -13,6 +14,14 @@
 UMaterialInterface* UUEMotionMobject::GetOrCreateBaseMaterial()
 {
 	if (CachedBaseMaterial) return CachedBaseMaterial;
+
+	static const FString PersistentMaterialPath = TEXT("/Game/UEMotion/Materials/M_UEMotionBaseTranslucent");
+	UMaterialInterface* PersistentMat = LoadObject<UMaterialInterface>(nullptr, *PersistentMaterialPath);
+	if (PersistentMat)
+	{
+		CachedBaseMaterial = PersistentMat;
+		return CachedBaseMaterial;
+	}
 
 	UMaterial* Material = NewObject<UMaterial>(GetTransientPackage(), TEXT("M_UEMotionBase"), RF_Transient | RF_Public);
 	if (!Material)
@@ -85,7 +94,8 @@ void UUEMotionMobject::CreateStaticMeshActor(AUEMotionSceneActor* Owner, const F
 
 	FActorSpawnParameters Params;
 	Params.Name = FName(*FString::Printf(TEXT("Mobject_%d"), GetUniqueID()));
-	AActor* Actor = World->SpawnActor<AActor>(AActor::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params);
+	AUEMotionMobjectActor* Actor = World->SpawnActor<AUEMotionMobjectActor>(
+		AUEMotionMobjectActor::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params);
 	if (!Actor) return;
 
 	InternalActor = Actor;
@@ -114,6 +124,8 @@ void UUEMotionMobject::CreateStaticMeshActor(AUEMotionSceneActor* Owner, const F
 	}
 
 	MeshComponent = MeshComp;
+
+	Actor->EnsureDynamicMaterial();
 
 	if (!FMath::IsNearlyEqual(InScale, 1.0f))
 	{
@@ -197,10 +209,17 @@ FRotator UUEMotionMobject::GetRotation() const
 void UUEMotionMobject::SetOpacity(float InOpacity)
 {
 	CurrentOpacity = FMath::Clamp(InOpacity, 0.0f, 1.0f);
-	if (MaterialInstance.IsValid())
+
+	AUEMotionMobjectActor* MobActor = Cast<AUEMotionMobjectActor>(InternalActor.Get());
+	if (MobActor)
+	{
+		MobActor->SetOpacity(CurrentOpacity);
+	}
+	else if (MaterialInstance.IsValid())
 	{
 		MaterialInstance->SetScalarParameterValue(FName("Opacity"), CurrentOpacity);
 	}
+
 	if (CurrentOpacity <= 0.0f)
 	{
 		bVisible = false;
@@ -264,6 +283,16 @@ void UUEMotionMobject::InitializeFromSpawnedActor(AActor* SpawnedActor, UStaticM
 		}
 	}
 
+	AUEMotionMobjectActor* MobActor = Cast<AUEMotionMobjectActor>(SpawnedActor);
+	if (MobActor)
+	{
+		MobActor->EnsureDynamicMaterial();
+		if (MobActor->GetDynamicMaterial())
+		{
+			MaterialInstance = MobActor->GetDynamicMaterial();
+		}
+	}
+
 	UE_LOG(LogTemp, Log, TEXT("UEMotionMobject: Initialized from spawned actor '%s' (AssetBased=%s)"),
 		*SpawnedActor->GetName(), bIsAssetBased ? TEXT("true") : TEXT("false"));
 }
@@ -271,4 +300,17 @@ void UUEMotionMobject::InitializeFromSpawnedActor(AActor* SpawnedActor, UStaticM
 FString UUEMotionMobject::GetName() const
 {
 	return MobjectName;
+}
+
+void UUEMotionMobject::GetBounds(FVector& OutOrigin, FVector& OutBoxExtent) const
+{
+	if (InternalActor.IsValid())
+	{
+		InternalActor->GetActorBounds(false, OutOrigin, OutBoxExtent);
+	}
+	else
+	{
+		OutOrigin = FVector::ZeroVector;
+		OutBoxExtent = FVector::ZeroVector;
+	}
 }

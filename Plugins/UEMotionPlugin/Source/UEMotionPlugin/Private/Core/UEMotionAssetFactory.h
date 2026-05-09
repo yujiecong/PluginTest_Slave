@@ -8,6 +8,7 @@ class UStaticMesh;
 class UMaterialInterface;
 class UMaterialInstanceConstant;
 class UMaterialInstanceDynamic;
+class UMaterial;
 class AActor;
 class UBlueprint;
 
@@ -92,6 +93,10 @@ public:
 
     UFUNCTION(BlueprintCallable, Category = "UEMotion|Asset")
     UMaterialInstanceDynamic* CreateDynamicMaterialFromConfig(const FMotionAssetConfig& Config);
+
+    static const FString TranslucentMaterialPath;
+
+    UMaterialInterface* EnsureBaseTranslucentMaterial();
 
 private:
     UPROPERTY()

@@ -71,3 +71,65 @@ void UUEMotionCamera::OrbitAround(const FVector& Center, float Radius, float Ang
 	SetPosition(X, Y, Z);
 	LookAt(Center);
 }
+
+void UUEMotionCamera::SetProjectionMode(int32 Mode)
+{
+	if (!CameraActor.IsValid()) return;
+	UCameraComponent* CamComp = CameraActor->GetCameraComponent();
+	if (CamComp)
+	{
+		CamComp->SetProjectionMode(static_cast<ECameraProjectionMode::Type>(Mode));
+	}
+}
+
+int32 UUEMotionCamera::GetProjectionMode() const
+{
+	if (!CameraActor.IsValid()) return 0;
+	UCameraComponent* CamComp = CameraActor->GetCameraComponent();
+	if (CamComp)
+	{
+		return static_cast<int32>(CamComp->ProjectionMode);
+	}
+	return 0;
+}
+
+void UUEMotionCamera::SetOrthoWidth(float Width)
+{
+	if (!CameraActor.IsValid()) return;
+	UCameraComponent* CamComp = CameraActor->GetCameraComponent();
+	if (CamComp)
+	{
+		CamComp->SetOrthoWidth(Width);
+	}
+}
+
+float UUEMotionCamera::GetOrthoWidth() const
+{
+	if (!CameraActor.IsValid()) return 512.0f;
+	UCameraComponent* CamComp = CameraActor->GetCameraComponent();
+	if (CamComp)
+	{
+		return CamComp->OrthoWidth;
+	}
+	return 512.0f;
+}
+
+void UUEMotionCamera::SetOrthoNearClipPlane(float NearClip)
+{
+	if (!CameraActor.IsValid()) return;
+	UCameraComponent* CamComp = CameraActor->GetCameraComponent();
+	if (CamComp)
+	{
+		CamComp->SetOrthoNearClipPlane(NearClip);
+	}
+}
+
+void UUEMotionCamera::SetOrthoFarClipPlane(float FarClip)
+{
+	if (!CameraActor.IsValid()) return;
+	UCameraComponent* CamComp = CameraActor->GetCameraComponent();
+	if (CamComp)
+	{
+		CamComp->SetOrthoFarClipPlane(FarClip);
+	}
+}
