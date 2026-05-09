@@ -1,6 +1,10 @@
 #include "UEMotionMobjectActor.h"
 #include "Components/StaticMeshComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "Materials/MaterialParameterCollection.h"
+#include "Kismet/KismetMaterialLibrary.h"
+
+static const FString FadeMPCPath = TEXT("/Game/UEMotion/Materials/MPC_UEMotionFade");
 
 AUEMotionMobjectActor::AUEMotionMobjectActor()
 {
@@ -10,7 +14,6 @@ AUEMotionMobjectActor::AUEMotionMobjectActor()
 void AUEMotionMobjectActor::BeginPlay()
 {
 	Super::BeginPlay();
-	EnsureDynamicMaterial();
 }
 
 UStaticMeshComponent* AUEMotionMobjectActor::GetMeshComponent() const
@@ -34,21 +37,20 @@ void AUEMotionMobjectActor::EnsureDynamicMaterial()
 		DynamicMaterial = UMaterialInstanceDynamic::Create(CurrentMat, this);
 		MeshComp->SetMaterial(0, DynamicMaterial);
 	}
-
-	ApplyOpacityToMaterial();
 }
 
 void AUEMotionMobjectActor::SetOpacity(float InOpacity)
 {
 	Opacity = FMath::Clamp(InOpacity, 0.0f, 1.0f);
-	ApplyOpacityToMaterial();
-}
 
-void AUEMotionMobjectActor::ApplyOpacityToMaterial()
-{
-	if (DynamicMaterial)
+	UWorld* World = GetWorld();
+	if (World)
 	{
-		DynamicMaterial->SetScalarParameterValue(FName("Opacity"), Opacity);
+		UMaterialParameterCollection* MPC = LoadObject<UMaterialParameterCollection>(nullptr, *FadeMPCPath);
+		if (MPC)
+		{
+			UKismetMaterialLibrary::SetScalarParameterValue(World, MPC, FName("Opacity"), Opacity);
+		}
 	}
 
 	UStaticMeshComponent* MeshComp = FindComponentByClass<UStaticMeshComponent>();
@@ -66,7 +68,7 @@ void AUEMotionMobjectActor::PostEditChangeProperty(FPropertyChangedEvent& Proper
 	FName PropertyName = PropertyChangedEvent.GetPropertyName();
 	if (PropertyName == GET_MEMBER_NAME_CHECKED(AUEMotionMobjectActor, Opacity))
 	{
-		ApplyOpacityToMaterial();
+		SetOpacity(Opacity);
 	}
 }
 #endif

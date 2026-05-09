@@ -155,6 +155,30 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "UEMotion")
 	bool GetAutoCleanup() const;
 
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
+	void SetBackgroundColor(const FLinearColor& Color);
+
+	UFUNCTION(BlueprintPure, Category = "UEMotion|Scene")
+	FLinearColor GetBackgroundColor() const;
+
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
+	void SetShowCoordinateAxes(bool bShow);
+
+	UFUNCTION(BlueprintPure, Category = "UEMotion|Scene")
+	bool GetShowCoordinateAxes() const;
+
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
+	void SetCoordinateAxisLength(float Length);
+
+	UFUNCTION(BlueprintPure, Category = "UEMotion|Scene")
+	float GetCoordinateAxisLength() const;
+
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
+	void SetUseUnlit(bool bUnlit);
+
+	UFUNCTION(BlueprintPure, Category = "UEMotion|Scene")
+	bool IsUsingUnlit() const;
+
 private:
 	bool bInitialized = false;
 	FString SceneName;
@@ -163,6 +187,18 @@ private:
 	bool bAutoCleanup = true;
 	float CurrentTime = 0.0f;
 	float PlaybackFPS = 30.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UEMotion|Scene")
+	FLinearColor BackgroundColor = FLinearColor(0.02f, 0.02f, 0.04f, 1.0f);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UEMotion|Scene")
+	bool bShowCoordinateAxes = true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UEMotion|Scene")
+	float CoordinateAxisLength = 200.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UEMotion|Scene")
+	bool bUseUnlitMode = true;
 
 	UPROPERTY()
 	UWorld* SceneWorld = nullptr;
@@ -191,6 +227,7 @@ private:
 	bool CreateSceneMap();
 	bool CreateLevelSequenceAsset();
 	void SetupDefaultLighting();
+	void SetupCoordinateAxes();
 	void OpenLevelSequenceInEditor();
 
 	FGuid AddActorToSequencer(AActor* Actor);

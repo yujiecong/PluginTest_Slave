@@ -7,11 +7,10 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Materials/Material.h"
 #include "Materials/MaterialExpressionVectorParameter.h"
-#include "Materials/MaterialExpressionScalarParameter.h"
-#include "Materials/MaterialExpressionConstant.h"
 #include "Materials/MaterialExpressionCollectionParameter.h"
-#include "Materials/MaterialExpressionMultiply.h"
+#include "Materials/MaterialExpressionConstant.h"
 #include "Materials/MaterialParameterCollection.h"
+#include "Kismet/KismetMaterialLibrary.h"
 #include "UObject/ConstructorHelpers.h"
 
 UMaterialInterface* UUEMotionMobject::GetOrCreateBaseMaterial()
@@ -42,31 +41,23 @@ UMaterialInterface* UUEMotionMobject::GetOrCreateBaseMaterial()
 	ColorExpr->DefaultValue = FLinearColor(0.5f, 0.5f, 0.5f, 1.0f);
 	Material->GetExpressionCollection().AddExpression(ColorExpr);
 
-	UMaterialExpressionScalarParameter* OpacityExpr = NewObject<UMaterialExpressionScalarParameter>(Material);
-	OpacityExpr->ParameterName = FName("Opacity");
-	OpacityExpr->DefaultValue = 1.0f;
-	Material->GetExpressionCollection().AddExpression(OpacityExpr);
-
 	static const FString MPCPath = TEXT("/Game/UEMotion/Materials/MPC_UEMotionFade");
 	UMaterialParameterCollection* MPC = LoadObject<UMaterialParameterCollection>(nullptr, *MPCPath);
 
-	UMaterialExpression* OpacityOutput = OpacityExpr;
+	UMaterialExpression* OpacityOutput = nullptr;
 
 	if (MPC)
 	{
-		UMaterialExpressionCollectionParameter* MPCNode = NewObject<UMaterialExpressionCollectionParameter>(Material);
-		MPCNode->Collection = MPC;
-		MPCNode->ParameterName = FName("Opacity");
-		Material->GetExpressionCollection().AddExpression(MPCNode);
-
-		UMaterialExpressionMultiply* MultiplyNode = NewObject<UMaterialExpressionMultiply>(Material);
-		MultiplyNode->A.Expression = OpacityExpr;
-		MultiplyNode->A.OutputIndex = 0;
-		MultiplyNode->B.Expression = MPCNode;
-		MultiplyNode->B.OutputIndex = 0;
-		Material->GetExpressionCollection().AddExpression(MultiplyNode);
-
-		OpacityOutput = MultiplyNode;
+		FGuid OpacityParamId = MPC->GetParameterId(FName("Opacity"));
+		if (OpacityParamId.IsValid())
+		{
+			UMaterialExpressionCollectionParameter* MPCNode = NewObject<UMaterialExpressionCollectionParameter>(Material);
+			MPCNode->Collection = MPC;
+			MPCNode->ParameterName = FName("Opacity");
+			MPCNode->ParameterId = OpacityParamId;
+			Material->GetExpressionCollection().AddExpression(MPCNode);
+			OpacityOutput = MPCNode;
+		}
 	}
 
 	UMaterialExpressionConstant* RoughnessConst = NewObject<UMaterialExpressionConstant>(Material);
@@ -235,14 +226,15 @@ void UUEMotionMobject::SetOpacity(float InOpacity)
 {
 	CurrentOpacity = FMath::Clamp(InOpacity, 0.0f, 1.0f);
 
-	AUEMotionMobjectActor* MobActor = Cast<AUEMotionMobjectActor>(InternalActor.Get());
-	if (MobActor)
+	static const FString MPCPath = TEXT("/Game/UEMotion/Materials/MPC_UEMotionFade");
+	UMaterialParameterCollection* MPC = LoadObject<UMaterialParameterCollection>(nullptr, *MPCPath);
+	if (MPC && InternalActor.IsValid())
 	{
-		MobActor->SetOpacity(CurrentOpacity);
-	}
-	else if (MaterialInstance.IsValid())
-	{
-		MaterialInstance->SetScalarParameterValue(FName("Opacity"), CurrentOpacity);
+		UWorld* World = InternalActor->GetWorld();
+		if (World)
+		{
+			UKismetMaterialLibrary::SetScalarParameterValue(World, MPC, FName("Opacity"), CurrentOpacity);
+		}
 	}
 
 	if (CurrentOpacity <= 0.0f)
