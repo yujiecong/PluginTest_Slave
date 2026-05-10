@@ -30,18 +30,18 @@ print("\n=== STEP 3: fade_out + play (Opacity track) ===")
 cube.fade_out(duration=2.0)
 s.play()
 
-if cube:
-    ue_mob = cube._ue
-    print(f"  Opacity:  {ue_mob.get_opacity():.4f}")
-    print(f"  Visible:  {ue_mob.get_visibility()}")
+# if cube:
+#     ue_mob = cube._ue
+#     print(f"  Opacity:  {ue_mob.get_opacity():.4f}")
+#     print(f"  Visible:  {ue_mob.get_visibility()}")
 
-print("\n=== STEP 4: fade_in + play ===")
-cube.fade_in(duration=2.0)
-s.play()
+# print("\n=== STEP 4: fade_in + play ===")
+# cube.fade_in(duration=2.0)
+# s.play()
 
-if cube:
-    ue_mob = cube._ue
-    print(f"  Opacity:  {ue_mob.get_opacity():.4f}")
-    print(f"  Visible:  {ue_mob.get_visibility()}")
+# if cube:
+#     ue_mob = cube._ue
+#     print(f"  Opacity:  {ue_mob.get_opacity():.4f}")
+#     print(f"  Visible:  {ue_mob.get_visibility()}")
 
-print("\nAll steps done.")
+# print("\nAll steps done.")
