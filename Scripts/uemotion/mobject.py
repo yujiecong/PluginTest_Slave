@@ -101,6 +101,14 @@ class Mobject:
     def visible(self, value):
         self._ue.set_visibility(bool(value))
 
+    @property
+    def opacity(self):
+        return self._ue.get_opacity()
+
+    @opacity.setter
+    def opacity(self, value):
+        self._ue.set_opacity(float(value))
+
     def get_bounding_box(self):
         origin, extent = self._ue.get_bounds()
         center = ue_to_motion_vec(origin)
@@ -245,7 +253,7 @@ class Mobject:
         anim.set_fade_out(False)
         anim.set_duration(duration)
         anim.set_easing(easing)
-        self._ue.set_visibility(False)
+        self._ue.set_opacity(0.0)
         self._scene._pending_animations.append(anim)
         return self
 
