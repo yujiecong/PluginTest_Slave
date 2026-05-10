@@ -144,7 +144,7 @@ bool UUEMotionScene::CreateLevelSequenceAsset()
 	{
 		FFrameRate FrameRate(FMath::RoundToInt(PlaybackFPS), 1);
 		MovieScene->SetDisplayRate(FrameRate);
-		int32 DefaultFrames = FMath::RoundToInt(2.0f * PlaybackFPS);
+		int32 DefaultFrames = FMath::RoundToInt(1.0f * PlaybackFPS);
 		FFrameNumber StartTick = UEMotionCompat::DisplayFrameToTick(MovieScene, 0);
 		FFrameNumber EndTick = UEMotionCompat::DisplayFrameToTick(MovieScene, DefaultFrames);
 		MovieScene->SetPlaybackRange(TRange<FFrameNumber>(StartTick, EndTick), true);
@@ -205,44 +205,51 @@ void UUEMotionScene::SetupCoordinateAxes()
 	SpawnParams.bNoFail = true;
 
 	float Len = CoordinateAxisLength;
+	float Thickness = FMath::Max(Len * 0.008f, 1.0f);
 
-	AActor* XAxisActor = SceneWorld->SpawnActor<AActor>(AActor::StaticClass(), FVector(0, 0, 0), FRotator(0, 0, -90), SpawnParams);
+	AActor* XAxisActor = SceneWorld->SpawnActor<AActor>(AActor::StaticClass(), FVector::ZeroVector, FRotator(-90, 0, 0), SpawnParams);
 	if (XAxisActor)
 	{
 		UStaticMeshComponent* XMeshComp = NewObject<UStaticMeshComponent>(XAxisActor, TEXT("XAxisMesh"));
 		XMeshComp->SetStaticMesh(GizmoMesh);
 		XMeshComp->RegisterComponent();
-		XMeshComp->SetWorldScale3D(FVector(Len / 60.0f, Len / 60.0f, 1.0f));
+		XMeshComp->SetWorldScale3D(FVector(Len / 60.0f, Thickness / 60.0f, Thickness / 60.0f));
 		XAxisActor->SetRootComponent(XMeshComp);
+
+		XMeshComp->SetVisibility(true);
+		XMeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 		UMaterialInterface* BaseMat = XMeshComp->GetMaterial(0);
 		if (BaseMat)
 		{
 			UMaterialInstanceDynamic* XMat = UMaterialInstanceDynamic::Create(BaseMat, this);
-			XMat->SetVectorParameterValue(FName("BaseColor"), FLinearColor::Red);
+			XMat->SetVectorParameterValue(FName("GizmoColor"), FLinearColor(0.9f, 0.15f, 0.15f, 1.0f));
 			XMeshComp->SetMaterial(0, XMat);
 		}
 	}
 
-	AActor* YAxisActor = SceneWorld->SpawnActor<AActor>(AActor::StaticClass(), FVector(0, 0, 0), FRotator(0, 0, 0), SpawnParams);
+	AActor* YAxisActor = SceneWorld->SpawnActor<AActor>(AActor::StaticClass(), FVector::ZeroVector, FRotator(0, 0, 90), SpawnParams);
 	if (YAxisActor)
 	{
 		UStaticMeshComponent* YMeshComp = NewObject<UStaticMeshComponent>(YAxisActor, TEXT("YAxisMesh"));
 		YMeshComp->SetStaticMesh(GizmoMesh);
 		YMeshComp->RegisterComponent();
-		YMeshComp->SetWorldScale3D(FVector(Len / 60.0f, Len / 60.0f, 1.0f));
+		YMeshComp->SetWorldScale3D(FVector(Len / 60.0f, Thickness / 60.0f, Thickness / 60.0f));
 		YAxisActor->SetRootComponent(YMeshComp);
+
+		YMeshComp->SetVisibility(true);
+		YMeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 		UMaterialInterface* BaseMat = YMeshComp->GetMaterial(0);
 		if (BaseMat)
 		{
 			UMaterialInstanceDynamic* YMat = UMaterialInstanceDynamic::Create(BaseMat, this);
-			YMat->SetVectorParameterValue(FName("BaseColor"), FLinearColor::Green);
+			YMat->SetVectorParameterValue(FName("GizmoColor"), FLinearColor(0.15f, 0.9f, 0.15f, 1.0f));
 			YMeshComp->SetMaterial(0, YMat);
 		}
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Coordinate axes created (X=Red, Y=Green, Length=%.0f)"), Len);
+	UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Coordinate axes created (X=Red, Y=Green, Length=%.0f, Thickness=%.1f)"), Len, Thickness);
 }
 
 void UUEMotionScene::OpenLevelSequenceInEditor()
@@ -375,7 +382,7 @@ FString UUEMotionScene::GetSceneName() const
 
 UWorld* UUEMotionScene::GetSceneWorld() const
 {
-	return SceneWorld;
+	return SceneWorld.Get();
 }
 
 ULevelSequence* UUEMotionScene::GetLevelSequence() const
@@ -431,7 +438,7 @@ UUEMotionMobject* UUEMotionScene::CreateTorus(float OuterRadius, float InnerRadi
 
 UUEMotionCamera* UUEMotionScene::GetCamera()
 {
-	return Camera;
+	return Camera.Get();
 }
 
 UUEMotionAssetFactory* UUEMotionScene::GetAssetFactory()

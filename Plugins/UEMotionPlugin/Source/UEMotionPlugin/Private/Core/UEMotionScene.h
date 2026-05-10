@@ -201,16 +201,16 @@ private:
 	float PlaybackFPS = 30.0f;
 
 	UPROPERTY()
-	UWorld* SceneWorld = nullptr;
+	TWeakObjectPtr<UWorld> SceneWorld;
 
 	UPROPERTY()
 	ULevelSequence* LevelSequence = nullptr;
 
 	UPROPERTY()
-	AUEMotionSceneActor* SceneActor = nullptr;
+	TWeakObjectPtr<AUEMotionSceneActor> SceneActor;
 
 	UPROPERTY()
-	UUEMotionCamera* Camera = nullptr;
+	TWeakObjectPtr<UUEMotionCamera> Camera;
 
 	UPROPERTY()
 	TArray<UUEMotionMobject*> Mobjects;

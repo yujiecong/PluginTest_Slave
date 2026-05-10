@@ -73,11 +73,12 @@ namespace UEMotionCompat
 	inline FGuid FindOrAddPossessable(UMovieScene* MovieScene, AActor* Actor, ULevelSequence* LevelSequence, UWorld* World)
 	{
 		FGuid ObjectBinding = FindObjectBinding(MovieScene, Actor);
-		if (!ObjectBinding.IsValid())
+		bool bIsNewBinding = !ObjectBinding.IsValid();
+		if (bIsNewBinding)
 		{
 			ObjectBinding = AddPossessable(MovieScene, Actor);
 		}
-		if (ObjectBinding.IsValid() && LevelSequence && World)
+		if (bIsNewBinding && ObjectBinding.IsValid() && LevelSequence && World)
 		{
 			LevelSequence->BindPossessableObject(ObjectBinding, *Actor, World);
 		}
