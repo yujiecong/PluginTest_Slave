@@ -210,7 +210,7 @@ private:
 	TWeakObjectPtr<AUEMotionSceneActor> SceneActor;
 
 	UPROPERTY()
-	TWeakObjectPtr<UUEMotionCamera> Camera;
+	UUEMotionCamera* Camera = nullptr;
 
 	UPROPERTY()
 	TArray<UUEMotionMobject*> Mobjects;

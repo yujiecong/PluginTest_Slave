@@ -89,9 +89,9 @@ bool UUEMotionScene::CreateSceneMap()
 	if (!NewWorld) return false;
 
 	SceneWorld = GEditor->GetEditorWorldContext().World();
-	if (!SceneWorld) return false;
+	if (!SceneWorld.IsValid()) return false;
 
-	for (TActorIterator<AActor> It(SceneWorld); It; ++It)
+	for (TActorIterator<AActor> It(SceneWorld.Get()); It; ++It)
 	{
 		AActor* Actor = *It;
 		if (Actor && Actor->GetClass() != AWorldSettings::StaticClass() && !Actor->GetName().Contains(TEXT("PlayerStart")))
@@ -100,7 +100,7 @@ bool UUEMotionScene::CreateSceneMap()
 		}
 	}
 
-	AWorldSettings* WS = SceneWorld->GetWorldSettings();
+	AWorldSettings* WS = SceneWorld.Get()->GetWorldSettings();
 	if (WS)
 	{
 		WS->bEnableWorldBoundsChecks = false;
@@ -108,7 +108,7 @@ bool UUEMotionScene::CreateSceneMap()
 
 	if (MapPath == DefaultMapPath || !UEditorAssetLibrary::DoesAssetExist(DefaultMapPath))
 	{
-		if (!UEditorLoadingAndSavingUtils::SaveMap(SceneWorld, MapPath))
+		if (!UEditorLoadingAndSavingUtils::SaveMap(SceneWorld.Get(), MapPath))
 		{
 			UE_LOG(LogTemp, Warning, TEXT("UEMotionScene: Failed to save map to '%s'"), *MapPath);
 		}
@@ -165,7 +165,7 @@ bool UUEMotionScene::CreateLevelSequenceAsset()
 
 void UUEMotionScene::SetupDefaultLighting()
 {
-	if (!SceneWorld) return;
+	if (!SceneWorld.IsValid()) return;
 
 	if (bUseUnlitMode)
 	{
@@ -176,7 +176,7 @@ void UUEMotionScene::SetupDefaultLighting()
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-	ADirectionalLight* DirLight = SceneWorld->SpawnActor<ADirectionalLight>(ADirectionalLight::StaticClass(), FVector(0, 0, 500), FRotator(-45, 0, 0), SpawnParams);
+	ADirectionalLight* DirLight = SceneWorld.Get()->SpawnActor<ADirectionalLight>(ADirectionalLight::StaticClass(), FVector(0, 0, 500), FRotator(-45, 0, 0), SpawnParams);
 	if (DirLight)
 	{
 		UDirectionalLightComponent* LightComp = Cast<UDirectionalLightComponent>(DirLight->GetLightComponent());
@@ -190,7 +190,7 @@ void UUEMotionScene::SetupDefaultLighting()
 
 void UUEMotionScene::SetupCoordinateAxes()
 {
-	if (!SceneWorld || !bShowCoordinateAxes) return;
+	if (!SceneWorld.IsValid() || !bShowCoordinateAxes) return;
 
 	static const FString GizmoMeshPath = TEXT("/Engine/InteractiveToolsFramework/Meshes/GizmoArrowHandle.GizmoArrowHandle");
 	UStaticMesh* GizmoMesh = LoadObject<UStaticMesh>(nullptr, *GizmoMeshPath);
@@ -207,7 +207,7 @@ void UUEMotionScene::SetupCoordinateAxes()
 	float Len = CoordinateAxisLength;
 	float Thickness = FMath::Max(Len * 0.008f, 1.0f);
 
-	AActor* XAxisActor = SceneWorld->SpawnActor<AActor>(AActor::StaticClass(), FVector::ZeroVector, FRotator(-90, 0, 0), SpawnParams);
+	AActor* XAxisActor = SceneWorld.Get()->SpawnActor<AActor>(AActor::StaticClass(), FVector::ZeroVector, FRotator(-90, 0, 0), SpawnParams);
 	if (XAxisActor)
 	{
 		UStaticMeshComponent* XMeshComp = NewObject<UStaticMeshComponent>(XAxisActor, TEXT("XAxisMesh"));
@@ -228,7 +228,7 @@ void UUEMotionScene::SetupCoordinateAxes()
 		}
 	}
 
-	AActor* YAxisActor = SceneWorld->SpawnActor<AActor>(AActor::StaticClass(), FVector::ZeroVector, FRotator(0, 0, 90), SpawnParams);
+	AActor* YAxisActor = SceneWorld.Get()->SpawnActor<AActor>(AActor::StaticClass(), FVector::ZeroVector, FRotator(0, 0, 90), SpawnParams);
 	if (YAxisActor)
 	{
 		UStaticMeshComponent* YMeshComp = NewObject<UStaticMeshComponent>(YAxisActor, TEXT("YAxisMesh"));
@@ -290,17 +290,17 @@ void UUEMotionScene::Initialize(const FString& InSceneName, int32 Width, int32 H
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-	SceneActor = SceneWorld->SpawnActor<AUEMotionSceneActor>(AUEMotionSceneActor::StaticClass(), Location, Rotation, SpawnParams);
+	SceneActor = SceneWorld.Get()->SpawnActor<AUEMotionSceneActor>(AUEMotionSceneActor::StaticClass(), Location, Rotation, SpawnParams);
 
-	if (SceneActor)
+	if (SceneActor.IsValid())
 	{
-		SceneActor->SetOwnerScene(this);
+		SceneActor.Get()->SetOwnerScene(this);
 
 		Camera = NewObject<UUEMotionCamera>(this);
-		Camera->Init(SceneActor);
+		Camera->Init(SceneActor.Get());
 		Camera->LookAt(FVector(0, 0, 0));
 
-		FGuid CameraBinding = AddActorToSequencer(SceneActor);
+		FGuid CameraBinding = AddActorToSequencer(SceneActor.Get());
 
 		if (CameraBinding.IsValid())
 		{
@@ -343,9 +343,9 @@ void UUEMotionScene::Initialize(const FString& InSceneName, int32 Width, int32 H
 					FFrameNumber EndFrame = UEMotionCompat::DisplayFrameToTick(MovieScene, DefaultEndFrame);
 					CamSection->SetRange(TRange<FFrameNumber>(StartFrame, EndFrame));
 
-					FVector CamLoc = SceneActor->GetActorLocation();
-					FRotator CamRot = SceneActor->GetActorRotation();
-					FVector CamScale = SceneActor->GetActorScale();
+					FVector CamLoc = SceneActor.Get()->GetActorLocation();
+					FRotator CamRot = SceneActor.Get()->GetActorRotation();
+					FVector CamScale = SceneActor.Get()->GetActorScale();
 					UMovieScene3DTransformSection* TransformSection = Cast<UMovieScene3DTransformSection>(CamSection);
 					if (TransformSection)
 					{
@@ -362,7 +362,7 @@ void UUEMotionScene::Initialize(const FString& InSceneName, int32 Width, int32 H
 		SetupCoordinateAxes();
 		bInitialized = true;
 
-		UEditorLoadingAndSavingUtils::SaveMap(SceneWorld, GetMapPath());
+		UEditorLoadingAndSavingUtils::SaveMap(SceneWorld.Get(), GetMapPath());
 
 		OpenLevelSequenceInEditor();
 
@@ -392,21 +392,21 @@ ULevelSequence* UUEMotionScene::GetLevelSequence() const
 
 UUEMotionMobject* UUEMotionScene::CreateSphere(float Radius)
 {
-	if (!bInitialized || !SceneActor) return nullptr;
+	if (!bInitialized || !SceneActor.IsValid()) return nullptr;
 	if (Radius <= 0.0f) Radius = 1.0f;
 	return CreateMobjectFromParams(TEXT("sphere"), Radius);
 }
 
 UUEMotionMobject* UUEMotionScene::CreateCube(float Size)
 {
-	if (!bInitialized || !SceneActor) return nullptr;
+	if (!bInitialized || !SceneActor.IsValid()) return nullptr;
 	if (Size <= 0.0f) Size = 1.0f;
 	return CreateMobjectFromParams(TEXT("cube"), Size);
 }
 
 UUEMotionMobject* UUEMotionScene::CreateCylinder(float Radius, float Height)
 {
-	if (!bInitialized || !SceneActor) return nullptr;
+	if (!bInitialized || !SceneActor.IsValid()) return nullptr;
 	if (Radius <= 0.0f) Radius = 1.0f;
 	if (Height <= 0.0f) Height = 1.0f;
 	return CreateMobjectFromParams(TEXT("cylinder"), Radius);
@@ -414,7 +414,7 @@ UUEMotionMobject* UUEMotionScene::CreateCylinder(float Radius, float Height)
 
 UUEMotionMobject* UUEMotionScene::CreateCone(float Radius, float Height)
 {
-	if (!bInitialized || !SceneActor) return nullptr;
+	if (!bInitialized || !SceneActor.IsValid()) return nullptr;
 	if (Radius <= 0.0f) Radius = 1.0f;
 	if (Height <= 0.0f) Height = 1.0f;
 	return CreateMobjectFromParams(TEXT("cone"), Radius);
@@ -422,7 +422,7 @@ UUEMotionMobject* UUEMotionScene::CreateCone(float Radius, float Height)
 
 UUEMotionMobject* UUEMotionScene::CreatePlane(float Width, float Height)
 {
-	if (!bInitialized || !SceneActor) return nullptr;
+	if (!bInitialized || !SceneActor.IsValid()) return nullptr;
 	if (Width <= 0.0f) Width = 1.0f;
 	if (Height <= 0.0f) Height = 1.0f;
 	return CreateMobjectFromParams(TEXT("plane"), Width);
@@ -430,7 +430,7 @@ UUEMotionMobject* UUEMotionScene::CreatePlane(float Width, float Height)
 
 UUEMotionMobject* UUEMotionScene::CreateTorus(float OuterRadius, float InnerRadius)
 {
-	if (!bInitialized || !SceneActor) return nullptr;
+	if (!bInitialized || !SceneActor.IsValid()) return nullptr;
 	if (OuterRadius <= 0.0f) OuterRadius = 1.0f;
 	if (InnerRadius <= 0.0f) InnerRadius = 1.0f;
 	return CreateMobjectFromParams(TEXT("torus"), OuterRadius);
@@ -438,7 +438,7 @@ UUEMotionMobject* UUEMotionScene::CreateTorus(float OuterRadius, float InnerRadi
 
 UUEMotionCamera* UUEMotionScene::GetCamera()
 {
-	return Camera.Get();
+	return Camera;
 }
 
 UUEMotionAssetFactory* UUEMotionScene::GetAssetFactory()
@@ -461,7 +461,7 @@ UUEMotionMobject* UUEMotionScene::CreateMobjectFromAsset(
 	float Opacity,
 	const FString& CustomMeshPath)
 {
-	if (!bInitialized || !SceneActor) return nullptr;
+	if (!bInitialized || !SceneActor.IsValid()) return nullptr;
 
 	UUEMotionAssetFactory* Factory = GetAssetFactory();
 	if (!Factory)
@@ -502,7 +502,7 @@ UUEMotionMobject* UUEMotionScene::CreateMobjectFromParams(
 	float Opacity,
 	const FString& CustomMeshPath)
 {
-	if (!bInitialized || !SceneActor) return nullptr;
+	if (!bInitialized || !SceneActor.IsValid()) return nullptr;
 
 	UUEMotionAssetFactory* Factory = GetAssetFactory();
 	if (!Factory)
@@ -596,7 +596,7 @@ bool UUEMotionScene::DoesAssetExist(const FString& AssetPath)
 
 void UUEMotionScene::AddDirectionalLight(const FVector& Direction, const FLinearColor& Color, float Intensity)
 {
-	if (!bInitialized || !SceneWorld) return;
+	if (!bInitialized || !SceneWorld.IsValid()) return;
 
 	ADirectionalLight* Light = SceneWorld->SpawnActor<ADirectionalLight>();
 	if (Light)
@@ -613,7 +613,7 @@ void UUEMotionScene::AddDirectionalLight(const FVector& Direction, const FLinear
 
 void UUEMotionScene::AddPointLight(const FVector& Location, const FLinearColor& Color, float Intensity)
 {
-	if (!bInitialized || !SceneWorld) return;
+	if (!bInitialized || !SceneWorld.IsValid()) return;
 
 	APointLight* Light = SceneWorld->SpawnActor<APointLight>();
 	if (Light)
@@ -640,7 +640,7 @@ FGuid UUEMotionScene::AddActorToSequencer(AActor* Actor)
 	UMovieScene* MovieScene = LevelSequence->GetMovieScene();
 	if (!MovieScene) return FGuid();
 
-	FGuid Binding = UEMotionCompat::FindOrAddPossessable(MovieScene, Actor, LevelSequence, SceneWorld);
+	FGuid Binding = UEMotionCompat::FindOrAddPossessable(MovieScene, Actor, LevelSequence, SceneWorld.Get());
 	UE_LOG(LogTemp, Log, TEXT("UEMotionScene: AddActorToSequencer '%s' -> Binding %s"),
 		*Actor->GetName(), Binding.IsValid() ? *Binding.ToString() : TEXT("INVALID"));
 	return Binding;
@@ -660,7 +660,7 @@ UMovieScene3DTransformTrack* UUEMotionScene::GetOrCreateTransformTrack(UUEMotion
 	UMovieScene* MovieScene = LevelSequence->GetMovieScene();
 	if (!MovieScene) return nullptr;
 
-	FGuid ObjectBinding = UEMotionCompat::FindOrAddPossessable(MovieScene, Actor, LevelSequence, SceneWorld);
+	FGuid ObjectBinding = UEMotionCompat::FindOrAddPossessable(MovieScene, Actor, LevelSequence, SceneWorld.Get());
 	if (!ObjectBinding.IsValid())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("UEMotionScene: GetOrCreateTransformTrack - Failed to get binding for '%s'"), *Actor->GetName());
@@ -700,7 +700,7 @@ UMovieSceneFloatTrack* UUEMotionScene::GetOrCreateFloatTrack(UUEMotionMobject* M
 	UMovieScene* MovieScene = LevelSequence->GetMovieScene();
 	if (!MovieScene) return nullptr;
 
-	FGuid ObjectBinding = UEMotionCompat::FindOrAddPossessable(MovieScene, Actor, LevelSequence, SceneWorld);
+	FGuid ObjectBinding = UEMotionCompat::FindOrAddPossessable(MovieScene, Actor, LevelSequence, SceneWorld.Get());
 	if (!ObjectBinding.IsValid()) return nullptr;
 
 	UMovieSceneFloatTrack* NewTrack = Cast<UMovieSceneFloatTrack>(
@@ -781,11 +781,11 @@ void UUEMotionScene::UpdateCameraCutRange(int32 EndFrame)
 
 void UUEMotionScene::UpdateCameraTransformRange(int32 EndFrame)
 {
-	if (!LevelSequence || !SceneActor) return;
+	if (!LevelSequence || !SceneActor.IsValid()) return;
 	UMovieScene* MovieScene = LevelSequence->GetMovieScene();
 	if (!MovieScene) return;
 
-	FGuid CameraBinding = UEMotionCompat::FindObjectBinding(MovieScene, SceneActor);
+	FGuid CameraBinding = UEMotionCompat::FindObjectBinding(MovieScene, SceneActor.Get());
 	if (!CameraBinding.IsValid()) return;
 
 	UMovieScene3DTransformTrack* CamTrack = UEMotionCompat::FindTransformTrack(MovieScene, CameraBinding);
@@ -1033,12 +1033,12 @@ void UUEMotionScene::RenderFrames(const FString& OutputDirectory, float Duration
 	if (!Renderer)
 	{
 		Renderer = NewObject<UUEMotionRenderer>(this);
-		Renderer->Initialize(SceneWorld, ResolutionWidth, ResolutionHeight);
+		Renderer->Initialize(SceneWorld.Get(), ResolutionWidth, ResolutionHeight);
 		Renderer->SetUseUnlit(bUseUnlitMode);
 		Renderer->OnRenderFinishedDelegate.AddDynamic(this, &UUEMotionScene::OnRendererFinished);
 	}
 
-	Renderer->BindCamera(SceneActor);
+	Renderer->BindCamera(SceneActor.Get());
 
 	SaveAssets();
 
@@ -1084,10 +1084,10 @@ void UUEMotionScene::Destroy()
 {
 	ClearScene();
 
-	if (SceneActor)
+	if (SceneActor.IsValid())
 	{
-		SceneActor->Destroy();
-		SceneActor = nullptr;
+		SceneActor.Get()->Destroy();
+		SceneActor.Reset();
 	}
 
 	if (Renderer)
@@ -1098,7 +1098,7 @@ void UUEMotionScene::Destroy()
 
 	Camera = nullptr;
 	LevelSequence = nullptr;
-	SceneWorld = nullptr;
+	SceneWorld.Reset();
 	bInitialized = false;
 
 	if (bAutoCleanup)
@@ -1127,10 +1127,10 @@ void UUEMotionScene::SaveAssets()
 		}
 	}
 
-	if (SceneWorld)
+	if (SceneWorld.IsValid())
 	{
 		FString MapPath = GetMapPath();
-		if (UEditorLoadingAndSavingUtils::SaveMap(SceneWorld, MapPath))
+		if (UEditorLoadingAndSavingUtils::SaveMap(SceneWorld.Get(), MapPath))
 		{
 			UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Map saved to '%s'"), *MapPath);
 		}
@@ -1161,21 +1161,21 @@ void UUEMotionScene::CleanupAssets()
 
 void UUEMotionScene::UpdateCameraKey()
 {
-	if (!LevelSequence || !SceneActor || !bInitialized) return;
+	if (!LevelSequence || !SceneActor.IsValid() || !bInitialized) return;
 
 	UMovieScene* MovieScene = LevelSequence->GetMovieScene();
 	if (!MovieScene) return;
 
-	FGuid CameraBinding = UEMotionCompat::FindObjectBinding(MovieScene, SceneActor);
+	FGuid CameraBinding = UEMotionCompat::FindObjectBinding(MovieScene, SceneActor.Get());
 	if (!CameraBinding.IsValid()) return;
 
 	UMovieScene3DTransformTrack* CamTrack = UEMotionCompat::FindTransformTrack(MovieScene, CameraBinding);
 	if (!CamTrack) return;
 
 	int32 CurrentFrame = FMath::RoundToInt(CurrentTime * PlaybackFPS);
-	FVector CamLoc = SceneActor->GetActorLocation();
-	FRotator CamRot = SceneActor->GetActorRotation();
-	FVector CamScale = SceneActor->GetActorScale();
+	FVector CamLoc = SceneActor.Get()->GetActorLocation();
+	FRotator CamRot = SceneActor.Get()->GetActorRotation();
+	FVector CamScale = SceneActor.Get()->GetActorScale();
 
 	RecordTransformKey(CamTrack, CurrentFrame, CamLoc, CamRot, CamScale);
 }

@@ -310,6 +310,12 @@ void UUEMotionMobject::InitializeFromSpawnedActor(AActor* SpawnedActor, UStaticM
 		}
 	}
 
+	if (MaterialInstance.IsValid())
+	{
+		MaterialInstance->SetVectorParameterValue(FName("BaseColor"), CurrentColor);
+		MaterialInstance->SetScalarParameterValue(FName("Opacity"), CurrentOpacity);
+	}
+
 	UE_LOG(LogTemp, Log, TEXT("UEMotionMobject: Initialized from spawned actor '%s' (AssetBased=%s)"),
 		*SpawnedActor->GetName(), bIsAssetBased ? TEXT("true") : TEXT("false"));
 }
