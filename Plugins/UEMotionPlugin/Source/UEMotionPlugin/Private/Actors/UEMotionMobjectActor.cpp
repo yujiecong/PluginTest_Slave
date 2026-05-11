@@ -53,10 +53,10 @@ void AUEMotionMobjectActor::SetOpacity(float InOpacity)
 		}
 	}
 
-	UStaticMeshComponent* MeshComp = FindComponentByClass<UStaticMeshComponent>();
-	if (MeshComp)
+	EnsureDynamicMaterial();
+	if (DynamicMaterial)
 	{
-		MeshComp->SetVisibility(Opacity > KINDA_SMALL_NUMBER);
+		DynamicMaterial->SetScalarParameterValue(FName("Opacity"), Opacity);
 	}
 }
 

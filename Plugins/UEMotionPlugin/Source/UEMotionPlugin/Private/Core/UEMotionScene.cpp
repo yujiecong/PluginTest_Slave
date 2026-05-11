@@ -963,15 +963,6 @@ void UUEMotionScene::Play(UUEMotionAnimation* Animation)
 	ActiveAnimations.Add(Animation);
 	Animation->Reset();
 
-	if (UUEMotionFadeAnimation* FadeAnim = Cast<UUEMotionFadeAnimation>(Animation))
-	{
-		if (UUEMotionMobject* FadeTarget = FadeAnim->GetTargetMobject())
-		{
-			float EndOpacity = FadeAnim->IsFadeOut() ? 0.0f : 1.0f;
-			FadeTarget->SetOpacity(EndOpacity);
-		}
-	}
-
 	CurrentTime = EndTime;
 
 	UMovieScene* MovieScene = LevelSequence ? LevelSequence->GetMovieScene() : nullptr;

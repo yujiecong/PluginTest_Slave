@@ -237,6 +237,11 @@ void UUEMotionMobject::SetOpacity(float InOpacity)
 		}
 	}
 
+	if (MaterialInstance.IsValid())
+	{
+		MaterialInstance->SetScalarParameterValue(FName("Opacity"), CurrentOpacity);
+	}
+
 	if (CurrentOpacity <= 0.0f)
 	{
 		bVisible = false;
