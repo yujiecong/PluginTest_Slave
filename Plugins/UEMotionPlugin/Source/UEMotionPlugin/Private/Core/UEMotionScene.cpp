@@ -41,6 +41,9 @@
 #include "FileHelpers.h"
 #include "Tracks/MovieSceneCameraCutTrack.h"
 #include "Sections/MovieSceneCameraCutSection.h"
+#include "Materials/Material.h"
+#include "Materials/MaterialExpressionVectorParameter.h"
+#include "Materials/MaterialInstanceDynamic.h"
 
 FString UUEMotionScene::GetMapPath() const
 {
@@ -207,7 +210,7 @@ void UUEMotionScene::SetupCoordinateAxes()
 	float Len = CoordinateAxisLength;
 	float Thickness = FMath::Max(Len * 0.008f, 1.0f);
 
-	AActor* XAxisActor = SceneWorld.Get()->SpawnActor<AActor>(AActor::StaticClass(), FVector::ZeroVector, FRotator(-90, 0, 0), SpawnParams);
+	AActor* XAxisActor = SceneWorld.Get()->SpawnActor<AActor>(AActor::StaticClass(), FVector::ZeroVector, FRotator(0, 0, 0), SpawnParams);
 	if (XAxisActor)
 	{
 		UStaticMeshComponent* XMeshComp = NewObject<UStaticMeshComponent>(XAxisActor, TEXT("XAxisMesh"));
@@ -215,20 +218,12 @@ void UUEMotionScene::SetupCoordinateAxes()
 		XMeshComp->RegisterComponent();
 		XMeshComp->SetWorldScale3D(FVector(Len / 60.0f, Thickness / 60.0f, Thickness / 60.0f));
 		XAxisActor->SetRootComponent(XMeshComp);
-
 		XMeshComp->SetVisibility(true);
 		XMeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
-		UMaterialInterface* BaseMat = XMeshComp->GetMaterial(0);
-		if (BaseMat)
-		{
-			UMaterialInstanceDynamic* XMat = UMaterialInstanceDynamic::Create(BaseMat, this);
-			XMat->SetVectorParameterValue(FName("GizmoColor"), FLinearColor(0.9f, 0.15f, 0.15f, 1.0f));
-			XMeshComp->SetMaterial(0, XMat);
-		}
+		XMeshComp->SetMaterial(0, CreateAxisMaterial(FLinearColor::Red));
 	}
 
-	AActor* YAxisActor = SceneWorld.Get()->SpawnActor<AActor>(AActor::StaticClass(), FVector::ZeroVector, FRotator(0, 0, 90), SpawnParams);
+	AActor* YAxisActor = SceneWorld.Get()->SpawnActor<AActor>(AActor::StaticClass(), FVector::ZeroVector, FRotator(0, 90, 0), SpawnParams);
 	if (YAxisActor)
 	{
 		UStaticMeshComponent* YMeshComp = NewObject<UStaticMeshComponent>(YAxisActor, TEXT("YAxisMesh"));
@@ -236,20 +231,57 @@ void UUEMotionScene::SetupCoordinateAxes()
 		YMeshComp->RegisterComponent();
 		YMeshComp->SetWorldScale3D(FVector(Len / 60.0f, Thickness / 60.0f, Thickness / 60.0f));
 		YAxisActor->SetRootComponent(YMeshComp);
-
 		YMeshComp->SetVisibility(true);
 		YMeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
-		UMaterialInterface* BaseMat = YMeshComp->GetMaterial(0);
-		if (BaseMat)
-		{
-			UMaterialInstanceDynamic* YMat = UMaterialInstanceDynamic::Create(BaseMat, this);
-			YMat->SetVectorParameterValue(FName("GizmoColor"), FLinearColor(0.15f, 0.9f, 0.15f, 1.0f));
-			YMeshComp->SetMaterial(0, YMat);
-		}
+		YMeshComp->SetMaterial(0, CreateAxisMaterial(FLinearColor::Green));
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Coordinate axes created (X=Red, Y=Green, Length=%.0f, Thickness=%.1f)"), Len, Thickness);
+	AActor* ZAxisActor = SceneWorld.Get()->SpawnActor<AActor>(AActor::StaticClass(), FVector::ZeroVector, FRotator(-90, 0, 0), SpawnParams);
+	if (ZAxisActor)
+	{
+		UStaticMeshComponent* ZMeshComp = NewObject<UStaticMeshComponent>(ZAxisActor, TEXT("ZAxisMesh"));
+		ZMeshComp->SetStaticMesh(GizmoMesh);
+		ZMeshComp->RegisterComponent();
+		ZMeshComp->SetWorldScale3D(FVector(Len / 60.0f, Thickness / 60.0f, Thickness / 60.0f));
+		ZAxisActor->SetRootComponent(ZMeshComp);
+		ZMeshComp->SetVisibility(true);
+		ZMeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		ZMeshComp->SetMaterial(0, CreateAxisMaterial(FLinearColor::Blue));
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Coordinate axes created (X=Red, Y=Green, Z=Blue, Length=%.0f)"), Len);
+}
+
+UMaterialInstanceDynamic* UUEMotionScene::CreateAxisMaterial(const FLinearColor& Color)
+{
+	static UMaterial* AxisBaseMaterial = nullptr;
+	if (!AxisBaseMaterial)
+	{
+		AxisBaseMaterial = NewObject<UMaterial>(GetTransientPackage(), TEXT("M_AxisBase"), RF_Transient | RF_Public);
+		AxisBaseMaterial->MaterialDomain = EMaterialDomain::MD_Surface;
+		AxisBaseMaterial->BlendMode = EBlendMode::BLEND_Opaque;
+
+		UMaterialExpressionVectorParameter* ColorParam = NewObject<UMaterialExpressionVectorParameter>(AxisBaseMaterial);
+		ColorParam->ParameterName = FName("AxisColor");
+		ColorParam->DefaultValue = FLinearColor::White;
+		AxisBaseMaterial->GetExpressionCollection().AddExpression(ColorParam);
+
+		UMaterialEditorOnlyData* EditorData = AxisBaseMaterial->GetEditorOnlyData();
+		if (EditorData)
+		{
+			EditorData->EmissiveColor.Expression = ColorParam;
+			EditorData->EmissiveColor.OutputIndex = 0;
+		}
+
+		AxisBaseMaterial->MarkPackageDirty();
+#if WITH_EDITOR
+		AxisBaseMaterial->PostEditChange();
+#endif
+	}
+
+	UMaterialInstanceDynamic* MID = UMaterialInstanceDynamic::Create(AxisBaseMaterial, this);
+	MID->SetVectorParameterValue(FName("AxisColor"), Color);
+	return MID;
 }
 
 void UUEMotionScene::OpenLevelSequenceInEditor()

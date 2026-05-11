@@ -227,6 +227,7 @@ private:
 	bool CreateLevelSequenceAsset();
 	void SetupDefaultLighting();
 	void SetupCoordinateAxes();
+	UMaterialInstanceDynamic* CreateAxisMaterial(const FLinearColor& Color);
 	void OpenLevelSequenceInEditor();
 
 	FGuid AddActorToSequencer(AActor* Actor);
