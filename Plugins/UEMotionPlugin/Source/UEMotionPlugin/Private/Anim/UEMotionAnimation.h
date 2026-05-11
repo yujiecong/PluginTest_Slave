@@ -36,13 +36,13 @@ public:
 		Elapsed += DeltaTime;
 		float Progress = FMath::Clamp(Elapsed / FMath::Max(Duration, 0.001f), 0.0f, 1.0f);
 		float EasedProgress = ApplyEasing(EasingType, Progress);
-		TickAnimation(DeltaTime, EasedProgress);
+		UpdateAnimation(DeltaTime, EasedProgress);
 	}
 
 	static float ApplyEasing(const FString& Type, float t);
 
 protected:
-	virtual void TickAnimation(float DeltaTime, float EasedProgress) {}
+	virtual void UpdateAnimation(float DeltaTime, float EasedProgress) {}
 
 	UPROPERTY()
 	float Duration = 1.0f;

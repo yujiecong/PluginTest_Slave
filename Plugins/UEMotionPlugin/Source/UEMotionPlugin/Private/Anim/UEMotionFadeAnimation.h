@@ -30,7 +30,7 @@ public:
 	virtual void Reset() override;
 
 protected:
-	virtual void TickAnimation(float DeltaTime, float EasedProgress) override;
+	virtual void UpdateAnimation(float DeltaTime, float EasedProgress) override;
 
 private:
 	UPROPERTY()

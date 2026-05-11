@@ -10,7 +10,7 @@ void UUEMotionColorAnimation::SetTargetMobject(UUEMotionMobject* InTarget)
 	}
 }
 
-void UUEMotionColorAnimation::TickAnimation(float DeltaTime, float EasedProgress)
+void UUEMotionColorAnimation::UpdateAnimation(float DeltaTime, float EasedProgress)
 {
 	if (!TargetMobject) return;
 	FLinearColor Current = FLinearColor::LerpUsingHSV(StartColor, EndColor, EasedProgress);

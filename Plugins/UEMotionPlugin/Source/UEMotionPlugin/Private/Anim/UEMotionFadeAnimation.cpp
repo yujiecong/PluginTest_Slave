@@ -22,7 +22,7 @@ void UUEMotionFadeAnimation::Reset()
 	}
 }
 
-void UUEMotionFadeAnimation::TickAnimation(float DeltaTime, float EasedProgress)
+void UUEMotionFadeAnimation::UpdateAnimation(float DeltaTime, float EasedProgress)
 {
 	if (!TargetMobject.IsValid()) return;
 

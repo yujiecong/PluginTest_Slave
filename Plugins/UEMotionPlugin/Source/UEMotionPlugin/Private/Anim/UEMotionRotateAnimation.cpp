@@ -10,7 +10,7 @@ void UUEMotionRotateAnimation::SetTargetMobject(UUEMotionMobject* InTarget)
 	}
 }
 
-void UUEMotionRotateAnimation::TickAnimation(float DeltaTime, float EasedProgress)
+void UUEMotionRotateAnimation::UpdateAnimation(float DeltaTime, float EasedProgress)
 {
 	if (!TargetMobject) return;
 

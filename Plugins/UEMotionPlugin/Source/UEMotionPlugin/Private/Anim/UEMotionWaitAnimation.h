@@ -10,5 +10,5 @@ class UUEMotionWaitAnimation : public UUEMotionAnimation
 	GENERATED_BODY()
 
 protected:
-	virtual void TickAnimation(float DeltaTime, float EasedProgress) override {}
+	virtual void UpdateAnimation(float DeltaTime, float EasedProgress) override {}
 };

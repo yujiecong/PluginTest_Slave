@@ -50,7 +50,7 @@ void UUEMotionGroupAnimation::Reset()
 	}
 }
 
-void UUEMotionGroupAnimation::TickAnimation(float DeltaTime, float EasedProgress)
+void UUEMotionGroupAnimation::UpdateAnimation(float DeltaTime, float EasedProgress)
 {
 	if (bIsSequential)
 	{

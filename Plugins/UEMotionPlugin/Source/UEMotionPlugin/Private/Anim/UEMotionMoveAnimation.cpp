@@ -10,7 +10,7 @@ void UUEMotionMoveAnimation::SetTargetMobject(UUEMotionMobject* InTarget)
 	}
 }
 
-void UUEMotionMoveAnimation::TickAnimation(float DeltaTime, float EasedProgress)
+void UUEMotionMoveAnimation::UpdateAnimation(float DeltaTime, float EasedProgress)
 {
 	if (!TargetMobject) return;
 	FVector Current = FMath::Lerp(Start, End, EasedProgress);
