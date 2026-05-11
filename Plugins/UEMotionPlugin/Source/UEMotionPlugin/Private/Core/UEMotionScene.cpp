@@ -952,7 +952,7 @@ void UUEMotionScene::Wait(float Duration)
 	}
 }
 
-void UEMotionScene::StopAll()
+void UUEMotionScene::StopAll()
 {
 	ActiveAnimations.Empty();
 }
