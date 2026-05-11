@@ -122,6 +122,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "UEMotion")
 	bool HasActiveAnimations() const;
 
+	void UpdateAnimations(float DeltaTime);
+
 	UFUNCTION(BlueprintCallable, Category = "UEMotion")
 	void RenderFrames(const FString& OutputDirectory, float Duration, float FPS = 30.0f);
 

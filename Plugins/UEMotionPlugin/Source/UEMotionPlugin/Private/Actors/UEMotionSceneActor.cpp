@@ -8,7 +8,20 @@ AUEMotionSceneActor::AUEMotionSceneActor(const FObjectInitializer& ObjectInitial
 	CameraAspectRatio = 1.0f;
 	CameraSensorWidth = 24.0f;
 
+	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.TickGroup = TG_PostUpdateWork;
+
 	ApplyCameraAspectRatio();
+}
+
+void AUEMotionSceneActor::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	if (UUEMotionScene* Scene = OwnerScene.Get())
+	{
+		Scene->UpdateAnimations(DeltaTime);
+	}
 }
 
 void AUEMotionSceneActor::SetOwnerScene(UUEMotionScene* InScene)

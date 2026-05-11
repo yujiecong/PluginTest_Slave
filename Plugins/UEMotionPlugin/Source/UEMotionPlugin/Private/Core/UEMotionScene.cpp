@@ -962,6 +962,22 @@ bool UUEMotionScene::HasActiveAnimations() const
 	return ActiveAnimations.Num() > 0;
 }
 
+void UUEMotionScene::UpdateAnimations(float DeltaTime)
+{
+	for (int32 i = ActiveAnimations.Num() - 1; i >= 0; --i)
+	{
+		UUEMotionAnimation* Animation = ActiveAnimations[i];
+		if (!Animation) continue;
+
+		Animation->Advance(DeltaTime);
+
+		if (Animation->IsFinished())
+		{
+			ActiveAnimations.RemoveAt(i);
+		}
+	}
+}
+
 void UUEMotionScene::RenderFrames(const FString& OutputDirectory, float Duration, float FPS)
 {
 	if (!bInitialized || !LevelSequence) return;

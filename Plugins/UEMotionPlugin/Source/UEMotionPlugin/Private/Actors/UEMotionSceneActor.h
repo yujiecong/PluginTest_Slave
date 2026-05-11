@@ -25,6 +25,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UEMotion|Camera", meta = (ClampMin = 1.0, UIMin = 1.0))
 	float CameraSensorWidth;
 
+protected:
+	virtual void Tick(float DeltaTime) override;
+
 private:
 	TWeakObjectPtr<UUEMotionScene> OwnerScene;
 };
