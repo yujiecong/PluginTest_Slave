@@ -33,6 +33,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
 
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
@@ -41,6 +42,8 @@ protected:
 private:
 	UPROPERTY()
 	UMaterialInstanceDynamic* DynamicMaterial;
+
+	float CachedOpacity;
 
 	void ApplyOpacityToMaterial();
 };

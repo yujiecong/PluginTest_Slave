@@ -5,11 +5,26 @@
 AUEMotionMobjectActor::AUEMotionMobjectActor()
 {
 	Opacity = 1.0f;
+	CachedOpacity = 1.0f;
+	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.TickGroup = TG_PostUpdateWork;
 }
 
 void AUEMotionMobjectActor::BeginPlay()
 {
 	Super::BeginPlay();
+	CachedOpacity = Opacity;
+}
+
+void AUEMotionMobjectActor::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	if (!FMath::IsNearlyEqual(Opacity, CachedOpacity))
+	{
+		CachedOpacity = Opacity;
+		ApplyOpacityToMaterial();
+	}
 }
 
 UStaticMeshComponent* AUEMotionMobjectActor::GetMeshComponent() const
@@ -35,10 +50,8 @@ void AUEMotionMobjectActor::EnsureDynamicMaterial()
 	}
 }
 
-void AUEMotionMobjectActor::SetOpacity(float InOpacity)
+void AUEMotionMobjectActor::ApplyOpacityToMaterial()
 {
-	Opacity = FMath::Clamp(InOpacity, 0.0f, 1.0f);
-
 	EnsureDynamicMaterial();
 	if (DynamicMaterial)
 	{
@@ -46,15 +59,26 @@ void AUEMotionMobjectActor::SetOpacity(float InOpacity)
 	}
 }
 
+void AUEMotionMobjectActor::SetOpacity(float InOpacity)
+{
+	Opacity = FMath::Clamp(InOpacity, 0.0f, 1.0f);
+	CachedOpacity = Opacity;
+	ApplyOpacityToMaterial();
+}
+
 #if WITH_EDITOR
 void AUEMotionMobjectActor::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 
-	FName PropertyName = PropertyChangedEvent.GetPropertyName();
-	if (PropertyName == GET_MEMBER_NAME_CHECKED(AUEMotionMobjectActor, Opacity))
+	if (PropertyChangedEvent.Property)
 	{
-		SetOpacity(Opacity);
+		FName PropertyName = PropertyChangedEvent.Property->GetFName();
+		if (PropertyName == GET_MEMBER_NAME_CHECKED(AUEMotionMobjectActor, Opacity))
+		{
+			CachedOpacity = Opacity;
+			ApplyOpacityToMaterial();
+		}
 	}
 }
 #endif
