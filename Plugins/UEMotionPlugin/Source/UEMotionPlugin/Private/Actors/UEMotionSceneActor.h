@@ -14,8 +14,6 @@ class AUEMotionSceneActor : public ACineCameraActor
 public:
 	AUEMotionSceneActor(const FObjectInitializer& ObjectInitializer);
 
-	virtual void Tick(float DeltaTime) override;
-
 	void SetOwnerScene(UUEMotionScene* InScene);
 
 	UFUNCTION(BlueprintCallable, Category = "UEMotion|Camera")

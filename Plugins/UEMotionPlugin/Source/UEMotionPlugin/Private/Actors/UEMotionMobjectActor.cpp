@@ -1,10 +1,6 @@
 #include "UEMotionMobjectActor.h"
 #include "Components/StaticMeshComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
-#include "Materials/MaterialParameterCollection.h"
-#include "Kismet/KismetMaterialLibrary.h"
-
-static const FString FadeMPCPath = TEXT("/Game/UEMotion/Materials/MPC_UEMotionFade");
 
 AUEMotionMobjectActor::AUEMotionMobjectActor()
 {
@@ -42,16 +38,6 @@ void AUEMotionMobjectActor::EnsureDynamicMaterial()
 void AUEMotionMobjectActor::SetOpacity(float InOpacity)
 {
 	Opacity = FMath::Clamp(InOpacity, 0.0f, 1.0f);
-
-	UWorld* World = GetWorld();
-	if (World)
-	{
-		UMaterialParameterCollection* MPC = LoadObject<UMaterialParameterCollection>(nullptr, *FadeMPCPath);
-		if (MPC)
-		{
-			UKismetMaterialLibrary::SetScalarParameterValue(World, MPC, FName("Opacity"), Opacity);
-		}
-	}
 
 	EnsureDynamicMaterial();
 	if (DynamicMaterial)

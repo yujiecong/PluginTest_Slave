@@ -14,9 +14,6 @@
 #include "Actors/UEMotionSceneActor.h"
 #include "Utils/UEMotionSequencerCompat.h"
 #include "UEMotionAssetFactory.h"
-#include "Materials/MaterialParameterCollection.h"
-#include "Tracks/MovieSceneMaterialParameterCollectionTrack.h"
-#include "Sections/MovieSceneParameterSection.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "Engine/DirectionalLight.h"
@@ -883,71 +880,27 @@ void UUEMotionScene::Play(UUEMotionAnimation* Animation)
 	}
 	else if (UUEMotionFadeAnimation* FadeAnim = Cast<UUEMotionFadeAnimation>(Animation))
 	{
-		static const FString MPCPath = TEXT("/Game/UEMotion/Materials/MPC_UEMotionFade");
-		UMaterialParameterCollection* MPC = LoadObject<UMaterialParameterCollection>(nullptr, *MPCPath);
-		if (MPC)
+		UUEMotionMobject* Target = FadeAnim->GetTargetMobject();
+		if (Target && Target->GetInternalActor())
 		{
-			UMovieScene* MovieScene = LevelSequence->GetMovieScene();
-			if (MovieScene)
+			UMovieSceneFloatTrack* OpacityTrack = GetOrCreateFloatTrack(Target, TEXT("Opacity"));
+			if (OpacityTrack)
 			{
-				UMovieSceneMaterialParameterCollectionTrack* MPCTrack = nullptr;
+				float StartOpacity = FadeAnim->IsFadeOut() ? 1.0f : 0.0f;
+				float EndOpacity = FadeAnim->IsFadeOut() ? 0.0f : 1.0f;
 
-				for (UMovieSceneTrack* Track : MovieScene->GetTracks())
-				{
-					UMovieSceneMaterialParameterCollectionTrack* CandidateTrack =
-						Cast<UMovieSceneMaterialParameterCollectionTrack>(Track);
-					if (CandidateTrack && CandidateTrack->MPC == MPC)
-					{
-						MPCTrack = CandidateTrack;
-						break;
-					}
-				}
+				RecordFloatKey(OpacityTrack, StartFrame, StartOpacity);
+				RecordFloatKey(OpacityTrack, EndFrame, EndOpacity);
 
-				if (!MPCTrack)
-				{
-					MPCTrack = MovieScene->AddTrack<UMovieSceneMaterialParameterCollectionTrack>();
-					if (MPCTrack)
-					{
-						MPCTrack->MPC = MPC;
-					}
-				}
-
-				if (MPCTrack)
-				{
-					UMovieSceneParameterSection* Section = Cast<UMovieSceneParameterSection>(
-						MPCTrack->GetAllSections().Num() > 0 ? MPCTrack->GetAllSections()[0] : nullptr);
-					if (!Section)
-					{
-						Section = Cast<UMovieSceneParameterSection>(MPCTrack->CreateNewSection());
-						if (Section)
-						{
-							Section->SetRange(TRange<FFrameNumber>::All());
-							MPCTrack->AddSection(*Section);
-						}
-					}
-
-					if (Section)
-					{
-						float StartOpacity = FadeAnim->IsFadeOut() ? 1.0f : 0.0f;
-						float EndOpacity = FadeAnim->IsFadeOut() ? 0.0f : 1.0f;
-
-						FFrameNumber StartTick = UEMotionCompat::DisplayFrameToTick(MovieScene, StartFrame);
-						FFrameNumber EndTick = UEMotionCompat::DisplayFrameToTick(MovieScene, EndFrame);
-
-						Section->AddScalarParameterKey(FName("Opacity"), StartTick, StartOpacity);
-						Section->AddScalarParameterKey(FName("Opacity"), EndTick, EndOpacity);
-
-						TRange<FFrameNumber> CurrentRange = Section->GetRange();
-						FFrameNumber MinTick = CurrentRange.GetLowerBound().IsOpen() ? StartTick :
-							FMath::Min(CurrentRange.GetLowerBoundValue(), StartTick);
-						FFrameNumber MaxTick = CurrentRange.GetUpperBound().IsOpen() ? EndTick :
-							FMath::Max(CurrentRange.GetUpperBoundValue(), EndTick);
-						Section->SetRange(TRange<FFrameNumber>(MinTick, MaxTick));
-
-						UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Recorded MPC fade keys - Start=%f Frame=%d End=%f Frame=%d"),
-							StartOpacity, StartFrame, EndOpacity, EndFrame);
-					}
-				}
+				UE_LOG(LogTemp, Log,
+					TEXT("UEMotionScene: Recorded per-instance fade keys for '%s' - Start=%.2f@Frame%d End=%.2f@Frame%d"),
+					*Target->GetName(), StartOpacity, StartFrame, EndOpacity, EndFrame);
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning,
+					TEXT("UEMotionScene: Failed to create Opacity FloatTrack for '%s'"),
+					*Target->GetName());
 			}
 		}
 	}
@@ -999,24 +952,7 @@ void UUEMotionScene::Wait(float Duration)
 	}
 }
 
-void UUEMotionScene::Tick(float DeltaTime)
-{
-	if (!bInitialized) return;
-	if (DeltaTime <= 0.0f) return;
-
-	for (int32 i = ActiveAnimations.Num() - 1; i >= 0; --i)
-	{
-		UUEMotionAnimation* Anim = ActiveAnimations[i];
-		if (!Anim) continue;
-		Anim->Advance(DeltaTime);
-		if (Anim->IsFinished())
-		{
-			ActiveAnimations.RemoveAt(i);
-		}
-	}
-}
-
-void UUEMotionScene::StopAll()
+void UEMotionScene::StopAll()
 {
 	ActiveAnimations.Empty();
 }

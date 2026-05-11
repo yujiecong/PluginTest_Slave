@@ -5,23 +5,10 @@
 AUEMotionSceneActor::AUEMotionSceneActor(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-	PrimaryActorTick.bCanEverTick = true;
-	PrimaryActorTick.bStartWithTickEnabled = true;
-
 	CameraAspectRatio = 1.0f;
 	CameraSensorWidth = 24.0f;
 
 	ApplyCameraAspectRatio();
-}
-
-void AUEMotionSceneActor::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-	if (OwnerScene.IsValid())
-	{
-		OwnerScene->Tick(DeltaTime);
-	}
 }
 
 void AUEMotionSceneActor::SetOwnerScene(UUEMotionScene* InScene)

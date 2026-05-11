@@ -117,9 +117,6 @@ public:
 	void Wait(float Duration = 1.0f);
 
 	UFUNCTION(BlueprintCallable, Category = "UEMotion")
-	void Tick(float DeltaTime);
-
-	UFUNCTION(BlueprintCallable, Category = "UEMotion")
 	void StopAll();
 
 	UFUNCTION(BlueprintCallable, Category = "UEMotion")

@@ -7,9 +7,8 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Materials/Material.h"
 #include "Materials/MaterialExpressionVectorParameter.h"
-#include "Materials/MaterialExpressionCollectionParameter.h"
+#include "Materials/MaterialExpressionScalarParameter.h"
 #include "Materials/MaterialExpressionConstant.h"
-#include "Materials/MaterialParameterCollection.h"
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "AssetToolsModule.h"
 #include "EditorAssetLibrary.h"
@@ -27,52 +26,14 @@
 #include "PackageHelperFunctions.h"
 
 const FString UUEMotionAssetFactory::TranslucentMaterialPath = TEXT("/Game/UEMotion/Materials/M_UEMotionBaseTranslucent");
-static const FString FadeMPCPath = TEXT("/Game/UEMotion/Materials/MPC_UEMotionFade");
 
 FString UUEMotionAssetFactory::ResolveAssetPath(const FString& PackagePath, const FString& AssetName) const
 {
 	return FString::Printf(TEXT("%s/%s"), *PackagePath, *AssetName);
 }
 
-UMaterialParameterCollection* UUEMotionAssetFactory::EnsureFadeMPC()
-{
-	UPackage* Package = CreatePackage(*FadeMPCPath);
-	if (!Package) return nullptr;
-
-	UMaterialParameterCollection* MPC = NewObject<UMaterialParameterCollection>(
-		Package, FName(TEXT("MPC_UEMotionFade")), RF_Public | RF_Standalone);
-	if (!MPC) return nullptr;
-
-	FCollectionScalarParameter ScalarParam;
-	ScalarParam.ParameterName = FName("Opacity");
-	ScalarParam.Id = FGuid::NewGuid();
-	ScalarParam.DefaultValue = 1.0f;
-	MPC->ScalarParameters.Empty();
-	MPC->ScalarParameters.Add(ScalarParam);
-
-	SaveAssetToObject(MPC, TEXT("/Game/UEMotion/Materials"), TEXT("MPC_UEMotionFade"));
-
-	FAssetRegistryModule::AssetCreated(MPC);
-	MPC->MarkPackageDirty();
-
-	UE_LOG(LogTemp, Log, TEXT("UEMotionAssetFactory: Created MPC '%s' paramId=%s"),
-		*FadeMPCPath, *ScalarParam.Id.ToString());
-
-	return MPC;
-}
-
 UMaterialInterface* UUEMotionAssetFactory::EnsureBaseTranslucentMaterial()
 {
-	UMaterialParameterCollection* MPC = EnsureFadeMPC();
-	if (!MPC) return nullptr;
-
-	FGuid OpacityParamId = MPC->GetParameterId(FName("Opacity"));
-	if (!OpacityParamId.IsValid())
-	{
-		UE_LOG(LogTemp, Error, TEXT("UEMotionAssetFactory: MPC Opacity parameter has invalid Guid"));
-		return nullptr;
-	}
-
 	FString PackageName = TranslucentMaterialPath;
 	UPackage* Package = CreatePackage(*PackageName);
 	if (!Package) return nullptr;
@@ -88,11 +49,10 @@ UMaterialInterface* UUEMotionAssetFactory::EnsureBaseTranslucentMaterial()
 	ColorExpr->DefaultValue = FLinearColor(0.5f, 0.5f, 0.5f, 1.0f);
 	Material->GetExpressionCollection().AddExpression(ColorExpr);
 
-	UMaterialExpressionCollectionParameter* MPCNode = NewObject<UMaterialExpressionCollectionParameter>(Material);
-	MPCNode->Collection = MPC;
-	MPCNode->ParameterName = FName("Opacity");
-	MPCNode->ParameterId = OpacityParamId;
-	Material->GetExpressionCollection().AddExpression(MPCNode);
+	UMaterialExpressionScalarParameter* OpacityParam = NewObject<UMaterialExpressionScalarParameter>(Material);
+	OpacityParam->ParameterName = FName("Opacity");
+	OpacityParam->DefaultValue = 1.0f;
+	Material->GetExpressionCollection().AddExpression(OpacityParam);
 
 	UMaterialExpressionConstant* RoughnessConst = NewObject<UMaterialExpressionConstant>(Material);
 	RoughnessConst->R = 0.5f;
@@ -107,7 +67,7 @@ UMaterialInterface* UUEMotionAssetFactory::EnsureBaseTranslucentMaterial()
 	{
 		EditorData->BaseColor.Expression = ColorExpr;
 		EditorData->BaseColor.OutputIndex = 0;
-		EditorData->Opacity.Expression = MPCNode;
+		EditorData->Opacity.Expression = OpacityParam;
 		EditorData->Opacity.OutputIndex = 0;
 		EditorData->Roughness.Expression = RoughnessConst;
 		EditorData->Roughness.OutputIndex = 0;

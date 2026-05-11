@@ -9,7 +9,6 @@ class UMaterialInterface;
 class UMaterialInstanceConstant;
 class UMaterialInstanceDynamic;
 class UMaterial;
-class UMaterialParameterCollection;
 class AActor;
 class UBlueprint;
 
@@ -98,8 +97,6 @@ public:
     static const FString TranslucentMaterialPath;
 
     UMaterialInterface* EnsureBaseTranslucentMaterial();
-
-    UMaterialParameterCollection* EnsureFadeMPC();
 
 private:
     UPROPERTY()
