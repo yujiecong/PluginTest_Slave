@@ -15,10 +15,10 @@ class AUEMotionMobjectActor : public AActor
 public:
 	AUEMotionMobjectActor();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Interp, Category = "UEMotion")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Interp, Category = "UEMotion", meta = (BlueprintSetter = "SetOpacity"))
 	float Opacity;
 
-	UFUNCTION(BlueprintCallable, Category = "UEMotion")
+	UFUNCTION(BlueprintCallable, CallInEditor, Category = "UEMotion")
 	void SetOpacity(float InOpacity);
 
 	UFUNCTION(BlueprintPure, Category = "UEMotion")

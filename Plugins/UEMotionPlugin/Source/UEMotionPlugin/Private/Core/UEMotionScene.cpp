@@ -150,6 +150,9 @@ bool UUEMotionScene::CreateLevelSequenceAsset()
 		MovieScene->SetViewRange(0.0, EndTime);
 	}
 
+	NewSequence->SetSequenceFlags(
+		EMovieSceneSequenceFlags::Volatile | EMovieSceneSequenceFlags::BlockingEvaluation);
+
 	FAssetRegistryModule::AssetCreated(NewSequence);
 	UEMotionCompat::MarkPackageDirty(SequencePackage);
 	UEMotionCompat::SavePackageToDisk(SequencePackage, TEXT(".uasset"));
