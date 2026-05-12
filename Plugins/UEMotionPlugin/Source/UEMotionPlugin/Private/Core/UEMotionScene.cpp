@@ -465,32 +465,113 @@ void UUEMotionScene::SetupBlackBackgroundFloor()
 
 UMaterialInterface* UUEMotionScene::CreateOrLoadBlackMaterial()
 {
-	const FString MaterialPath = TEXT("/Game/UEMotion/Materials/M_BlackBackground");
+	const FString BaseMaterialPath = TEXT("/Game/UEMotion/Materials/M_BlackBackground_Base");
+	const FString InstanceMaterialPath = TEXT("/Game/UEMotion/Materials/M_BlackBackground");
 
-	if (UEditorAssetLibrary::DoesAssetExist(MaterialPath))
+	UMaterial* ParentMaterial = nullptr;
+
+	if (UEditorAssetLibrary::DoesAssetExist(BaseMaterialPath))
 	{
-		UMaterialInterface* ExistingMat = LoadObject<UMaterialInterface>(nullptr, *MaterialPath);
+		ParentMaterial = LoadObject<UMaterial>(nullptr, *BaseMaterialPath);
+		if (ParentMaterial)
+		{
+			UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Reusing existing base material '%s'"), *BaseMaterialPath);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("UEMotionScene: Base material exists but failed to load, recreating..."));
+			UEditorAssetLibrary::DeleteAsset(BaseMaterialPath);
+		}
+	}
+
+	if (!ParentMaterial)
+	{
+		UPackage* BasePackage = CreatePackage(*BaseMaterialPath);
+		if (!BasePackage)
+		{
+			UE_LOG(LogTemp, Error, TEXT("UEMotionScene: Failed to create package for base material"));
+			return nullptr;
+		}
+
+		ParentMaterial = NewObject<UMaterial>(
+			BasePackage, TEXT("M_BlackBackground_Base"), RF_Public | RF_Standalone | RF_Transactional);
+
+		if (!ParentMaterial)
+		{
+			UE_LOG(LogTemp, Error, TEXT("UEMotionScene: Failed to create base material"));
+			return nullptr;
+		}
+
+		ParentMaterial->SetShadingModel(MSM_Unlit);
+
+#if WITH_EDITOR
+		UMaterialExpressionVectorParameter* ColorParam = NewObject<UMaterialExpressionVectorParameter>(ParentMaterial);
+		ColorParam->ParameterName = FName("BlackColor");
+		ColorParam->DefaultValue = FLinearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		ColorParam->Desc = TEXT("Pure black color for background");
+		ParentMaterial->Expressions.Add(ColorParam);
+		ParentMaterial->BaseColor.Expression = ColorParam;
+
+		ParentMaterial->PostEditChange();
+#endif
+
+		ParentMaterial->SetFlags(RF_Public | RF_Standalone);
+		BasePackage->MarkPackageDirty();
+
+		FString BaseFilePath = FPaths::Combine(
+			FPaths::ProjectContentDir(),
+			TEXT("UEMotion/Materials/"),
+			TEXT("M_BlackBackground_Base.uasset"));
+
+		FSavePackageArgs BaseSaveArgs;
+		BaseSaveArgs.SaveFlags = RF_Public | RF_Standalone;
+
+		bool bBaseSaveSuccess = UPackage::SavePackage(
+			BasePackage,
+			ParentMaterial,
+			*BaseFilePath,
+			BaseSaveArgs);
+
+		if (bBaseSaveSuccess)
+		{
+			UE_LOG(LogTemp, Log,
+				TEXT("UEMotionScene: Created custom unlit base material '%s'")
+				TEXT("\n  Shading Model: Unlit")
+				TEXT("\n  Parameter: BlackColor = (0, 0, 0, 1) [Pure Black]")
+				TEXT("\n  Purpose: Optimized black background with zero lighting"),
+				*BaseFilePath);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("UEMotionScene: Failed to save base material to '%s'"), *BaseFilePath);
+			return nullptr;
+		}
+	}
+
+	if (UEditorAssetLibrary::DoesAssetExist(InstanceMaterialPath))
+	{
+		UMaterialInterface* ExistingMat = LoadObject<UMaterialInterface>(nullptr, *InstanceMaterialPath);
 		if (ExistingMat)
 		{
-			UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Reusing existing black material '%s'"), *MaterialPath);
+			UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Reusing existing black material instance '%s'"), *InstanceMaterialPath);
 			return ExistingMat;
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("UEMotionScene: Black material exists but failed to load, recreating..."));
-			UEditorAssetLibrary::DeleteAsset(MaterialPath);
+			UE_LOG(LogTemp, Warning, TEXT("UEMotionScene: Material instance exists but failed to load, recreating..."));
+			UEditorAssetLibrary::DeleteAsset(InstanceMaterialPath);
 		}
 	}
 
-	UPackage* Package = CreatePackage(*MaterialPath);
-	if (!Package)
+	UPackage* InstancePackage = CreatePackage(*InstanceMaterialPath);
+	if (!InstancePackage)
 	{
-		UE_LOG(LogTemp, Error, TEXT("UEMotionScene: Failed to create package for black material"));
+		UE_LOG(LogTemp, Error, TEXT("UEMotionScene: Failed to create package for material instance"));
 		return nullptr;
 	}
 
 	UMaterialInstanceConstant* BlackMIC = NewObject<UMaterialInstanceConstant>(
-		Package, TEXT("M_BlackBackground"), RF_Public | RF_Standalone | RF_Transactional);
+		InstancePackage, TEXT("M_BlackBackground"), RF_Public | RF_Standalone | RF_Transactional);
 
 	if (!BlackMIC)
 	{
@@ -498,58 +579,43 @@ UMaterialInterface* UUEMotionScene::CreateOrLoadBlackMaterial()
 		return nullptr;
 	}
 
-	UMaterialInterface* BaseMat = LoadObject<UMaterialInterface>(
-		nullptr, TEXT("/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"));
-
-	if (!BaseMat)
-	{
-		UE_LOG(LogTemp, Error, TEXT("UEMotionScene: Failed to load base material 'BasicShapeMaterial'"));
-		return nullptr;
-	}
-
-	BlackMIC->SetParentEditorOnly(BaseMat);
+	BlackMIC->SetParentEditorOnly(ParentMaterial);
 
 #if WITH_EDITOR
 	FLinearColor PureBlack(0.0f, 0.0f, 0.0f, 1.0f);
-	BlackMIC->SetVectorParameterValueEditorOnly(FName("Color"), PureBlack);
-	BlackMIC->SetScalarParameterValueEditorOnly(FName("Metallic"), 0.0f);
-	BlackMIC->SetScalarParameterValueEditorOnly(FName("Roughness"), 1.0f);
-	BlackMIC->SetScalarParameterValueEditorOnly(FName("Specular"), 0.0f);
+	BlackMIC->SetVectorParameterValueEditorOnly(FName("BlackColor"), PureBlack);
 	BlackMIC->PostEditChange();
 #endif
 
 	BlackMIC->SetFlags(RF_Public | RF_Standalone);
-	Package->MarkPackageDirty();
+	InstancePackage->MarkPackageDirty();
 
-	FString FilePath = FPaths::Combine(
+	FString InstanceFilePath = FPaths::Combine(
 		FPaths::ProjectContentDir(),
 		TEXT("UEMotion/Materials/"),
 		TEXT("M_BlackBackground.uasset"));
 
-	FSavePackageArgs SaveArgs;
-	SaveArgs.SaveFlags = RF_Public | RF_Standalone;
+	FSavePackageArgs InstanceSaveArgs;
+	InstanceSaveArgs.SaveFlags = RF_Public | RF_Standalone;
 
-	bool bSaveSuccess = UPackage::SavePackage(
-		Package,
+	bool bInstanceSaveSuccess = UPackage::SavePackage(
+		InstancePackage,
 		BlackMIC,
-		*FilePath,
-		SaveArgs);
+		*InstanceFilePath,
+		InstanceSaveArgs);
 
-	if (bSaveSuccess)
+	if (bInstanceSaveSuccess)
 	{
 		UE_LOG(LogTemp, Log,
 			TEXT("UEMotionScene: Created ultra-black material instance '%s'")
-			TEXT("\n  Parent: BasicShapeMaterial (Engine Built-in)")
-			TEXT("\n  Parameters:")
-			TEXT("\n    - Color = (0, 0, 0, 1) [Pure Black]")
-			TEXT("\n    - Metallic = 0.0 [Non-metallic]")
-			TEXT("\n    - Roughness = 1.0 [Maximum - No reflections]")
-			TEXT("\n    - Specular = 0.0 [No highlights]"),
-			*FilePath);
+			TEXT("\n  Parent: M_BlackBackground_Base (Custom Unlit)")
+			TEXT("\n  Shading Model: Unlit [No lighting calculations]")
+			TEXT("\n  Parameter: BlackColor = (0, 0, 0, 1) [Absolute Black]"),
+			*InstanceFilePath);
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("UEMotionScene: Failed to save black material to '%s'"), *FilePath);
+		UE_LOG(LogTemp, Error, TEXT("UEMotionScene: Failed to save material instance to '%s'"), *InstanceFilePath);
 		return nullptr;
 	}
 
