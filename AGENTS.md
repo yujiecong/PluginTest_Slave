@@ -331,6 +331,56 @@ After any changes to:
 
 **Always run** `run_full_pipeline_test.bat` to verify no regression.
 
+### Asset Management Rules
+
+⚠️ **严禁直接 Spawn Actor 到 Level**
+
+所有场景中的对象（Actor、Mesh、Light、Camera 等）**必须**基于 UAsset 资源创建，禁止直接在 Level 中通过 `SpawnActor` 或 Python API 动态生成。
+
+#### 核心原则
+
+1. **UAsset 优先**: 所有可复用对象必须先创建为 `.uasset` 文件（Blueprint、StaticMesh、Material 等）
+2. **引用而非创建**: 场景中只放置对 UAsset 的引用/实例，不包含原始数据
+3. **资源路径管理**: 使用 Content Browser 管理的标准化路径，避免硬编码
+
+#### 正确做法 ✅
+
+```python
+# 从 UAsset 创建对象
+cube_asset = unreal.EditorAssetLibrary.load_asset("/Game/Meshes/Cube_Mesh")
+cube_actor = unreal.EditorLevelLibrary.spawn_actor_from_object(
+    cube_asset,
+    location=ORIGIN,
+    rotation=(0, 0, 0)
+)
+
+# 或使用 Scene API（内部封装 UAsset 引用）
+s = Scene("demo")
+box = s.cube(size=25, color="cyan")  # 内部引用预设 UAsset
+```
+
+#### 错误做法 ❌
+
+```python
+# 禁止直接动态创建 Actor
+actor = unreal.GameplayStatics.spawn_actor(
+    world_context,
+    actor_class,
+    location,
+    rotation
+)
+
+# 禁止绕过 Asset 系统
+mesh_component = actor.add_component("StaticMeshComponent")
+mesh_component.set_static_mesh(runtime_mesh)  # 运行时创建的 Mesh
+```
+
+#### 例外情况
+
+仅在以下场景允许动态创建：
+- 测试脚本中的临时验证对象（测试结束后立即销毁）
+- Runtime 逻辑层的数据驱动实例化（需在代码审查时特别说明）
+
 ---
 
 ## Quick Reference
