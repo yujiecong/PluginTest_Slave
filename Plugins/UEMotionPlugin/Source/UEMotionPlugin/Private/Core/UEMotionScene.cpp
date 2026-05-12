@@ -18,11 +18,9 @@
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "Engine/DirectionalLight.h"
-#include "Engine/PointLight.h"
 #include "Engine/StaticMesh.h"
 #include "GameFramework/WorldSettings.h"
 #include "Components/DirectionalLightComponent.h"
-#include "Components/PointLightComponent.h"
 #include "LevelSequence.h"
 #include "LevelSequenceActor.h"
 #include "MovieScene.h"
@@ -221,38 +219,6 @@ void UUEMotionScene::SetupCoordinateAxes()
 	}
 
 	UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Coordinate axes created using AUEMotionAxisActor (X=Red, Y=Green, Z=Blue, Length=%.0f)"), Len);
-}
-
-UMaterialInstanceDynamic* UUEMotionScene::CreateAxisMaterial(const FLinearColor& Color)
-{
-	static UMaterial* AxisBaseMaterial = nullptr;
-	if (!AxisBaseMaterial)
-	{
-		AxisBaseMaterial = NewObject<UMaterial>(GetTransientPackage(), TEXT("M_AxisBase"), RF_Transient | RF_Public);
-		AxisBaseMaterial->MaterialDomain = EMaterialDomain::MD_Surface;
-		AxisBaseMaterial->BlendMode = EBlendMode::BLEND_Opaque;
-
-		UMaterialExpressionVectorParameter* ColorParam = NewObject<UMaterialExpressionVectorParameter>(AxisBaseMaterial);
-		ColorParam->ParameterName = FName("AxisColor");
-		ColorParam->DefaultValue = FLinearColor::White;
-		AxisBaseMaterial->GetExpressionCollection().AddExpression(ColorParam);
-
-		UMaterialEditorOnlyData* EditorData = AxisBaseMaterial->GetEditorOnlyData();
-		if (EditorData)
-		{
-			EditorData->EmissiveColor.Expression = ColorParam;
-			EditorData->EmissiveColor.OutputIndex = 0;
-		}
-
-		AxisBaseMaterial->MarkPackageDirty();
-#if WITH_EDITOR
-		AxisBaseMaterial->PostEditChange();
-#endif
-	}
-
-	UMaterialInstanceDynamic* MID = UMaterialInstanceDynamic::Create(AxisBaseMaterial, this);
-	MID->SetVectorParameterValue(FName("AxisColor"), Color);
-	return MID;
 }
 
 void UUEMotionScene::OpenLevelSequenceInEditor()
@@ -601,28 +567,10 @@ void UUEMotionScene::AddDirectionalLight(const FVector& Direction, const FLinear
 {
 	if (!bInitialized || !SceneWorld.IsValid()) return;
 
-	ADirectionalLight* Light = SceneWorld->SpawnActor<ADirectionalLight>();
+	ADirectionalLight* Light = SceneWorld->SpawnActor<ADirectionalLight>(FVector(300, -300, 600), Direction.Rotation());
 	if (Light)
 	{
-		Light->SetActorRotation(Direction.Rotation());
 		UDirectionalLightComponent* LightComp = Cast<UDirectionalLightComponent>(Light->GetLightComponent());
-		if (LightComp)
-		{
-			LightComp->SetIntensity(Intensity);
-			LightComp->SetLightColor(Color);
-		}
-	}
-}
-
-void UUEMotionScene::AddPointLight(const FVector& Location, const FLinearColor& Color, float Intensity)
-{
-	if (!bInitialized || !SceneWorld.IsValid()) return;
-
-	APointLight* Light = SceneWorld->SpawnActor<APointLight>();
-	if (Light)
-	{
-		Light->SetActorLocation(Location);
-		UPointLightComponent* LightComp = Cast<UPointLightComponent>(Light->GetLightComponent());
 		if (LightComp)
 		{
 			LightComp->SetIntensity(Intensity);

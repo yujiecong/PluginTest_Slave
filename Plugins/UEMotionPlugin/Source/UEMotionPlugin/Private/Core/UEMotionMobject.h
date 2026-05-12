@@ -56,6 +56,12 @@ public:
 	float GetOpacity() const;
 
 	UFUNCTION(BlueprintCallable, Category = "UEMotion|Mobject")
+	void SetEmissive(const FLinearColor& InEmissive);
+
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Mobject")
+	FLinearColor GetEmissive() const;
+
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Mobject")
 	void Destroy();
 
 	UFUNCTION(BlueprintCallable, Category = "UEMotion|Mobject")
@@ -83,6 +89,7 @@ private:
 	bool bVisible = true;
 	float CurrentOpacity = 1.0f;
 	FLinearColor CurrentColor = FLinearColor::White;
+	FLinearColor CurrentEmissive = FLinearColor::Black;
 	FString MobjectName;
 
 	UPROPERTY()

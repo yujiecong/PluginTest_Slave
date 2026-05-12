@@ -2,10 +2,9 @@
 #include "Components/StaticMeshComponent.h"
 #include "Materials/MaterialInterface.h"
 #include "Materials/MaterialInstanceDynamic.h"
-#include "Materials/Material.h"
-#include "Materials/MaterialExpressionVectorParameter.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
+#include "UObject/ConstructorHelpers.h"
 
 AUEMotionAxisActor::AUEMotionAxisActor()
 {
@@ -45,7 +44,7 @@ void AUEMotionAxisActor::SetAxisColor(const FLinearColor& InColor)
 
 	if (MeshComponent && DynamicMaterial)
 	{
-		DynamicMaterial->SetVectorParameterValue(FName("AxisColor"), AxisColor);
+		DynamicMaterial->SetVectorParameterValue(FName("BaseColor"), AxisColor);
 	}
 	else
 	{
@@ -109,35 +108,20 @@ void AUEMotionAxisActor::CreateAxisMaterial()
 {
 	if (!MeshComponent) return;
 
-	static UMaterial* AxisBaseMaterial = nullptr;
+	static UMaterialInterface* AxisBaseMaterial = nullptr;
 	if (!AxisBaseMaterial)
 	{
-		AxisBaseMaterial = NewObject<UMaterial>(GetTransientPackage(), TEXT("M_AxisBase"), RF_Transient | RF_Public);
-		AxisBaseMaterial->MaterialDomain = EMaterialDomain::MD_Surface;
-		AxisBaseMaterial->BlendMode = EBlendMode::BLEND_Opaque;
-
-		UMaterialExpressionVectorParameter* ColorParam = NewObject<UMaterialExpressionVectorParameter>(AxisBaseMaterial);
-		ColorParam->ParameterName = FName("AxisColor");
-		ColorParam->DefaultValue = FLinearColor::White;
-		AxisBaseMaterial->GetExpressionCollection().AddExpression(ColorParam);
-
-		UMaterialEditorOnlyData* EditorData = AxisBaseMaterial->GetEditorOnlyData();
-		if (EditorData)
-		{
-			EditorData->BaseColor.Expression = ColorParam;
-			EditorData->BaseColor.OutputIndex = 0;
-		}
-
-		AxisBaseMaterial->MarkPackageDirty();
-#if WITH_EDITOR
-		AxisBaseMaterial->PostEditChange();
-#endif
+		AxisBaseMaterial = LoadObject<UMaterialInterface>(
+			nullptr, TEXT("/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"));
 	}
+
+	if (!AxisBaseMaterial) return;
 
 	DynamicMaterial = UMaterialInstanceDynamic::Create(AxisBaseMaterial, this);
 	if (DynamicMaterial)
 	{
-		DynamicMaterial->SetVectorParameterValue(FName("AxisColor"), AxisColor);
+		DynamicMaterial->SetVectorParameterValue(FName("BaseColor"), AxisColor);
+		DynamicMaterial->SetScalarParameterValue(FName("Opacity"), 1.0f);
 		MeshComponent->SetMaterial(0, DynamicMaterial);
 	}
 }

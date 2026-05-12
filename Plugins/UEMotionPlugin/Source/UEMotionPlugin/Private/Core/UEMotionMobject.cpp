@@ -37,6 +37,11 @@ UMaterialInterface* UUEMotionMobject::GetOrCreateBaseMaterial()
 	Material->GetExpressionCollection().AddExpression(OpacityParam);
 	UMaterialExpression* OpacityOutput = OpacityParam;
 
+	UMaterialExpressionVectorParameter* EmissiveParam = NewObject<UMaterialExpressionVectorParameter>(Material);
+	EmissiveParam->ParameterName = FName("EmissiveColor");
+	EmissiveParam->DefaultValue = FLinearColor::Black;
+	Material->GetExpressionCollection().AddExpression(EmissiveParam);
+
 	UMaterialExpressionConstant* RoughnessConst = NewObject<UMaterialExpressionConstant>(Material);
 	RoughnessConst->R = 0.5f;
 	Material->GetExpressionCollection().AddExpression(RoughnessConst);
@@ -50,7 +55,7 @@ UMaterialInterface* UUEMotionMobject::GetOrCreateBaseMaterial()
 	{
 		EditorData->BaseColor.Expression = ColorExpr;
 		EditorData->BaseColor.OutputIndex = 0;
-		EditorData->EmissiveColor.Expression = ColorExpr;
+		EditorData->EmissiveColor.Expression = EmissiveParam;
 		EditorData->EmissiveColor.OutputIndex = 0;
 		EditorData->Opacity.Expression = OpacityOutput;
 		EditorData->Opacity.OutputIndex = 0;
@@ -115,6 +120,7 @@ void UUEMotionMobject::CreateStaticMeshActor(AUEMotionSceneActor* Owner, const F
 		{
 			MaterialInstance->SetVectorParameterValue(FName("BaseColor"), CurrentColor);
 			MaterialInstance->SetScalarParameterValue(FName("Opacity"), CurrentOpacity);
+			MaterialInstance->SetVectorParameterValue(FName("EmissiveColor"), CurrentEmissive);
 		}
 	}
 
@@ -223,6 +229,21 @@ void UUEMotionMobject::SetOpacity(float InOpacity)
 float UUEMotionMobject::GetOpacity() const
 {
 	return CurrentOpacity;
+}
+
+void UUEMotionMobject::SetEmissive(const FLinearColor& InEmissive)
+{
+	CurrentEmissive = InEmissive;
+
+	if (MaterialInstance.IsValid())
+	{
+		MaterialInstance->SetVectorParameterValue(FName("EmissiveColor"), CurrentEmissive);
+	}
+}
+
+FLinearColor UUEMotionMobject::GetEmissive() const
+{
+	return CurrentEmissive;
 }
 
 void UUEMotionMobject::Destroy()
