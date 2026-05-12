@@ -27,6 +27,8 @@ AUEMotionAxisActor::AUEMotionAxisActor()
 	AxisType = EAxis::X;
 	AxisLength = 200.0f;
 	AxisColor = FLinearColor::Red;
+
+	MeshComponent->SetRelativeScale3D(FVector(5.0f, 0.2f, 0.2f));
 }
 
 void AUEMotionAxisActor::OnConstruction(const FTransform& Transform)

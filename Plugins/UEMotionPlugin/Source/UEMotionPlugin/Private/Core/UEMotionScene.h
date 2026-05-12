@@ -173,6 +173,12 @@ public:
 	float GetCoordinateAxisLength() const;
 
 	UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
+	void SetIs2DView(bool b2D);
+
+	UFUNCTION(BlueprintPure, Category = "UEMotion|Scene")
+	bool Is2DView() const;
+
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
 	void SetUseUnlit(bool bUnlit);
 
 	UFUNCTION(BlueprintPure, Category = "UEMotion|Scene")
@@ -183,6 +189,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UEMotion|Scene")
 	bool bShowCoordinateAxes = true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UEMotion|Scene")
+	bool bIs2DView = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UEMotion|Scene")
 	float CoordinateAxisLength = 200.0f;

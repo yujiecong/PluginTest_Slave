@@ -223,6 +223,12 @@ void UUEMotionScene::SetupCoordinateAxes()
 
 	for (int32 i = 0; i < AxisConfigs.Num(); i++)
 	{
+		if (bIs2DView && i == 2)
+		{
+			UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Skipping Z-axis in 2D view mode"));
+			continue;
+		}
+
 		const FString& BPName = AxisConfigs[i].Key;
 		const FLinearColor& Color = AxisConfigs[i].Value;
 
@@ -491,7 +497,7 @@ UMaterialInterface* UUEMotionScene::CreateOrLoadBlackMaterial()
 	}
 
 	UMaterialInterface* BaseMat = LoadObject<UMaterialInterface>(
-		nullptr, TEXT("/Engine/EngineMaterials/M_Unlit.M_Unlit"));
+		nullptr, TEXT("/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"));
 
 	if (!BaseMat)
 	{
@@ -503,7 +509,7 @@ UMaterialInterface* UUEMotionScene::CreateOrLoadBlackMaterial()
 
 #if WITH_EDITOR
 	FLinearColor DefaultBlack(0.0f, 0.0f, 0.0f, 1.0f);
-	BlackMIC->SetVectorParameterValueEditorOnly(FName("BaseColor"), DefaultBlack);
+	BlackMIC->SetVectorParameterValueEditorOnly(FName("Color"), DefaultBlack);
 	BlackMIC->PostEditChange();
 #endif
 
@@ -1466,6 +1472,16 @@ void UUEMotionScene::SetCoordinateAxisLength(float Length)
 float UUEMotionScene::GetCoordinateAxisLength() const
 {
 	return CoordinateAxisLength;
+}
+
+void UUEMotionScene::SetIs2DView(bool b2D)
+{
+	bIs2DView = b2D;
+}
+
+bool UUEMotionScene::Is2DView() const
+{
+	return bIs2DView;
 }
 
 void UUEMotionScene::SetUseUnlit(bool bUnlit)
