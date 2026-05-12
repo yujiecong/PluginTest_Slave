@@ -228,6 +228,8 @@ private:
 	void SetupDefaultLighting();
 	void SetupCoordinateAxes();
 	void SetupSkyEnvironment();
+	void SetupBlackBackgroundFloor();
+	UMaterialInterface* CreateOrLoadBlackMaterial();
 	void OpenLevelSequenceInEditor();
 
 	FGuid AddActorToSequencer(AActor* Actor);

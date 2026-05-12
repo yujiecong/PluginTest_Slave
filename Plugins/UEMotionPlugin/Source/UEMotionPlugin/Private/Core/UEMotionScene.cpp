@@ -23,6 +23,11 @@
 #include "Components/SkyAtmosphereComponent.h"
 #include "Components/SkyLightComponent.h"
 #include "Engine/StaticMesh.h"
+#include "Materials/MaterialInstanceConstant.h"
+#include "Engine/Blueprint.h"
+#include "Components/StaticMeshComponent.h"
+#include "Engine/SimpleConstructionScript.h"
+#include "Engine/SCS_Node.h"
 #include "GameFramework/WorldSettings.h"
 #include "Components/DirectionalLightComponent.h"
 #include "Components/PointLightComponent.h"
@@ -35,6 +40,7 @@
 #include "EditorAssetLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Factories/BlueprintFactory.h"
+#include "Kismet2/KismetEditorUtilities.h"
 #include "Kismet/GameplayStatics.h"
 #include "UObject/Package.h"
 #include "Misc/PackageName.h"
@@ -246,6 +252,32 @@ void UUEMotionScene::SetupCoordinateAxes()
 
 				if (NewBP)
 				{
+					USimpleConstructionScript* SCS = NewBP->SimpleConstructionScript;
+					if (SCS)
+					{
+						USCS_Node* RootNode = SCS->CreateNode(USceneComponent::StaticClass(), TEXT("DefaultSceneRoot"));
+						SCS->AddNode(RootNode);
+
+						USCS_Node* MeshNode = SCS->CreateNode(UStaticMeshComponent::StaticClass(), TEXT("Mesh"));
+						RootNode->AddChildNode(MeshNode);
+
+						UStaticMeshComponent* MeshTemplate = Cast<UStaticMeshComponent>(MeshNode->ComponentTemplate);
+						if (MeshTemplate)
+						{
+							UStaticMesh* GizmoMesh = LoadObject<UStaticMesh>(
+								nullptr, TEXT("/Engine/InteractiveToolsFramework/Meshes/GizmoArrowHandle.GizmoArrowHandle"));
+							if (GizmoMesh)
+							{
+								MeshTemplate->SetStaticMesh(GizmoMesh);
+							}
+
+							MeshTemplate->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+							MeshTemplate->CastShadow = false;
+						}
+					}
+
+					FKismetEditorUtilities::CompileBlueprint(NewBP);
+
 					FAssetRegistryModule::AssetCreated(NewBP);
 					Package->MarkPackageDirty();
 
@@ -254,7 +286,7 @@ void UUEMotionScene::SetupCoordinateAxes()
 					FEditorFileUtils::PromptForCheckoutAndSave(PackagesToSave, false, true);
 
 					AxisClass = NewBP->GeneratedClass;
-					UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Created axis blueprint '%s'"), *BlueprintPath);
+					UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Created axis blueprint '%s' with SCS configuration"), *BlueprintPath);
 				}
 			}
 		}
@@ -337,6 +369,108 @@ void UUEMotionScene::SetupSkyEnvironment()
 	}
 
 	UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Sky environment setup complete (Atmosphere + SkyLight + SkySphere)"));
+}
+
+void UUEMotionScene::SetupBlackBackgroundFloor()
+{
+	if (!SceneWorld.IsValid()) return;
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	SpawnParams.bNoFail = true;
+
+	AActor* FloorActor = SceneWorld->SpawnActor<AActor>(
+		FVector(0, 0, -0.01),
+		FRotator(90, 0, 0),
+		SpawnParams);
+
+	if (FloorActor)
+	{
+		UStaticMeshComponent* FloorMesh = NewObject<UStaticMeshComponent>(FloorActor);
+		if (FloorMesh)
+		{
+			FloorMesh->RegisterComponent();
+			FloorMesh->AttachToComponent(FloorActor->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+
+			UStaticMesh* PlaneMesh = LoadObject<UStaticMesh>(
+				nullptr, TEXT("/Engine/BasicShapes/Plane.Plane"));
+
+			if (PlaneMesh)
+			{
+				FloorMesh->SetStaticMesh(PlaneMesh);
+
+				float FloorSize = 8.0f * 50.0f;
+				FloorMesh->SetWorldScale3D(FVector(FloorSize / 200.0f));
+
+				FloorMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+				FloorMesh->CastShadow = false;
+				FloorMesh->bReceivesDecals = false;
+
+				UMaterialInterface* BlackMaterial = CreateOrLoadBlackMaterial();
+				if (BlackMaterial)
+				{
+					FloorMesh->SetMaterial(0, BlackMaterial);
+				}
+
+				UE_LOG(LogTemp, Log,
+					TEXT("UEMotionScene: Created black background floor (%.0f x %.0f cm)"),
+					FloorSize, FloorSize);
+			}
+		}
+	}
+}
+
+UMaterialInterface* UUEMotionScene::CreateOrLoadBlackMaterial()
+{
+	const FString MaterialPath = TEXT("/Game/UEMotion/Materials/M_BlackBackground");
+
+	if (UEditorAssetLibrary::DoesAssetExist(MaterialPath))
+	{
+		UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Reusing existing black material '%s'"), *MaterialPath);
+		return LoadObject<UMaterialInterface>(nullptr, *MaterialPath);
+	}
+
+	UPackage* Package = CreatePackage(*MaterialPath);
+	if (!Package) return nullptr;
+
+	UMaterialInstanceConstant* BlackMIC = NewObject<UMaterialInstanceConstant>(
+		Package, TEXT("M_BlackBackground"), RF_Public | RF_Standalone);
+
+	if (!BlackMIC) return nullptr;
+
+	UMaterialInterface* BaseMat = LoadObject<UMaterialInterface>(
+		nullptr, TEXT("/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"));
+
+	if (BaseMat)
+	{
+		BlackMIC->SetParentEditorOnly(BaseMat);
+
+#if WITH_EDITOR
+		BlackMIC->SetVectorParameterValueEditorOnly(FName("BaseColor"), FLinearColor::Black);
+		BlackMIC->SetScalarParameterValueEditorOnly(FName("Opacity"), 1.0f);
+#endif
+	}
+
+	FAssetRegistryModule::AssetCreated(BlackMIC);
+	Package->MarkPackageDirty();
+
+	FString FilePath = FPaths::Combine(
+		FPaths::ProjectContentDir(),
+		TEXT("UEMotion/Materials/"),
+		TEXT("M_BlackBackground.uasset"));
+
+	FSavePackageArgs SaveArgs;
+	SaveArgs.SaveFlags = RF_Public | RF_Standalone;
+
+	UPackage::SavePackage(
+		Package,
+		nullptr,
+		*FilePath,
+		SaveArgs);
+
+	UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Created and saved black background material to '%s'"), *FilePath);
+
+	return BlackMIC;
 }
 
 void UUEMotionScene::OpenLevelSequenceInEditor()
@@ -446,8 +580,9 @@ void UUEMotionScene::Initialize(const FString& InSceneName, int32 Width, int32 H
 		}
 
 		SetupDefaultLighting();
-		SetupCoordinateAxes();
 		SetupSkyEnvironment();
+		SetupBlackBackgroundFloor();
+		SetupCoordinateAxes();
 		bInitialized = true;
 
 		UEditorLoadingAndSavingUtils::SaveMap(SceneWorld.Get(), GetMapPath());

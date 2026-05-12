@@ -225,12 +225,22 @@ UMaterialInterface* AUEMotionAxisActor::CreateStaticAxisMaterial(const FString& 
 	FAssetRegistryModule::AssetCreated(NewMaterialInstance);
 	MaterialPackage->MarkPackageDirty();
 
-	TArray<UPackage*> PackagesToSave;
-	PackagesToSave.Add(MaterialPackage);
-	FEditorFileUtils::PromptForCheckoutAndSave(PackagesToSave, false, true);
+	FString FilePath = FPaths::Combine(
+		FPaths::ProjectContentDir(),
+		TEXT("UEMotion/Materials/"),
+		MaterialName + TEXT(".uasset"));
+
+	FSavePackageArgs SaveArgs;
+	SaveArgs.SaveFlags = RF_Public | RF_Standalone;
+
+	UPackage::SavePackage(
+		MaterialPackage,
+		nullptr,
+		*FilePath,
+		SaveArgs);
 
 	UE_LOG(LogTemp, Log, TEXT("UEMotionAxisActor: Created and saved axis material instance '%s' to '%s' with color (%.2f, %.2f, %.2f)"),
-		*MaterialName, *MaterialPath, Color.R, Color.G, Color.B);
+		*MaterialName, *FilePath, Color.R, Color.G, Color.B);
 
 	return NewMaterialInstance;
 }
