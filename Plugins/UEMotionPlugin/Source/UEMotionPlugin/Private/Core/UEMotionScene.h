@@ -108,6 +108,9 @@ public:
 	void AddDirectionalLight(const FVector& Direction, const FLinearColor& Color, float Intensity = 10.0f);
 
 	UFUNCTION(BlueprintCallable, Category = "UEMotion")
+	void AddPointLight(const FVector& Location, const FLinearColor& Color, float Intensity = 5000.0f);
+
+	UFUNCTION(BlueprintCallable, Category = "UEMotion")
 	void Play(UUEMotionAnimation* Animation);
 
 	UFUNCTION(BlueprintCallable, Category = "UEMotion")

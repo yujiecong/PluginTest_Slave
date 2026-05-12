@@ -21,6 +21,7 @@
 #include "Engine/StaticMesh.h"
 #include "GameFramework/WorldSettings.h"
 #include "Components/DirectionalLightComponent.h"
+#include "Components/PointLightComponent.h"
 #include "LevelSequence.h"
 #include "LevelSequenceActor.h"
 #include "MovieScene.h"
@@ -194,6 +195,8 @@ void UUEMotionScene::SetupCoordinateAxes()
 {
 	if (!SceneWorld.IsValid() || !bShowCoordinateAxes) return;
 
+	AUEMotionAxisActor::CreateAxisMaterials();
+
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	SpawnParams.bNoFail = true;
@@ -203,19 +206,19 @@ void UUEMotionScene::SetupCoordinateAxes()
 	AUEMotionAxisActor* XAxisActor = SceneWorld.Get()->SpawnActor<AUEMotionAxisActor>(FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
 	if (XAxisActor)
 	{
-		XAxisActor->InitializeAxis(EAxis::X, Len, FLinearColor::Red);
+		XAxisActor->InitializeAxis(EAxis::X, Len, FLinearColor(1.0f, 0.25f, 0.25f, 1.0f));
 	}
 
 	AUEMotionAxisActor* YAxisActor = SceneWorld.Get()->SpawnActor<AUEMotionAxisActor>(FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
 	if (YAxisActor)
 	{
-		YAxisActor->InitializeAxis(EAxis::Y, Len, FLinearColor::Green);
+		YAxisActor->InitializeAxis(EAxis::Y, Len, FLinearColor(0.25f, 1.0f, 0.25f, 1.0f));
 	}
 
 	AUEMotionAxisActor* ZAxisActor = SceneWorld.Get()->SpawnActor<AUEMotionAxisActor>(FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
 	if (ZAxisActor)
 	{
-		ZAxisActor->InitializeAxis(EAxis::Z, Len, FLinearColor::Blue);
+		ZAxisActor->InitializeAxis(EAxis::Z, Len, FLinearColor(0.25f, 0.5f, 1.0f, 1.0f));
 	}
 
 	UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Coordinate axes created using AUEMotionAxisActor (X=Red, Y=Green, Z=Blue, Length=%.0f)"), Len);
@@ -575,6 +578,27 @@ void UUEMotionScene::AddDirectionalLight(const FVector& Direction, const FLinear
 		{
 			LightComp->SetIntensity(Intensity);
 			LightComp->SetLightColor(Color);
+		}
+	}
+}
+
+void UUEMotionScene::AddPointLight(const FVector& Location, const FLinearColor& Color, float Intensity)
+{
+	if (!bInitialized || !SceneWorld.IsValid()) return;
+
+	AActor* PointLight = SceneWorld->SpawnActor<AActor>(Location, FRotator::ZeroRotator);
+	if (PointLight)
+	{
+		UPointLightComponent* LightComp = NewObject<UPointLightComponent>(PointLight);
+		if (LightComp)
+		{
+			LightComp->RegisterComponent();
+			LightComp->AttachToComponent(PointLight->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+			LightComp->SetIntensity(Intensity);
+			LightComp->SetLightColor(Color);
+
+			UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Added point light at (%.1f, %.1f, %.1f) with intensity=%.1f"),
+				Location.X, Location.Y, Location.Z, Intensity);
 		}
 	}
 }

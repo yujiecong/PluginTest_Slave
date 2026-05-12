@@ -5,7 +5,7 @@
 #include "UEMotionRenderer.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUEMotionRendererFinished, bool, bSuccess);
-
+ 
 class UWorld;
 class ACineCameraActor;
 class ULevelSequence;

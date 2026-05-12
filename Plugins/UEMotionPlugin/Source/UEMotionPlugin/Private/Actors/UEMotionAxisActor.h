@@ -5,7 +5,7 @@
 #include "UEMotionAxisActor.generated.h"
 
 class UStaticMeshComponent;
-class UMaterialInstanceDynamic;
+class UMaterialInterface;
 
 UCLASS()
 class AUEMotionAxisActor : public AActor
@@ -32,6 +32,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "UEMotion|Axis")
 	UStaticMeshComponent* GetMeshComponent() const;
 
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Axis")
+	static bool CreateAxisMaterials();
+
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UEMotion|Axis")
 	UStaticMeshComponent* MeshComponent;
@@ -47,9 +50,10 @@ protected:
 
 private:
 	UPROPERTY()
-	UMaterialInstanceDynamic* DynamicMaterial;
+	UMaterialInterface* AxisMaterial;
 
 	void SetupMesh();
 	void ApplyRotationForAxis();
-	void CreateAxisMaterial();
+	void CreateOrLoadAxisMaterial();
+	static UMaterialInterface* CreateStaticAxisMaterial(const FString& MaterialName, const FLinearColor& Color);
 };

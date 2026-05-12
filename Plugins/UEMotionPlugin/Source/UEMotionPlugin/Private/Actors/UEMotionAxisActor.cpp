@@ -2,9 +2,16 @@
 #include "Components/StaticMeshComponent.h"
 #include "Materials/MaterialInterface.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "Materials/Material.h"
+#include "Materials/MaterialExpressionVectorParameter.h"
+#include "Materials/MaterialExpressionConstant.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
 #include "UObject/ConstructorHelpers.h"
+#include "AssetRegistry/AssetRegistryModule.h"
+#include "EditorAssetLibrary.h"
+#include "PackageTools.h"
+#include "FileHelpers.h"
 
 AUEMotionAxisActor::AUEMotionAxisActor()
 {
@@ -42,19 +49,43 @@ void AUEMotionAxisActor::SetAxisColor(const FLinearColor& InColor)
 {
 	AxisColor = InColor;
 
-	if (MeshComponent && DynamicMaterial)
+	if (MeshComponent && AxisMaterial)
 	{
-		DynamicMaterial->SetVectorParameterValue(FName("BaseColor"), AxisColor);
+		if (UMaterialInstanceDynamic* DynamicMat = UMaterialInstanceDynamic::Create(AxisMaterial, this))
+		{
+			DynamicMat->SetVectorParameterValue(FName("BaseColor"), AxisColor);
+			MeshComponent->SetMaterial(0, DynamicMat);
+		}
 	}
 	else
 	{
-		CreateAxisMaterial();
+		CreateOrLoadAxisMaterial();
 	}
 }
 
 UStaticMeshComponent* AUEMotionAxisActor::GetMeshComponent() const
 {
 	return MeshComponent;
+}
+
+bool AUEMotionAxisActor::CreateAxisMaterials()
+{
+	bool bSuccess = true;
+
+	bSuccess &= CreateStaticAxisMaterial(TEXT("M_Axis_X"), FLinearColor(1.0f, 0.25f, 0.25f, 1.0f)) != nullptr;
+	bSuccess &= CreateStaticAxisMaterial(TEXT("M_Axis_Y"), FLinearColor(0.25f, 1.0f, 0.25f, 1.0f)) != nullptr;
+	bSuccess &= CreateStaticAxisMaterial(TEXT("M_Axis_Z"), FLinearColor(0.25f, 0.5f, 1.0f, 1.0f)) != nullptr;
+
+	if (bSuccess)
+	{
+		UE_LOG(LogTemp, Log, TEXT("UEMotionAxisActor: All axis materials created successfully"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("UEMotionAxisActor: Some axis materials failed to create"));
+	}
+
+	return bSuccess;
 }
 
 void AUEMotionAxisActor::SetupMesh()
@@ -74,7 +105,7 @@ void AUEMotionAxisActor::SetupMesh()
 	}
 
 	ApplyRotationForAxis();
-	CreateAxisMaterial();
+	CreateOrLoadAxisMaterial();
 
 	MeshComponent->SetVisibility(true);
 }
@@ -104,24 +135,107 @@ void AUEMotionAxisActor::ApplyRotationForAxis()
 	MeshComponent->SetRelativeRotation(TargetRotation);
 }
 
-void AUEMotionAxisActor::CreateAxisMaterial()
+void AUEMotionAxisActor::CreateOrLoadAxisMaterial()
 {
 	if (!MeshComponent) return;
 
-	static UMaterialInterface* AxisBaseMaterial = nullptr;
-	if (!AxisBaseMaterial)
+	FString MaterialName;
+	switch (static_cast<EAxis::Type>(AxisType.GetValue()))
 	{
-		AxisBaseMaterial = LoadObject<UMaterialInterface>(
-			nullptr, TEXT("/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"));
+	case EAxis::X:
+		MaterialName = TEXT("M_Axis_X");
+		break;
+	case EAxis::Y:
+		MaterialName = TEXT("M_Axis_Y");
+		break;
+	case EAxis::Z:
+		MaterialName = TEXT("M_Axis_Z");
+		break;
+	default:
+		MaterialName = TEXT("M_Axis_X");
+		break;
 	}
 
-	if (!AxisBaseMaterial) return;
+	FString MaterialPath = FString::Printf(TEXT("/Game/UEMotion/Materials/%s"), *MaterialName);
 
-	DynamicMaterial = UMaterialInstanceDynamic::Create(AxisBaseMaterial, this);
-	if (DynamicMaterial)
+	AxisMaterial = LoadObject<UMaterialInterface>(nullptr, *MaterialPath);
+	if (!AxisMaterial)
 	{
-		DynamicMaterial->SetVectorParameterValue(FName("BaseColor"), AxisColor);
-		DynamicMaterial->SetScalarParameterValue(FName("Opacity"), 1.0f);
-		MeshComponent->SetMaterial(0, DynamicMaterial);
+		AxisMaterial = CreateStaticAxisMaterial(MaterialName, AxisColor);
 	}
+
+	if (AxisMaterial)
+	{
+		if (UMaterialInstanceDynamic* DynamicMat = UMaterialInstanceDynamic::Create(AxisMaterial, this))
+		{
+			DynamicMat->SetVectorParameterValue(FName("BaseColor"), AxisColor);
+			MeshComponent->SetMaterial(0, DynamicMat);
+		}
+		else
+		{
+			MeshComponent->SetMaterial(0, AxisMaterial);
+		}
+	}
+}
+
+UMaterialInterface* AUEMotionAxisActor::CreateStaticAxisMaterial(const FString& MaterialName, const FLinearColor& Color)
+{
+	FString MaterialPath = FString::Printf(TEXT("/Game/UEMotion/Materials/%s"), *MaterialName);
+
+	if (UEditorAssetLibrary::DoesAssetExist(MaterialPath))
+	{
+		UE_LOG(LogTemp, Log, TEXT("UEMotionAxisActor: Material '%s' already exists, loading"), *MaterialName);
+		return LoadObject<UMaterialInterface>(nullptr, *MaterialPath);
+	}
+
+	UPackage* MaterialPackage = CreatePackage(*MaterialPath);
+	if (!MaterialPackage)
+	{
+		UE_LOG(LogTemp, Error, TEXT("UEMotionAxisActor: Failed to create package for material '%s'"), *MaterialName);
+		return nullptr;
+	}
+
+	UMaterial* NewMaterial = NewObject<UMaterial>(MaterialPackage, *MaterialName, RF_Public | RF_Standalone | RF_Transactional);
+	if (!NewMaterial)
+	{
+		UE_LOG(LogTemp, Error, TEXT("UEMotionAxisActor: Failed to create material object '%s'"), *MaterialName);
+		return nullptr;
+	}
+
+	NewMaterial->SetShadingModel(MSM_Unlit);
+	NewMaterial->SetMaterialUsageFlag(MATUSAGE_Scene);
+
+	UMaterialExpressionVectorParameter* BaseColorParam = NewMaterial->MaterialEditorOnly.CreateExpressionParameter<UMaterialExpressionVectorParameter>();
+	BaseColorParam->ParameterName = FName("BaseColor");
+	BaseColorParam->DefaultValue = Color;
+	BaseColorParam->Desc = TEXT("Base Color");
+
+	UMaterialExpressionConstant* OpacityConstant = NewMaterial->MaterialEditorOnly.CreateExpressionParameter<UMaterialExpressionConstant>();
+	OpacityConstant->Constant = 1.0f;
+
+	UMaterialExpressionVectorParameter* EmissiveColorParam = NewMaterial->MaterialEditorOnly.CreateExpressionParameter<UMaterialExpressionVectorParameter>();
+	EmissiveColorParam->ParameterName = FName("EmissiveColor");
+	EmissiveColorParam->DefaultValue = Color;
+	EmissiveColorParam->Desc = TEXT("Emissive Color");
+
+	NewMaterial->BaseColor.Expression = BaseColorParam;
+	NewMaterial->EmissiveColor.Expression = EmissiveColorParam;
+	NewMaterial->Opacity.Expression = OpacityConstant;
+	NewMaterial->MaterialDomain = MD_Surface;
+	NewMaterial->BlendMode = BLEND_Opaque;
+
+	FAssetRegistryModule::AssetCreated(NewMaterial);
+	UEMotionCompat::MarkPackageDirty(MaterialPackage);
+
+	if (!UEditorLoadingAndSavingUtils::SaveAsset(MaterialPath, false))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("UEMotionAxisActor: Failed to save material '%s' to disk"), *MaterialName);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("UEMotionAxisActor: Created and saved axis material '%s' to '%s' with color (%.2f, %.2f, %.2f)"),
+			*MaterialName, *MaterialPath, Color.R, Color.G, Color.B);
+	}
+
+	return NewMaterial;
 }
