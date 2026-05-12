@@ -40,12 +40,16 @@ class Scene:
                  axis_length=4.0,
                  unlit=True):
         self._ue = unreal.UEMotionScene()
-        self._ue.initialize(name, width, height)
         self._name = name
         self._width = width
         self._height = height
         self._mode = mode.lower()
         self._pending_animations = []
+
+        if self._mode == "2d":
+            self._ue.set_is_2d_view(True)
+
+        self._ue.initialize(name, width, height)
         self._camera = Camera(self, self._ue.get_camera())
         self._render_callbacks = []
         self._bind_render_delegate()
