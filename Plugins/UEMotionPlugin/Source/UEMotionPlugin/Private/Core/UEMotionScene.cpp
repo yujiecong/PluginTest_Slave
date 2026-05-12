@@ -197,8 +197,10 @@ void UUEMotionScene::SetupDefaultLighting()
 		UDirectionalLightComponent* LightComp = Cast<UDirectionalLightComponent>(DirLight->GetLightComponent());
 		if (LightComp)
 		{
-			LightComp->SetIntensity(10.0f);
-			LightComp->SetLightColor(FLinearColor::White);
+			LightComp->SetIntensity(0.0f);
+			LightComp->SetLightColor(FLinearColor::Black);
+
+			UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Directional light set to zero intensity for dark background"));
 		}
 	}
 }
@@ -283,7 +285,17 @@ void UUEMotionScene::SetupCoordinateAxes()
 
 					TArray<UPackage*> PackagesToSave;
 					PackagesToSave.Add(Package);
-					FEditorFileUtils::PromptForCheckoutAndSave(PackagesToSave, false, true);
+
+					FSavePackageArgs SaveArgs;
+					SaveArgs.SaveFlags = RF_Public | RF_Standalone;
+
+					for (UPackage* Pkg : PackagesToSave)
+					{
+					 FString PkgFilename = FPackageName::LongPackageNameToFilename(
+						 Pkg->GetName(), FPackageName::GetAssetPackageExtension());
+
+					 UPackage::SavePackage(Pkg, nullptr, *PkgFilename, SaveArgs);
+					}
 
 					AxisClass = NewBP->GeneratedClass;
 					UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Created axis blueprint '%s' with SCS configuration"), *BlueprintPath);
@@ -328,11 +340,11 @@ void UUEMotionScene::SetupSkyEnvironment()
 		USkyLightComponent* SkyComp = Cast<USkyLightComponent>(SkyLight->GetComponentByClass(USkyLightComponent::StaticClass()));
 		if (SkyComp)
 		{
-			SkyComp->SetIntensity(10.0f);
-			SkyComp->SetRealTimeCaptureEnabled(true);
+			SkyComp->SetIntensity(0.0f);
+			SkyComp->SetRealTimeCaptureEnabled(false);
 			SkyComp->SetMobility(EComponentMobility::Movable);
 
-			UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Created SkyLight (Real-time)"));
+			UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Created SkyLight with zero intensity for dark background"));
 		}
 	}
 
@@ -375,47 +387,116 @@ void UUEMotionScene::SetupBlackBackgroundFloor()
 {
 	if (!SceneWorld.IsValid()) return;
 
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	SpawnParams.bNoFail = true;
+	FString FloorBlueprintPath = TEXT("/Game/UEMotion/Blueprints/BP_BlackFloor");
+	UClass* FloorClass = nullptr;
 
-	AActor* FloorActor = SceneWorld->SpawnActor<AActor>(
-		FVector(0, 0, -0.01),
-		FRotator(90, 0, 0),
-		SpawnParams);
-
-	if (FloorActor)
+	if (UEditorAssetLibrary::DoesAssetExist(FloorBlueprintPath))
 	{
-		UStaticMeshComponent* FloorMesh = NewObject<UStaticMeshComponent>(FloorActor);
-		if (FloorMesh)
+		UBlueprint* ExistingBP = LoadObject<UBlueprint>(nullptr, *FloorBlueprintPath);
+		if (ExistingBP && ExistingBP->GeneratedClass)
 		{
-			FloorMesh->RegisterComponent();
-			FloorMesh->AttachToComponent(FloorActor->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+			FloorClass = ExistingBP->GeneratedClass;
+			UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Reusing existing floor blueprint '%s'"), *FloorBlueprintPath);
+		}
+	}
 
-			UStaticMesh* PlaneMesh = LoadObject<UStaticMesh>(
-				nullptr, TEXT("/Engine/BasicShapes/Plane.Plane"));
+	if (!FloorClass)
+	{
+		UPackage* Package = CreatePackage(*FloorBlueprintPath);
+		if (Package)
+		{
+			UBlueprintFactory* BPFactory = NewObject<UBlueprintFactory>();
+			BPFactory->ParentClass = AActor::StaticClass();
 
-			if (PlaneMesh)
+			UBlueprint* NewBP = Cast<UBlueprint>(BPFactory->FactoryCreateNew(
+				UBlueprint::StaticClass(), Package, TEXT("BP_BlackFloor"),
+				RF_Public | RF_Standalone, nullptr, GWarn));
+
+			if (NewBP)
 			{
-				FloorMesh->SetStaticMesh(PlaneMesh);
-
-				float FloorSize = 8.0f * 50.0f;
-				FloorMesh->SetWorldScale3D(FVector(FloorSize / 200.0f));
-
-				FloorMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-				FloorMesh->CastShadow = false;
-				FloorMesh->bReceivesDecals = false;
-
-				UMaterialInterface* BlackMaterial = CreateOrLoadBlackMaterial();
-				if (BlackMaterial)
+				USimpleConstructionScript* SCS = NewBP->SimpleConstructionScript;
+				if (SCS)
 				{
-					FloorMesh->SetMaterial(0, BlackMaterial);
+					USCS_Node* RootNode = SCS->CreateNode(USceneComponent::StaticClass(), TEXT("DefaultSceneRoot"));
+					SCS->AddNode(RootNode);
+
+					USCS_Node* MeshNode = SCS->CreateNode(UStaticMeshComponent::StaticClass(), TEXT("FloorMesh"));
+					RootNode->AddChildNode(MeshNode);
+
+					UStaticMeshComponent* MeshTemplate = Cast<UStaticMeshComponent>(MeshNode->ComponentTemplate);
+					if (MeshTemplate)
+					{
+						UStaticMesh* PlaneMesh = LoadObject<UStaticMesh>(
+							nullptr, TEXT("/Engine/BasicShapes/Plane.Plane"));
+
+						if (PlaneMesh)
+						{
+							MeshTemplate->SetStaticMesh(PlaneMesh);
+
+							float FloorSizeX = 20.0f * 50.0f;
+							float FloorSizeY = 20.0f * 50.0f;
+							MeshTemplate->SetRelativeScale3D(FVector(FloorSizeX / 200.0f, FloorSizeY / 200.0f, 1.0f));
+
+							MeshTemplate->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+							MeshTemplate->CastShadow = false;
+							MeshTemplate->bReceivesDecals = false;
+
+							UMaterialInterface* BlackMaterial = CreateOrLoadBlackMaterial();
+							if (BlackMaterial)
+							{
+								MeshTemplate->SetMaterial(0, BlackMaterial);
+								UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Black material applied to floor mesh template"));
+							}
+							else
+							{
+								UE_LOG(LogTemp, Warning, TEXT("UEMotionScene: Failed to create/load black material for floor"));
+							}
+						}
+					}
 				}
 
-				UE_LOG(LogTemp, Log,
-					TEXT("UEMotionScene: Created black background floor (%.0f x %.0f cm)"),
-					FloorSize, FloorSize);
+				FKismetEditorUtilities::CompileBlueprint(NewBP);
+
+				FAssetRegistryModule::AssetCreated(NewBP);
+				Package->MarkPackageDirty();
+
+				TArray<UPackage*> PackagesToSave;
+				PackagesToSave.Add(Package);
+
+				FSavePackageArgs SaveArgs;
+				SaveArgs.SaveFlags = RF_Public | RF_Standalone;
+
+				for (UPackage* Pkg : PackagesToSave)
+				{
+				 FString PkgFilename = FPackageName::LongPackageNameToFilename(
+					 Pkg->GetName(), FPackageName::GetAssetPackageExtension());
+
+				 UPackage::SavePackage(Pkg, nullptr, *PkgFilename, SaveArgs);
+				}
+
+				FloorClass = NewBP->GeneratedClass;
+				UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Created black floor blueprint '%s' with SCS configuration"), *FloorBlueprintPath);
 			}
+		}
+	}
+
+	if (FloorClass)
+	{
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		SpawnParams.bNoFail = true;
+
+		AActor* FloorActor = SceneWorld->SpawnActor<AActor>(
+			FloorClass,
+			FVector(0, 0, -0.01),
+			FRotator::ZeroRotator,
+			SpawnParams);
+
+		if (FloorActor)
+		{
+			UE_LOG(LogTemp, Log,
+				TEXT("UEMotionScene: Spawned black background floor from blueprint uasset (%.0f x %.0f cm)"),
+				20.0f * 50.0f, 20.0f * 50.0f);
 		}
 	}
 }
@@ -426,30 +507,50 @@ UMaterialInterface* UUEMotionScene::CreateOrLoadBlackMaterial()
 
 	if (UEditorAssetLibrary::DoesAssetExist(MaterialPath))
 	{
-		UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Reusing existing black material '%s'"), *MaterialPath);
-		return LoadObject<UMaterialInterface>(nullptr, *MaterialPath);
+		UMaterialInterface* ExistingMat = LoadObject<UMaterialInterface>(nullptr, *MaterialPath);
+		if (ExistingMat)
+		{
+			UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Reusing existing black material '%s'"), *MaterialPath);
+			return ExistingMat;
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("UEMotionScene: Black material exists but failed to load, recreating..."));
+			UEditorAssetLibrary::DeleteAsset(MaterialPath);
+		}
 	}
 
 	UPackage* Package = CreatePackage(*MaterialPath);
-	if (!Package) return nullptr;
+	if (!Package)
+	{
+		UE_LOG(LogTemp, Error, TEXT("UEMotionScene: Failed to create package for black material"));
+		return nullptr;
+	}
 
 	UMaterialInstanceConstant* BlackMIC = NewObject<UMaterialInstanceConstant>(
-		Package, TEXT("M_BlackBackground"), RF_Public | RF_Standalone);
+		Package, TEXT("M_BlackBackground"), RF_Public | RF_Standalone | RF_Transactional);
 
-	if (!BlackMIC) return nullptr;
+	if (!BlackMIC)
+	{
+		UE_LOG(LogTemp, Error, TEXT("UEMotionScene: Failed to create black material instance"));
+		return nullptr;
+	}
 
 	UMaterialInterface* BaseMat = LoadObject<UMaterialInterface>(
 		nullptr, TEXT("/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"));
 
-	if (BaseMat)
+	if (!BaseMat)
 	{
-		BlackMIC->SetParentEditorOnly(BaseMat);
+		UE_LOG(LogTemp, Error, TEXT("UEMotionScene: Failed to load base material 'BasicShapeMaterial'"));
+		return nullptr;
+	}
+
+	BlackMIC->SetParentEditorOnly(BaseMat);
 
 #if WITH_EDITOR
-		BlackMIC->SetVectorParameterValueEditorOnly(FName("BaseColor"), FLinearColor::Black);
-		BlackMIC->SetScalarParameterValueEditorOnly(FName("Opacity"), 1.0f);
+	BlackMIC->SetVectorParameterValueEditorOnly(FName("BaseColor"), FLinearColor(0.0f, 0.0f, 0.0f, 1.0f));
+	BlackMIC->SetScalarParameterValueEditorOnly(FName("Opacity"), 1.0f);
 #endif
-	}
 
 	FAssetRegistryModule::AssetCreated(BlackMIC);
 	Package->MarkPackageDirty();
@@ -462,13 +563,21 @@ UMaterialInterface* UUEMotionScene::CreateOrLoadBlackMaterial()
 	FSavePackageArgs SaveArgs;
 	SaveArgs.SaveFlags = RF_Public | RF_Standalone;
 
-	UPackage::SavePackage(
+	bool bSaveSuccess = UPackage::SavePackage(
 		Package,
 		nullptr,
 		*FilePath,
 		SaveArgs);
 
-	UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Created and saved black background material to '%s'"), *FilePath);
+	if (bSaveSuccess)
+	{
+		UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Created and saved black background material to '%s'"), *FilePath);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("UEMotionScene: Failed to save black material to '%s'"), *FilePath);
+		return nullptr;
+	}
 
 	return BlackMIC;
 }

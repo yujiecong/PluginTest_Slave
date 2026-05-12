@@ -183,8 +183,17 @@ UMaterialInterface* AUEMotionAxisActor::CreateStaticAxisMaterial(const FString& 
 
 	if (UEditorAssetLibrary::DoesAssetExist(MaterialPath))
 	{
-		UE_LOG(LogTemp, Log, TEXT("UEMotionAxisActor: Material '%s' already exists, loading"), *MaterialName);
-		return LoadObject<UMaterialInterface>(nullptr, *MaterialPath);
+		UMaterialInterface* ExistingMat = LoadObject<UMaterialInterface>(nullptr, *MaterialPath);
+		if (ExistingMat)
+		{
+			UE_LOG(LogTemp, Log, TEXT("UEMotionAxisActor: Material '%s' already exists, loading"), *MaterialName);
+			return ExistingMat;
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("UEMotionAxisActor: Material '%s' exists but failed to load, recreating..."), *MaterialName);
+			UEditorAssetLibrary::DeleteAsset(MaterialPath);
+		}
 	}
 
 	static UMaterialInterface* BaseMaterial = nullptr;
@@ -233,14 +242,22 @@ UMaterialInterface* AUEMotionAxisActor::CreateStaticAxisMaterial(const FString& 
 	FSavePackageArgs SaveArgs;
 	SaveArgs.SaveFlags = RF_Public | RF_Standalone;
 
-	UPackage::SavePackage(
+	bool bSaveSuccess = UPackage::SavePackage(
 		MaterialPackage,
 		nullptr,
 		*FilePath,
 		SaveArgs);
 
-	UE_LOG(LogTemp, Log, TEXT("UEMotionAxisActor: Created and saved axis material instance '%s' to '%s' with color (%.2f, %.2f, %.2f)"),
-		*MaterialName, *FilePath, Color.R, Color.G, Color.B);
+	if (bSaveSuccess)
+	{
+		UE_LOG(LogTemp, Log, TEXT("UEMotionAxisActor: Created and saved axis material instance '%s' to '%s' with color (%.2f, %.2f, %.2f)"),
+			*MaterialName, *FilePath, Color.R, Color.G, Color.B);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("UEMotionAxisActor: Failed to save axis material '%s' to '%s'"), *MaterialName, *FilePath);
+		return nullptr;
+	}
 
 	return NewMaterialInstance;
 }
