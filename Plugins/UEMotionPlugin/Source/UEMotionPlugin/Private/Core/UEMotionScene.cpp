@@ -295,11 +295,11 @@ void UUEMotionScene::SetupCoordinateAxes()
 							MeshTemplate->CastShadow = false;
 
 							FString MaterialName;
-							if (BPName.Contains(TEXT("X")))
+							if (BPName.EndsWith(TEXT("X")))
 								MaterialName = TEXT("M_Axis_X");
-							else if (BPName.Contains(TEXT("Y")))
+							else if (BPName.EndsWith(TEXT("Y")))
 								MaterialName = TEXT("M_Axis_Y");
-							else if (BPName.Contains(TEXT("Z")))
+							else if (BPName.EndsWith(TEXT("Z")))
 								MaterialName = TEXT("M_Axis_Z");
 
 							if (!MaterialName.IsEmpty())
@@ -575,161 +575,87 @@ void UUEMotionScene::SetupBlackBackgroundFloor()
 
 UMaterialInterface* UUEMotionScene::CreateOrLoadBlackMaterial()
 {
-	const FString BaseMaterialPath = TEXT("/Game/UEMotion/Materials/M_BlackFloor_Base");
-	const FString InstanceMaterialPath = TEXT("/Game/UEMotion/Materials/M_BlackFloor");
+	const FString MaterialPath = TEXT("/Game/UEMotion/Materials/M_BlackFloor");
 
-	UMaterial* ParentMaterial = nullptr;
-
-	if (UEditorAssetLibrary::DoesAssetExist(BaseMaterialPath))
+	if (UEditorAssetLibrary::DoesAssetExist(MaterialPath))
 	{
-		ParentMaterial = LoadObject<UMaterial>(nullptr, *BaseMaterialPath);
-		if (ParentMaterial)
-		{
-			UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Reusing existing black floor base material '%s'"), *BaseMaterialPath);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("UEMotionScene: Base material exists but failed to load, recreating..."));
-			UEditorAssetLibrary::DeleteAsset(BaseMaterialPath);
-		}
-	}
-
-	if (!ParentMaterial)
-	{
-		UPackage* BasePackage = CreatePackage(*BaseMaterialPath);
-		if (!BasePackage)
-		{
-			UE_LOG(LogTemp, Error, TEXT("UEMotionScene: Failed to create package for base material"));
-			return nullptr;
-		}
-
-		ParentMaterial = NewObject<UMaterial>(
-			BasePackage, TEXT("M_BlackFloor_Base"), RF_Public | RF_Standalone | RF_Transactional);
-
-		if (!ParentMaterial)
-		{
-			UE_LOG(LogTemp, Error, TEXT("UEMotionScene: Failed to create base material"));
-			return nullptr;
-		}
-
-		ParentMaterial->SetShadingModel(MSM_Unlit);
-
-#if WITH_EDITOR
-
-		UMaterialExpressionVectorParameter* BaseColorParam = NewObject<UMaterialExpressionVectorParameter>(ParentMaterial);
-		BaseColorParam->ParameterName = FName("FloorColor");
-		BaseColorParam->DefaultValue = FLinearColor(0.0f, 0.0f, 0.0f, 1.0f);
-		BaseColorParam->Desc = TEXT("Black floor color (non-reflective)");
-		ParentMaterial->Expressions.Add(BaseColorParam);
-		ParentMaterial->BaseColor.Expression = BaseColorParam;
-
-		ParentMaterial->PostEditChange();
-#endif
-
-		ParentMaterial->SetFlags(RF_Public | RF_Standalone);
-		BasePackage->MarkPackageDirty();
-
-		FString BaseFilePath = FPaths::Combine(
-			FPaths::ProjectContentDir(),
-			TEXT("UEMotion/Materials/"),
-			TEXT("M_BlackFloor_Base.uasset"));
-
-		FSavePackageArgs BaseSaveArgs;
-		BaseSaveArgs.SaveFlags = RF_Public | RF_Standalone;
-
-		bool bBaseSaveSuccess = UPackage::SavePackage(
-			BasePackage,
-			ParentMaterial,
-			*BaseFilePath,
-			BaseSaveArgs);
-
-		if (bBaseSaveSuccess)
-		{
-			FAssetRegistryModule::AssetCreated(ParentMaterial);
-			UE_LOG(LogTemp, Log,
-				TEXT("UEMotionScene: Created custom non-reflective black base material '%s'")
-				TEXT("\n  Shading Model: Unlit [No lighting calculations]")
-				TEXT("\n  Parameter: FloorColor = (0, 0, 0, 1) [Pure Black]")
-				TEXT("\n  Properties: Non-reflective, no specular"),
-				*BaseFilePath);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("UEMotionScene: Failed to save base material to '%s'"), *BaseFilePath);
-			return nullptr;
-		}
-	}
-
-	if (UEditorAssetLibrary::DoesAssetExist(InstanceMaterialPath))
-	{
-		UMaterialInterface* ExistingMat = LoadObject<UMaterialInterface>(nullptr, *InstanceMaterialPath);
+		UMaterialInterface* ExistingMat = LoadObject<UMaterialInterface>(nullptr, *MaterialPath);
 		if (ExistingMat)
 		{
-			UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Reusing existing black floor material instance '%s'"), *InstanceMaterialPath);
+			UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Reusing existing black floor material '%s'"), *MaterialPath);
 			return ExistingMat;
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("UEMotionScene: Material instance exists but failed to load, recreating..."));
-			UEditorAssetLibrary::DeleteAsset(InstanceMaterialPath);
+			UE_LOG(LogTemp, Warning, TEXT("UEMotionScene: Black floor material exists but failed to load, recreating..."));
+			UEditorAssetLibrary::DeleteAsset(MaterialPath);
 		}
 	}
 
-	UPackage* InstancePackage = CreatePackage(*InstanceMaterialPath);
-	if (!InstancePackage)
+	UPackage* Package = CreatePackage(*MaterialPath);
+	if (!Package)
 	{
-		UE_LOG(LogTemp, Error, TEXT("UEMotionScene: Failed to create package for material instance"));
+		UE_LOG(LogTemp, Error, TEXT("UEMotionScene: Failed to create package for black floor material"));
 		return nullptr;
 	}
 
 	UMaterialInstanceConstant* BlackMIC = NewObject<UMaterialInstanceConstant>(
-		InstancePackage, TEXT("M_BlackFloor"), RF_Public | RF_Standalone | RF_Transactional);
+		Package, TEXT("M_BlackFloor"), RF_Public | RF_Standalone | RF_Transactional);
 
 	if (!BlackMIC)
 	{
-		UE_LOG(LogTemp, Error, TEXT("UEMotionScene: Failed to create black material instance"));
+		UE_LOG(LogTemp, Error, TEXT("UEMotionScene: Failed to create black floor material instance"));
 		return nullptr;
 	}
 
-	BlackMIC->SetParentEditorOnly(ParentMaterial);
+	UMaterialInterface* BaseMat = LoadObject<UMaterialInterface>(
+		nullptr, TEXT("/Engine/EngineMaterials/M_Unlit.M_Unlit"));
+
+	if (!BaseMat)
+	{
+		UE_LOG(LogTemp, Error, TEXT("UEMotionScene: Failed to load unlit base material 'M_Unlit'"));
+		return nullptr;
+	}
+
+	BlackMIC->SetParentEditorOnly(BaseMat);
 
 #if WITH_EDITOR
 	FLinearColor PureBlack(0.0f, 0.0f, 0.0f, 1.0f);
-	BlackMIC->SetVectorParameterValueEditorOnly(FName("FloorColor"), PureBlack);
+	BlackMIC->SetVectorParameterValueEditorOnly(FName("BaseColor"), PureBlack);
 	BlackMIC->PostEditChange();
 #endif
 
 	BlackMIC->SetFlags(RF_Public | RF_Standalone);
-	InstancePackage->MarkPackageDirty();
+	Package->MarkPackageDirty();
 
-	FString InstanceFilePath = FPaths::Combine(
+	FString FilePath = FPaths::Combine(
 		FPaths::ProjectContentDir(),
 		TEXT("UEMotion/Materials/"),
 		TEXT("M_BlackFloor.uasset"));
 
-	FSavePackageArgs InstanceSaveArgs;
-	InstanceSaveArgs.SaveFlags = RF_Public | RF_Standalone;
+	FSavePackageArgs SaveArgs;
+	SaveArgs.SaveFlags = RF_Public | RF_Standalone;
 
-	bool bInstanceSaveSuccess = UPackage::SavePackage(
-		InstancePackage,
+	bool bSaveSuccess = UPackage::SavePackage(
+		Package,
 		BlackMIC,
-		*InstanceFilePath,
-		InstanceSaveArgs);
+		*FilePath,
+		SaveArgs);
 
-	if (bInstanceSaveSuccess)
+	if (bSaveSuccess)
 	{
 		FAssetRegistryModule::AssetCreated(BlackMIC);
 		UE_LOG(LogTemp, Log,
-			TEXT("UEMotionScene: Created non-reflective black floor material instance '%s'")
-			TEXT("\n  Parent: M_BlackFloor_Base (Custom Unlit Material)")
-			TEXT("\n  Shading Model: Unlit [Zero reflectivity]")
-			TEXT("\n  Color: Pure Black (0, 0, 0, 1)")
-			TEXT("\n  Usage: Optimized for background floors"),
-			*InstanceFilePath);
+			TEXT("UEMotionScene: Created non-reflective black floor material UAsset '%s'")
+			TEXT("\n  Parent: M_Unlit (Unlit Shading Model)")
+			TEXT("\n  BaseColor: (0, 0, 0, 1) [Pure Black]")
+			TEXT("\n  Properties: Zero reflectivity, no lighting calculations")
+			TEXT("\n  Type: MaterialInstanceConstant (Static UAsset)"),
+			*FilePath);
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("UEMotionScene: Failed to save material instance to '%s'"), *InstanceFilePath);
+		UE_LOG(LogTemp, Error, TEXT("UEMotionScene: Failed to save black floor material to '%s'"), *FilePath);
 		return nullptr;
 	}
 
