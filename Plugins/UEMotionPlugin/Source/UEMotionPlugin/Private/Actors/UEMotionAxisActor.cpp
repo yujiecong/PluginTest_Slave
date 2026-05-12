@@ -97,10 +97,6 @@ void AUEMotionAxisActor::SetupMesh()
 	if (GizmoMesh)
 	{
 		MeshComponent->SetStaticMesh(GizmoMesh);
-
-		float Len = AxisLength;
-		float Thickness = 0.6f;
-		MeshComponent->SetWorldScale3D(FVector(Len / 60.0f, Thickness / 60.0f, Thickness / 60.0f));
 	}
 
 	ApplyRotationForAxis();
@@ -167,7 +163,7 @@ void AUEMotionAxisActor::CreateOrLoadAxisMaterial()
 	{
 		if (UMaterialInstanceDynamic* DynamicMat = UMaterialInstanceDynamic::Create(AxisMaterial, this))
 		{
-			DynamicMat->SetVectorParameterValue(FName("BaseColor"), AxisColor);
+			DynamicMat->SetVectorParameterValue(FName("Color"), AxisColor);
 			MeshComponent->SetMaterial(0, DynamicMat);
 		}
 		else
@@ -228,7 +224,7 @@ UMaterialInterface* AUEMotionAxisActor::CreateStaticAxisMaterial(const FString& 
 	NewMaterialInstance->SetParentEditorOnly(BaseMaterial);
 
 #if WITH_EDITOR
-	NewMaterialInstance->SetVectorParameterValueEditorOnly(FName("BaseColor"), Color);
+	NewMaterialInstance->SetVectorParameterValueEditorOnly(FName("Color"), Color);
 #endif
 
 	FAssetRegistryModule::AssetCreated(NewMaterialInstance);
