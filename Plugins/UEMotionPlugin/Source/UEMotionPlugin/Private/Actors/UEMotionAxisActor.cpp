@@ -124,12 +124,8 @@ void AUEMotionAxisActor::CreateAxisMaterial()
 		UMaterialEditorOnlyData* EditorData = AxisBaseMaterial->GetEditorOnlyData();
 		if (EditorData)
 		{
-			EditorData->EmissiveColor.Expression = ColorParam;
-			EditorData->EmissiveColor.OutputIndex = 0;
 			EditorData->BaseColor.Expression = ColorParam;
-			EditorData->Metallic.Expression = nullptr;
-			EditorData->Roughness.Expression = nullptr;
-			EditorData->Specular.Expression = nullptr;
+			EditorData->BaseColor.OutputIndex = 0;
 		}
 
 		AxisBaseMaterial->MarkPackageDirty();
@@ -141,8 +137,7 @@ void AUEMotionAxisActor::CreateAxisMaterial()
 	DynamicMaterial = UMaterialInstanceDynamic::Create(AxisBaseMaterial, this);
 	if (DynamicMaterial)
 	{
-		FLinearColor EnhancedColor = AxisColor * 3.0f;
-		DynamicMaterial->SetVectorParameterValue(FName("AxisColor"), EnhancedColor);
+		DynamicMaterial->SetVectorParameterValue(FName("AxisColor"), AxisColor);
 		MeshComponent->SetMaterial(0, DynamicMaterial);
 	}
 }

@@ -180,7 +180,7 @@ void UUEMotionScene::SetupDefaultLighting()
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-	ADirectionalLight* DirLight = SceneWorld.Get()->SpawnActor<ADirectionalLight>(ADirectionalLight::StaticClass(), FVector(0, 0, 500), FRotator(-45, 0, 0), SpawnParams);
+	ADirectionalLight* DirLight = SceneWorld.Get()->SpawnActor<ADirectionalLight>(ADirectionalLight::StaticClass(), FVector(300, -300, 600), FRotator(-55, 45, 0), SpawnParams);
 	if (DirLight)
 	{
 		UDirectionalLightComponent* LightComp = Cast<UDirectionalLightComponent>(DirLight->GetLightComponent());

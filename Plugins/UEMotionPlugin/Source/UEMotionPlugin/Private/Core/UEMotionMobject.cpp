@@ -50,6 +50,8 @@ UMaterialInterface* UUEMotionMobject::GetOrCreateBaseMaterial()
 	{
 		EditorData->BaseColor.Expression = ColorExpr;
 		EditorData->BaseColor.OutputIndex = 0;
+		EditorData->EmissiveColor.Expression = ColorExpr;
+		EditorData->EmissiveColor.OutputIndex = 0;
 		EditorData->Opacity.Expression = OpacityOutput;
 		EditorData->Opacity.OutputIndex = 0;
 		EditorData->Roughness.Expression = RoughnessConst;
