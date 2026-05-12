@@ -99,7 +99,6 @@ void AUEMotionAxisActor::SetupMesh()
 		MeshComponent->SetStaticMesh(GizmoMesh);
 	}
 
-	ApplyRotationForAxis();
 	CreateOrLoadAxisMaterial();
 
 	MeshComponent->SetVisibility(true);
