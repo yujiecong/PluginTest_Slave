@@ -503,15 +503,18 @@ UMaterialInterface* UUEMotionScene::CreateOrLoadBlackMaterial()
 
 	if (!BaseMat)
 	{
-		UE_LOG(LogTemp, Error, TEXT("UEMotionScene: Failed to load unlit base material 'M_Unlit'"));
+		UE_LOG(LogTemp, Error, TEXT("UEMotionScene: Failed to load base material 'BasicShapeMaterial'"));
 		return nullptr;
 	}
 
 	BlackMIC->SetParentEditorOnly(BaseMat);
 
 #if WITH_EDITOR
-	FLinearColor DefaultBlack(0.0f, 0.0f, 0.0f, 1.0f);
-	BlackMIC->SetVectorParameterValueEditorOnly(FName("Color"), DefaultBlack);
+	FLinearColor PureBlack(0.0f, 0.0f, 0.0f, 1.0f);
+	BlackMIC->SetVectorParameterValueEditorOnly(FName("Color"), PureBlack);
+	BlackMIC->SetScalarParameterValueEditorOnly(FName("Metallic"), 0.0f);
+	BlackMIC->SetScalarParameterValueEditorOnly(FName("Roughness"), 1.0f);
+	BlackMIC->SetScalarParameterValueEditorOnly(FName("Specular"), 0.0f);
 	BlackMIC->PostEditChange();
 #endif
 
@@ -535,10 +538,13 @@ UMaterialInterface* UUEMotionScene::CreateOrLoadBlackMaterial()
 	if (bSaveSuccess)
 	{
 		UE_LOG(LogTemp, Log,
-			TEXT("UEMotionScene: Created custom black material instance '%s'")
-			TEXT("\n  Parent: M_Unlit (Engine Built-in Unlit)")
-			TEXT("\n  Parameter: BaseColor = (0, 0, 0, 1) [Pure Black]")
-			TEXT("\n  Usage: Adjust 'BaseColor' parameter in Material Editor"),
+			TEXT("UEMotionScene: Created ultra-black material instance '%s'")
+			TEXT("\n  Parent: BasicShapeMaterial (Engine Built-in)")
+			TEXT("\n  Parameters:")
+			TEXT("\n    - Color = (0, 0, 0, 1) [Pure Black]")
+			TEXT("\n    - Metallic = 0.0 [Non-metallic]")
+			TEXT("\n    - Roughness = 1.0 [Maximum - No reflections]")
+			TEXT("\n    - Specular = 0.0 [No highlights]"),
 			*FilePath);
 	}
 	else
