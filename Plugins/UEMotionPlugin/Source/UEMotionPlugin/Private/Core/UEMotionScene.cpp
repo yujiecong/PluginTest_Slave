@@ -387,9 +387,8 @@ void UUEMotionScene::SetupBlackBackgroundFloor()
 						{
 							MeshTemplate->SetStaticMesh(PlaneMesh);
 
-							float FloorSizeX = 20.0f * 50.0f;
-							float FloorSizeY = 20.0f * 50.0f;
-							MeshTemplate->SetRelativeScale3D(FVector(FloorSizeX / 200.0f, FloorSizeY / 200.0f, 1.0f));
+							float FloorSizeCM = FloorSize * 50.0f;
+							MeshTemplate->SetRelativeScale3D(FVector(FloorSizeCM / 200.0f, FloorSizeCM / 200.0f, 1.0f));
 
 							MeshTemplate->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 							MeshTemplate->CastShadow = false;
@@ -448,9 +447,10 @@ void UUEMotionScene::SetupBlackBackgroundFloor()
 
 		if (FloorActor)
 		{
+			float FloorSizeCM = FloorSize * 50.0f;
 			UE_LOG(LogTemp, Log,
-				TEXT("UEMotionScene: Spawned black background floor from blueprint uasset (%.0f x %.0f cm)"),
-				20.0f * 50.0f, 20.0f * 50.0f);
+				TEXT("UEMotionScene: Spawned black background floor from blueprint uasset (%.0f x %.0f cm) [Size=%.1f UEMotion units]"),
+				FloorSizeCM, FloorSizeCM, FloorSize);
 		}
 	}
 }
@@ -1475,6 +1475,18 @@ void UUEMotionScene::SetUseUnlit(bool bUnlit)
 bool UUEMotionScene::IsUsingUnlit() const
 {
 	return bUseUnlitMode;
+}
+
+void UUEMotionScene::SetFloorSize(float Size)
+{
+	FloorSize = FMath::Clamp(Size, 10.0f, 200.0f);
+	UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Floor size set to %.1f UEMotion units (%.0f x %.0f cm)"),
+		FloorSize, FloorSize * 50.0f, FloorSize * 50.0f);
+}
+
+float UUEMotionScene::GetFloorSize() const
+{
+	return FloorSize;
 }
 
 void UUEMotionScene::OnRendererFinished(bool bSuccess)

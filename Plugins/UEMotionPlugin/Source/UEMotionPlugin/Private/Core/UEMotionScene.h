@@ -190,6 +190,15 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UEMotion|Scene")
 	bool bUseUnlitMode = true;
 
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Scene")
+	void SetFloorSize(float Size);
+
+	UFUNCTION(BlueprintPure, Category = "UEMotion|Scene")
+	float GetFloorSize() const;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UEMotion|Scene", meta = (ClampMin = "10.0", ClampMax = "200.0"))
+	float FloorSize = 50.0f;
+
 private:
 	bool bInitialized = false;
 	FString SceneName;
