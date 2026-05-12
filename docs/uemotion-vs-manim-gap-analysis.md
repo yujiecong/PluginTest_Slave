@@ -1,1348 +1,689 @@
-# UEMotion vs Manim 功能对比分析报告
+# UEMotion 路线图 v2.0
 
-> 生成日期: 2026-05-09
-> 分析目标: 对比 UEMotion (基于 UE5) 与 Manim Community Edition 的功能覆盖情况
-
----
-
-## 📊 执行摘要
-
-**当前覆盖率: ~10%** (20/200+ 功能)
-
-UEMotion 项目在架构设计上借鉴了 Manim 的 Scene-Mobject-Animation-Camera 四件套模式，坐标系常量也采用了 Manim 的设计哲学（1:1 正方形坐标系）。但目前仅实现了基础 3D 几何体和简单动画，距离完整的数学动画引擎还有较大差距。
-
-### 核心优势
-- ✅ UE5 渲染引擎（Nanite/Lumen/PBR 材质）
-- ✅ GPU 加速性能（比 Manim 快 10x+）
-- ✅ 实时预览能力（无需等待渲染队列）
-- ✅ 生态系统集成（物理/粒子/后处理/VR）
-
-### 关键差距
-- ❌ 缺少 2D 矢量图形系统（Manim 核心）
-- ❌ 文本与 LaTeX 公式渲染完全缺失
-- ❌ 创建/变换动画（Create/Transform/Grow）未实现
-- ❌ VGroup 组合对象与 Updaters 持续更新机制缺失
-- ❌ 坐标系与数据可视化模块空白
+> **目标**: 基于 UE5 的好玩的可视化渲染平台，用 Sequencer 快速出动画
+> **核心理念**: 不复刻 Manim，而是发挥 UE + Sequencer 的独特优势
 
 ---
 
-## 一、当前 UEMotion 已实现功能清单
+## 当前状态快照
 
-### 1.1 核心架构模块（6个）
-
-| 模块 | 文件路径 | 职责 |
-|------|----------|------|
-| **Scene** | `Scripts/uemotion/scene.py` | 场景管理、生命周期控制、渲染调度 |
-| **Mobject** | `Scripts/uemotion/mobject.py` | 图形对象基类、属性访问器、位置方法 |
-| **Animation** | `Scripts/uemotion/animation.py` | 动画基类、组合动画支持 |
-| **Camera** | `Scripts/uemotion/camera.py` | 相机控制、视角管理 |
-| **Constants** | `Scripts/uemotion/constants.py` | 坐标系常量、单位转换 |
-| **Colors** | `Scripts/uemotion/colors.py` | 颜色解析、向量工具 |
-
-### 1.2 支持的几何对象类型（6种 - 全部为3D基础体）
-
-```python
-# Scene 类提供的方法
-s.sphere(radius=50, color="white", location=None)
-s.cube(size=50, color="white", location=None)
-s.cylinder(radius=50, height=100, color="white", location=None)
-s.cone(radius=50, height=100, color="white", location=None)
-s.plane(width=500, height=500, color="white", location=None)
-s.torus(outer_radius=80, inner_radius=25, color="white", location=None)
-```
-
-**底层实现**: 通过 Unreal Engine 原生几何体组件创建（Static Mesh / Procedural Mesh）
-
-### 1.3 已实现的动画类型（6种基础动画）
-
-| 动画 | 方法签名 | 说明 |
-|------|----------|------|
-| **移动** | `move_to(target, duration, easing)` | 绝对位置移动 |
-| **偏移** | `shift(vector, duration, easing)` | 相对位置偏移 |
-| **旋转** | `rotate(angle, axis, duration, easing)` | 绕轴旋转 |
-| **缩放** | `scale_to(target_scale, duration, easing)` | 目标缩放 |
-| **淡入淡出** | `fade_in(duration)` / `fade_out(duration)` | 透明度变化 |
-| **颜色变化** | `change_color(target_color, duration, easing)` | 颜色插值 |
-
-**支持的缓动函数（~3种）**:
-- `linear`
-- `ease_in_out`
-- `ease_in`, `ease_out`（部分支持）
-
-### 1.4 Mobject 位置方法（3个已实现 + 1个占位）
-
-| 方法 | 状态 | 说明 |
+| 维度 | 现状 | 说明 |
 |------|------|------|
-| `to_edge(edge, buff)` | ✅ 已实现 | 移动到边缘（UP/DOWN/LEFT/RIGHT/UL/UR/DL/DR）|
-| `next_to(other, direction, buff)` | ✅ 已实现 | 相邻定位 |
-| `align_to(other_or_edge, direction)` | ⚠️ 占位符 | 未实现（pass）|
-| `shift(vector, duration, easing)` | ✅ 已实现 | 相对位移 |
-
-### 1.5 相机系统功能（4个）
-
-| 功能 | 方法 | 说明 |
-|------|------|------|
-| **位置设置** | `camera.position = (x, y, z)` | 设置相机世界坐标 |
-| **视野调整** | `camera.fov = value` | 调整视场角 |
-| **注视目标** | `camera.look_at(target)` | 相机朝向指定点 |
-| **轨道运动** | `camera.orbit(center, radius, angle_deg, height)` | 围绕中心点旋转 |
-
-### 1.6 Animation 组合系统
-
-```python
-anim = Animation(scene)
-anim._add(ue_anim_1)
-anim._add(ue_anim_2)
-anim.sequential()  # 或 .parallel()
-built = anim.build()  # 返回 UEMotionGroupAnimation
-```
-
-**支持模式**:
-- `parallel()` - 并行播放（默认）
-- `sequential()` - 顺序播放
+| **基础架构** | ✅ 可用 | Scene/Mobject/Animation/Camera 四件套 |
+| **3D几何体** | ⚠️ 基础 | 6种（Sphere/Cube/Cylinder/Cone/Torus/Plane）|
+| **动画系统** | ⚠️ 基础 | Move/Rotate/Scale/Fade/Color + 简单组合 |
+| **2D图形** | ❌ 缺失 | Circle/Square/Line/Arrow/Polygon... |
+| **文本系统** | ❌ 缺失 | Text/LaTeX/Code... |
+| **Sequencer集成** | ⚠️ 浅层 | 能录关键帧，但缺少高级抽象 |
+| **实时预览** | ✅ 核心优势 | UE Editor 即时反馈 |
+| **渲染质量** | ✅ 核心优势 | Nanite/Lumen/PBR |
 
 ---
 
-## 二、Manim 功能体系完整参考
+## Phase 0: 基础设施加固 (Week 1-2)
 
-### 2.1 几何对象分类（50+ 种）
+### 目标：让现有系统稳定、好用、易扩展
 
-#### 2D 矢量图形（geometry 模块）
-```
-Circle              - 圆形
-Square              - 正方形
-Rectangle           - 矩形
-RoundedRectangle    - 圆角矩形
-Line                - 线段
-DashedLine          - 虚线
-Polygon             - 多边形
-RegularPolygon      - 正多边形（正五边形、六边形等）
-Arc                 - 弧线
-Ellipse             - 椭圆
-Annulus             - 圆环
-AnnularSector       - 扇环
-Sector              - 扇形
-Dot                 - 点
-SmallDot            - 小点
-Arrow               - 箭头
-Vector              - 向量箭头
-CurvedArrow         - 曲线箭头
-ElbowConnector      - 直角连接线
-TangentLine         - 切线
-StrokeArrow         - 描边箭头
-DoubleArrow         - 双向箭头
-```
-
-#### 形状标注（shape_matchers 模块）
-```
-SurroundingRectangle  - 包围矩形（高亮边框）
-Cross                 - 叉号
-Underline             - 下划线
-Brace                 - 大括号（标注长度/角度）
-RightAngle            - 直角标记
-Angle                 - 角度标记（圆弧+文字）
-```
-
-#### 3D 对象（three_d 模块）
-```
-Sphere               - 球体（✓ UEMotion已有）
-Cube                 - 立方体（✓ UEMotion已有）
-Cylinder             - 圆柱体（✓ UEMotion已有）
-Cone                 - 圆锥体（✓ UEMotion已有）
-Torus                - 圆环（✓ UEMotion已有）
-Prism                - 棱柱
-Polyhedron           - 多面体（通用类）
-Tetrahedron          - 正四面体
-Octahedron           - 正八面体
-Icosahedron          - 正二十面体
-Dodecahedron         - 正十二面体
-Surface              - 参数曲面
-ParametricSurface    - 参数方程曲面
-TexturedSurface      - 纹理曲面
-Square3D             - 3D正方形
-Disk3D               - 3D圆盘
-Line3D               - 3D线段
-Dot3D                - 3D点
-DotCloud             - 点云
-```
-
-#### 特殊对象
-```
-ImageMobject         - 图片显示
-SVGMobject           - SVG矢量图导入
-PMobject             - 像素化对象
-VMobject             - 矢量对象（贝塞尔曲线基类）
-TipableVMobject      - 可带箭头的矢量对象
-```
-
-#### 数据可视化对象
-```
-Matrix               - 矩阵展示
-DecimalMatrix        - 小数矩阵
-Table                - 表格
-BarChart             - 柱状图
-PieChart             - 饼图
-Graph                - 图论结构（节点+边）
-DiGraph              - 有向图
-```
-
-### 2.2 文本与公式系统（15+ 种）
-
-#### 文本渲染
-```
-Text                 - 普通文本（Pango引擎，支持中文/日文等）
-MarkupText           - 带Pango Markup样式的文本
-Paragraph            - 段落文本（自动换行）
-Code                 - 代码高亮显示
-```
-
-#### 数学公式（LaTeX）
-```
-Tex                  - LaTeX 公式（简单环境）
-MathTex              - 数学公式（完整数学环境）
-TexTemplate          - 自定义LaTeX模板
-BulletedList         - 无序列表
-EnumerateList        - 有序列表
-Title                - 标题文本
-```
-
-#### 数字显示
-```
-Integer              - 整数显示
-DecimalNumber        - 小数数字
-Variable             - 变量符号
-```
-
-**Manim 示例**:
+#### 0.1 错误处理体系
 ```python
-title = Text("函数图像", font_size=48)
-formula = MathTex(r"f(x) = \int_0^\infty e^{-t^2} dt")
-number = DecimalNumber(0, num_decimal_places=3)
-self.play(Write(title))
-self.play(Transform(number, DecimalNumber(3.14159)))
+# 当前问题：UE返回nullptr → Python崩溃
+# 目标：统一异常捕获 + 友好错误信息
+
+class UEMotionError(Exception):
+    pass
+
+def safe_call(ue_function, *args, **kwargs):
+    try:
+        result = ue_function(*args, **kwargs)
+        if result is None:
+            raise UEMotionError(f"{ue_function.__name__} returned None")
+        return result
+    except Exception as e:
+        raise UEMotionError(f"UE call failed: {e}")
 ```
 
-### 2.3 动画类型完整列表（60+ 种）
-
-#### 创建与绘制动画（creation 模块）
-```
-Create               - 逐笔画创建（手绘效果）⭐⭐⭐⭐⭐
-DrawBorderThenFill   - 先描边后填充
-ShowPartial          - 显示部分内容
-ShowIncreasingSubsets - 逐步增加子集
-ShowSubmobjectsOneByOne - 逐个显示子对象
-Uncreate             - 反向创建（擦除效果）
-Write                - 打字机效果（逐字显示）⭐⭐⭐⭐⭐
-AddTextLetterByLetter - 逐字母添加
-AddTextWordByWord    - 逐词添加
-RemoveTextLetterByLetter - 逐字母移除
-```
-
-#### 生长动画（growing 模块）
-```
-GrowFromCenter       - 从中心向外生长 ⭐⭐⭐⭐⭐
-GrowFromEdge         - 从边缘向内生长 ⭐⭐⭐⭐
-GrowFromPoint        - 从指定点生长
-GrowArrow            - 箭头生长动画
-SpinInFromNothing    - 旋入出现
-```
-
-#### 淡入淡出（fading 模块）
-```
-FadeIn               - 淡入（✓ UEMotion已有简化版）
-FadeOut              - 淡出（✓ UEMotion已有简化版）
-FadeInFrom           - 从方向淡入（UP/DOWN/LEFT/RIGHT）
-FadeOutAndShift      - 淡出并移位
-FadeInFromPoint      - 从点淡入
-FadeInFromLarge      - 从大尺寸淡入
-FadeTransform        - 交叉淡变（A→B同时淡入淡出）
-VFadeIn              - 矢量淡入（描边+填充透明度）
-VFadeOut             - 矢量淡出
-VFadeInThenOut       - 淡入后立即淡出
-```
-
-#### 变换动画（transform 模块）
-```
-Transform            - 形状变形（顶点插值）⭐⭐⭐⭐⭐
-ReplacementTransform - 替换变形（保留层级关系）⭐⭐⭐⭐⭐
-TransformFromCopy    - 从副本变换
-MoveToTarget         - 移动到预设目标
-CyclicReplace        - 三者循环交换位置
-ApplyMethod          - 应用任意方法
-ApplyFunction        - 应用函数
-ApplyPointwiseFunction - 逐点应用函数
-ApplyMatrix          - 应用变换矩阵
-Restore              - 恢复到之前状态
-```
-
-#### 移动动画（movement 模块）
-```
-MoveAlongPath        - 沿路径移动 ⭐⭐⭐⭐
-Homotopy             - 同伦变换（连续形变）
-Rotate               - 旋转（✓ UEMotion已有）
-Scale                - 缩放（✓ UEMotion已有部分功能）
-```
-
-#### 指示动画（indication 模块）
-```
-FocusOn              - 聚焦效果（矩形框+闪烁）
-Flash                - 闪光效果（从中心扩散）⭐⭐⭐⭐
-ShowPassingFlash     - 扫过闪光
-CircleIndicate       - 圆形指示
-Wiggle               - 抖动效果
-ApplyWave            - 波浪效果
-```
-
-#### 数字动画（numbers 模块）
-```
-CountInFrom          - 数字滚动计数
-ChangeDecimalToValue - 小数数值变化
-```
-
-#### 速度修改动画（speedmodifier 模块）
-```
-DelayByTime          - 时间延迟
-SpeedUp              - 加速播放
-SlowDown             - 减速播放
-```
-
-#### 组合动画（composition 模块）
-```
-AnimationGroup       - 动画组（并行播放）
-LaggedStart          - 错开开始（波浪效果）⭐⭐⭐⭐
-LaggedStartMap       - 列表错开播放
-Succession           - 顺序播放链
-```
-
-#### 更新器动画（updaters 模块）
-```
-UpdateFromFunc       - 函数驱动更新
-UpdateFromAlphaFunc  - alpha值驱动更新
-MobjectUpdateUtils   - Mobject更新工具集
-```
-
-### 2.4 缓动函数库（30+ 种）
-
-#### 基础缓动
-```
-linear               - 线性（✓ UEMotion已有）
-smooth               - 平滑 S 曲线
-ease_in_out          - 先慢后快再慢（✓ UEMotion已有）
-ease_in              - 渐入（先慢后快）
-ease_out             - 渐出（先快后慢）
-```
-
-#### 往返与特殊缓动
-```
-there_and_back       - 先去再回（往返晃动）⭐⭐⭐⭐
-slow_into            - 缓慢进入
-rush_from            - 快速离开起点
-rush_into            - 快速到达终点
-double_smooth        - 双重平滑
-```
-
-#### 多项式缓动
-```
-smooth(1)            - 1阶平滑（等同于 smooth）
-smooth(2)            - 2阶平滑（更平缓）
-smooth(3)...smooth(n)- n阶多项式
-```
-
-#### 指数与特殊曲线
-```
-exponential          - 指数曲线
-sigmoid              - Sigmoid 函数
-jump_by_power        - 幂次跳跃
-```
-
-### 2.5 相机系统（10+ 种）
-
-#### 基础相机
-```
-Camera               - 基础相机（✓ UEMotion已有简化版）
-```
-
-#### 高级相机
-```
-MovingCamera         - 可动画移动的相机 ⭐⭐⭐⭐
-ThreeDCamera         - 3D场景专用相机（欧拉角控制）⭐⭐⭐⭐
-MappingCamera        - 映射相机（扭曲效果）
-MultiCamera          - 多视角相机
-```
-
-#### MovingCamera 特性
-```
-CameraFrame          - 相机框架（可作为Mobject操作）
-set_euler_angles     - 设置欧拉角（theta, phi, gamma）
-increment_theta      - 增加 theta 角度（用于自动旋转）
-increment_phi        - 增加 phi 角度
-increment_gamma      - 增加 gamma 角度
-to_default_state     - 恢复默认状态
-light_source         - 光源跟随
-```
-
-**Manim MovingCamera 示例**:
+#### 0.2 配置系统集中化
 ```python
-class MyScene(MovingCameraScene):
-    def construct(self):
-        self.camera.frame.save_state()
-        self.play(self.camera.frame.animate.scale(0.5).move_to(UP*2))
-        self.wait()
-        self.play(Restore(self.camera.frame))
+# 新增 config.py
+class Config:
+    RESOLUTION = (1080, 1080)
+    FPS = 30
+    FRAME_SIZE = (8.0, 8.0)  # UEMotion units
+    SCALE_FACTOR = 50.0       # 1 unit = 50 UE cm
+    CAMERA_Z = 500.0          # 2D camera height
+    BACKGROUND_COLOR = "#1a1a2e"
 ```
 
-### 2.6 坐标系与数据可视化（20+ 种）
-
-#### 坐标系统
-```
-Axes                 - 笛卡尔坐标轴 ⭐⭐⭐⭐⭐
-ThreeDAxes           - 3D坐标轴
-NumberPlane          - 数值平面（带网格）⭐⭐⭐⭐
-ComplexPlane         - 复平面（实轴+虚轴）
-NumberLine           - 数轴
-CoordinateSystem     - 坐标系统基类
-```
-
-#### 函数绘图
-```
-FunctionGraph        - 函数图像（y=f(x)）⭐⭐⭐⭐⭐
-ParametricCurve      - 参数方程曲线
-ParametricFunction   - 参数函数
-ImplicitFunction     - 隐式曲线（f(x,y)=0）
-InputToGraphCoords   - 输入到图形坐标转换
-```
-
-#### 图结构
-```
-Graph                - 无向图（节点+边）
-DiGraph              - 有向图
-```
-
-#### 概率可视化
-```
-ProbabilityChart     - 概率图表
-```
-
-**Manim 坐标系示例**:
+#### 0.3 缓动函数模块化
 ```python
-axes = Axes(
-    x_range=[-5, 5, 1],    # [最小, 最大, 步长]
-    y_range=[-3, 3, 1],
-    axis_config={"include_tip": True}
-)
-
-graph = axes.plot(lambda x: x**2, color=BLUE)
-label = axes.get_graph_label(graph, "f(x)=x^2", x_val=2)
-self.play(Create(axes), Write(label), Create(graph))
+# easing.py - 从animation.py中提取
+EASING_FUNCTIONS = {
+    'linear': lambda t: t,
+    'ease_in_out': lambda t: t * t * (3 - 2 * t),
+    'ease_in': lambda t: t * t,
+    'ease_out': lambda t: t * (2 - t),
+    # Phase 0 先做这4个，够用了
+}
 ```
 
-### 2.7 组合与更新器系统（15+ 种）
+#### 0.4 测试基建增强
+- [ ] 每个 public 方法至少 1 个 happy path + 1 个 edge case
+- [ ] Smoke test 自动化（每次 push 都跑）
+- [ ] 性能基准测试（记录渲染时间）
 
-#### 组合对象
-```
-VGroup               - 垂直组合（统一操作多个Mobject）⭐⭐⭐⭐⭐
-Group                - 通用组合
-SGroup               - Surface组合
-VGroup3D             - 3D垂直组合
-```
-
-#### VGroup 操作示例
-```python
-group = VGroup(circle, square, triangle)
-group.scale(2)                    # 整体缩放
-group.next_to(text, RIGHT)        # 整体定位
-group[0].set_color(RED)           # 访问子对象
-group.arrange(RIGHT, buff=0.5)    # 排列布局
-```
-
-#### 更新器系统（Updaters）
-```
-ValueTracker          - 数值追踪器 ⭐⭐⭐⭐⭐
-add_updater           - 添加持续更新回调
-remove_updater        - 移除更新器
-clear_updaters        - 清除所有更新器
-has_updater           - 检查是否有更新器
-get_updaters          - 获取更新器列表
-UpdateFromFunc        - 函数驱动更新动画
-UpdateFromAlphaFunc   - Alpha值驱动更新
-```
-
-**Updaters 使用示例**:
-```python
-tracker = ValueTracker(0)
-dot = Dot()
-
-def update_dot(mob):
-    mob.move_to([tracker.get_value(), 0, 0])
-    return mob
-
-dot.add_updater(update_dot)
-self.play(tracker.animate.set_value(5))  # dot 自动跟随
-```
-
-### 2.8 场景类型（7种）
-
-```
-Scene                 - 基础场景（✓ UEMotion已有）
-MovingCameraScene     - 可移动相机场景
-ThreeDScene           - 3D场景（自动光照配置）
-ZoomedScene           - 局部放大镜场景
-VectorSpaceScene      - 向量空间场景
-InteractiveScene      - 交互式编辑场景（v0.19新增）
-SceneFileWriter       - 场景文件输出器
-```
+**交付物**:
+- ✅ `config.py` 集中配置
+- ✅ `easing.py` 独立缓动模块
+- ✅ 统一错误装饰器
+- ✅ 测试覆盖率 > 80%（现有代码）
 
 ---
 
-## 三、功能差距详细对比矩阵
+## Phase 1: Sequencer 深度集成 (Week 3-5) ⭐ 核心
 
-### 3.1 几何对象覆盖率
+### 目标：让 Sequencer 成为第一公民，而非黑盒
 
-| 类别 | Manim 总数 | UEMotion 已有 | 缺失关键项 | 覆盖率 |
-|------|-----------|--------------|-----------|--------|
-| **2D矢量图形** | 25+ | 0 | Circle, Square, Line, Arrow, Dot, Polygon... | **0%** |
-| **形状标注** | 8 | 0 | SurroundingRectangle, Brace, Angle... | **0%** |
-| **3D基础体** | 16 | 6 | Sphere✓, Cube✓, Cylinder✓, Cone✓, Torus✓, Plane✓ | **37.5%** |
-| **3D高级体** | 10 | 0 | Polyhedron, Tetrahedron, Surface... | **0%** |
-| **文本对象** | 12 | 0 | Text, Tex, MathTex, Code... | **0%** |
-| **数据可视化** | 8 | 0 | Matrix, Table, Graph, Chart... | **0%** |
-| **特殊对象** | 6 | 0 | ImageMobject, SVGMobject... | **0%** |
-| **总计** | **85+** | **6** | - | **~7%** |
-
-### 3.2 动画类型覆盖率
-
-| 类别 | Manim 总数 | UEMotion 已有 | 缺失关键项 | 覆盖率 |
-|------|-----------|--------------|-----------|--------|
-| **创建/绘制** | 11 | 0 | Create, Write, DrawBorderThenFill... | **0%** |
-| **生长动画** | 5 | 0 | GrowFromCenter, GrowFromEdge... | **0%** |
-| **淡入淡出** | 13 | 2 | FadeIn✓, FadeOut✓ (简化版) | **15%** |
-| **变换动画** | 11 | 0 | Transform, ReplacementTransform... | **0%** |
-| **移动/旋转** | 6 | 2 | MoveTo✓, Rotate✓, Scale✓ | **33%** |
-| **指示动画** | 6 | 0 | Flash, FocusOn, Wiggle... | **0%** |
-| **组合动画** | 4 | 1 | AnimationGroup✓ (基础版) | **25%** |
-| **数字动画** | 2 | 0 | CountInFrom, ChangeDecimal... | **0%** |
-| **更新器动画** | 3 | 0 | UpdateFromFunc... | **0%** |
-| **速度修改** | 3 | 0 | DelayByTime, SpeedUp... | **0%** |
-| **总计** | **64+** | **5** | - | **~8%** |
-
-### 3.3 其他系统覆盖率
-
-| 系统 | Manim 功能数 | UEMotion 实现 | 差距说明 |
-|------|-------------|--------------|----------|
-| **缓动函数** | 30+ | ~3 | 仅 linear/ease_in/ease_out |
-| **相机系统** | 15+ | 4 | 缺少 MovingCamera/ThreeDCamera/CameraFrame |
-| **组合系统** | 5 | 0 | VGroup 完全缺失 |
-| **更新器系统** | 9 | 0 | ValueTracker/add_updater 缺失 |
-| **坐标系** | 8 | 0 | Axes/NumberPlane/Graph 缺失 |
-| **场景类型** | 7 | 1 | 仅基础 Scene |
-
----
-
-## 四、优先级分级与实施建议
-
-### 🔴 P0 - 必须优先（阻塞核心使用场景）
-
-#### 1. 2D 矢量图形系统
-**重要性**: ⭐⭐⭐⭐⭐
-**工作量**: 2-3周
-**技术方案**:
-- 使用 UE `ProceduralMeshComponent` 或 `SplineMeshComponent`
-- 为每个 2D 图形编写顶点生成算法
-- 支持 stroke（描边）和 fill（填充）两种模式
-
-**必须实现的 TOP 8**:
-1. `Circle(radius, color, fill_opacity)`
-2. `Square(side_length, color)`
-3. `Rectangle(width, height, color)`
-4. `Line(start, end, color, thickness)`
-5. `Polygon(vertices, color)`
-6. `Arrow(start, end, color, buff)`
-7. `Dot(radius, color)`
-8. `Arc(radius, angle, start_angle, color)`
-
----
-
-#### 2. 创建与变换动画
-**重要性**: ⭐⭐⭐⭐⭐
-**工作量**: 3-4周
-**技术挑战**:
-- `Create`: 需要逐步显示顶点的逻辑（按路径顺序）
-- `Transform`: 需要**顶点对应插值算法**（两个不同形状间的 morphing）
-- `Write`: 需要字符级拆分 + 逐个显示
-
-**必须实现的 TOP 6**:
-1. `Create(mobject)` - 手绘效果
-2. `GrowFromCenter(mobject)` - 中心扩展
-3. `Transform(source, target)` - 形状变形
-4. `ReplacementTransform(source, target)` - 替换变形
-5. `Write(text_mobject)` - 打字机效果
-6. `Flash(point, color, line_length)` - 闪光效果
-
-**Transform 技术细节**:
+#### 1.1 动画时间轴 API
 ```python
-# 需要解决的核心问题：两个不同拓扑结构的形状如何插值？
-# 方案A：采样点重映射（将两个形状都采样到N个点，然后线性插值）
-# 方案B：子对象匹配（VGroup级别，适用于复杂对象）
-# 推荐：方案A 用于简单形状，方案B 用于复合对象
-```
-
----
-
-#### 3. 文本渲染基础
-**重要性**: ⭐⭐⭐⭐⭐
-**工作量**: 1-2周
-**技术方案选型**:
-
-| 方案 | 优点 | 缺点 | 推荐度 |
-|------|------|------|--------|
-| **UMG Widget** | UE原生，支持富文本 | 需要在3D空间中渲染 | ⭐⭐⭐⭐⭐ |
-| **TextRenderComponent** | 轻量级 | 功能有限 | ⭐⭐⭐ |
-| **Slate/Canvas** | 灵活 | 性能开销大 | ⭐⭐ |
-| **外部库集成** | 功能完整 | 依赖管理复杂 | ⭐⭐⭐ |
-
-**推荐**: UMG Widget + 3D Widget Component
-
-**必须实现**:
-1. `Text(text, font_size, color)` - 基础文本
-2. `Integer(number, edge_fix=True)` - 整数显示
-3. `DecimalNumber(num, num_decimal_places)` - 小数显示
-
-**可选（Phase 3）**:
-4. `MathTex(tex_string)` - LaTeX 公式（需要 MathJax/MaTeX 库）
-5. `Code(code, language, theme)` - 代码高亮
-
----
-
-### 🟠 P1 - 高优先级（提升实用性）
-
-#### 4. VGroup 组合系统
-**重要性**: ⭐⭐⭐⭐
-**工作量**: 1周
-**核心接口**:
-```python
-class VGroup(Mobject):
-    def __init__(self, *mobjects):
-        pass
-
-    def add(self, *mobjects):
-        pass
-
-    def remove(self, *mobjects):
-        pass
-
-    def arrange(self, direction=RIGHT, buff=DEFAULT_MOBJECT_TO_MOBJECT_BUFF):
-        """沿方向排列所有子对象"""
-        pass
-
-    def arrange_to_center(self):
-        """居中排列"""
-        pass
-
-    @property
-    def submobjects(self):
-        return self._children
-
-    def __getitem__(self, index):
-        """支持 group[0] 访问"""
-        return self._children[index]
-
-    def __len__(self):
-        return len(self._children)
-```
-
----
-
-#### 5. Updaters 持续更新机制
-**重要性**: ⭐⭐⭐⭐
-**工作量**: 1-2周
-**核心概念**:
-- **ValueTracker**: 包装一个可动画化的数值
-- **Updater**: 每帧调用的回调函数，用于动态更新 Mobject 属性
-
-**实现要点**:
-```python
-class ValueTracker:
-    def __init__(self, value=0):
-        self._value = value
-
-    def get_value(self):
-        return self._value
-
-    def set_value(self, value):
-        # 如果在动画中，会触发平滑过渡
-        self._value = value
-
-
-class Mobject:
-    def __init__(self, ...):
-        self._updaters = []
-
-    def add_updater(self, update_function, index=None):
-        """
-        update_function signature: func(mobject, dt) -> mobject
-        dt: 距上一帧的时间间隔（秒）
-        """
-        if index is None:
-            self._updaters.append(update_function)
-        else:
-            self._updaters.insert(index, update_function)
-        return self
-
-    def remove_updater(self, update_function):
-        self._updaters.remove(update_function)
-        return self
-
-    def clear_updaters(self):
-        self._updaters.clear()
-        return self
-
-    def update(self, dt):
-        """每帧调用"""
-        for updater in self._updaters:
-            result = updater(self, dt)
-            if result is not None:
-                # updater 可以返回修改后的 mobject
-                pass
-```
-
-**UE 集成方式**:
-- 在 `Tick` 或 `Render` 回调中遍历所有有 updaters 的 Mobject
-- 调用其 `update(dt)` 方法
-- 需要确保更新顺序正确（父子关系）
-
----
-
-#### 6. 坐标系与函数绘图
-**重要性**: ⭐⭐⭐⭐
-**工作量**: 2-3周
-**必须实现**:
-1. `Axes(x_range, y_range, axis_config)` - 基础坐标轴
-2. `NumberPlane(x_range, y_range)` - 带网格的坐标平面
-3. `NumberLine(range)` - 数轴
-4. `axes.plot(function, color)` - 绘制函数曲线
-
-**技术方案**:
-- 使用 `Line` 组件绘制坐标轴
-- 使用 Grid Material 绘制背景网格
-- 采样函数点，用 `Line` 或 `ParametricCurve` 连接
-
----
-
-#### 7. 缓动函数扩展
-**重要性**: ⭐⭐⭐
-**工作量**: 2-3天
-**需要添加的关键缓动**:
-```python
-# 往返类
-def there_and_back(t):
-    """0→1→0 的往返曲线"""
-    if t < 0.5:
-        return 2 * t
-    else:
-        return 2 * (1 - t)
-
-# 速度类
-def rush_from(t):
-    """快速离开起点"""
-    return np.sqrt(t)
-
-def rush_into(t):
-    """快速到达终点"""
-    return t * t
-
-# 平滑类（n阶多项式）
-def smooth(t, n=2):
-    """n阶平滑曲线"""
-    if t < 0.5:
-        return 0.5 * (2 * t) ** n
-    else:
-        return 1 - 0.5 * (2 * (1 - t)) ** n
-
-# 指数类
-def exponential(t):
-    if t == 0:
-        return 0
-    return 2 ** (10 * (t - 1))
-
-# Sigmoid
-def sigmoid(t):
-    return 1 / (1 + np.exp(-10 * (t - 0.5)))
-```
-
----
-
-### 🟡 P2 - 中优先级（增强表现力）
-
-#### 8. 高级动画组合
-- `LaggedStart(*animations, lag_ratio=0.1)` - 错开开始
-- `Succession(*animations)` - 顺序链
-- `LaggedStartMap(animation_class, mobjects, lag_ratio)` - 列表错开
-
-#### 9. 高级相机
-- `MovingCamera` 类
-- `CameraFrame` 作为 Mobject 操作
-- ThreeDCamera 欧拉角控制（phi/theta/gamma）
-
-#### 10. 特殊 Mobject
-- `Brace` - 大括号
-- `SurroundingRectangle` - 高亮框
-- `ImageMobject` - 图片显示
-- `SVGMobject` - SVG 导入
-
-#### 11. 数据可视化
-- `Matrix` - 矩阵展示
-- `Table` - 表格
-- `Graph/DiGraph` - 图结构
-
----
-
-## 五、实施路线图（时间估算）
-
-### Phase 1: 最小可用产品（MVP）- 6-8 周
-
-**目标**: 覆盖 Manim 70% 日常使用场景
-
-| 周次 | 任务 | 交付物 |
-|------|------|--------|
-| W1-W2 | 2D图形系统（TOP 8对象）| Circle, Square, Rectangle, Line, Polygon, Arrow, Dot, Arc |
-| W3-W4 | 核心动画（TOP 6）| Create, GrowFromCenter, Transform, ReplacementTransform, Write, Flash |
-| W5 | VGroup + 文本基础 | VGroup类, Text, Integer, DecimalNumber |
-| W6 | Updaters + 缓动扩展 | ValueTracker, add_updater, 15+ easing functions |
-| W7-W8 | 测试 + 文档 + 示例 | 单元测试, API文档, 5个示例脚本 |
-
-**Phase 1 结束后的能力**:
-```python
-from uemotion import *
-
 s = Scene("demo")
 
-# 创建2D图形
-circle = s.circle(radius=1, color=BLUE)
-square = s.square(side_length=2, color=RED)
-
-# 手绘效果
-s.play(Create(circle))
-
-# 变形动画
-s.play(Transform(circle, square))
-
-# 组合操作
-group = VGroup(circle, square)
-group.arrange(RIGHT, buff=0.5)
-s.play(group.animate.scale(1.5))
-
-# 文本
-title = s.text("Hello UEMotion!", font_size=48)
-s.play(Write(title))
-
-# Updaters
-tracker = ValueTracker(0)
-dot = s.dot(radius=0.1, color=YELLOW)
-dot.add_updater(lambda m, dt: m.move_to(tracker.get_value(), 0, 0))
-s.play(tracker.animate.set_value(3))
-
-s.render(output="demo.mp4", duration=10)
-```
-
----
-
-### Phase 2: 数学可视化核心 - 8-10 周
-
-**目标**: 支持数学教学视频制作
-
-| 周次 | 任务 | 交付物 |
-|------|------|--------|
-| W9-W10 | 坐标系系统 | Axes, NumberPlane, NumberLine, ComplexPlane |
-| W11-W12 | 函数绘图 | FunctionGraph, ParametricCurve, ImplicitFunction |
-| W13 | 高级动画 | LaggedStart, Succession, MoveAlongPath, FocusOn |
-| W14-W15 | 数据可视化 | Matrix, Table, Graph, BarChart |
-| W16 | 高级相机 | MovingCamera, CameraFrame, ThreeDCamera |
-| W17-W18 | 测试优化 + 性能调优 | 压力测试, 内存优化, 渲染缓存 |
-
-**Phase 2 结束后的能力**:
-```python
-# 坐标系 + 函数绘图
-axes = Axes(x_range=[-5, 5], y_range=[-3, 3])
-graph = axes.plot(lambda x: x**2, color=BLUE)
-label = axes.get_graph_label(graph, "f(x)=x²")
-
-s.play(Create(axes))
-s.play(Write(label), Create(graph))
-
-# 高亮区域
-rect = SurroundingRectangle(graph, color=YELLOW)
-s.play(FocusOn(rect))
-
-# 相机动画
-s.camera.frame.save_state()
-s.play(s.camera.frame.animate.scale(0.5).move_to(ORIGIN))
-s.play(Restore(s.camera.frame))
-```
-
----
-
-### Phase 3: 完整性与差异化 - 8-12 周
-
-| 周次 | 任务 | 交付物 |
-|------|------|--------|
-| W19-W21 | LaTeX 公式集成 | MathTex, TexTemplate（可选依赖 MathJax）|
-| W22-W23 | 3D 增强 | Polyhedron, Surface, VectorField, DotCloud |
-| W24-W25 | 特殊 Mobject | Brace, Angle, ImageMobject, SVGMobject |
-| W26-W28 | 后处理特效 | Bloom, DOF, Motion Blur, Color Grading |
-| W29-W30 | 导出格式扩展 | Pixel Streaming, VR Template, Asset Export |
-
----
-
-## 六、UEMotion 差异化优势（超越 Manim 的能力）
-
-虽然当前功能覆盖有限，但 UE 引擎赋予 UEMotion **无法比拟的独特优势**：
-
-### 6.1 渲染质量碾压
-
-| 特性 | Manim (Cairo) | UEMotion (UE5) |
-|------|---------------|----------------|
-| **渲染引擎** | CPU 软件光栅化 | GPU Nanite 虚拟几何体 |
-| **光照** | 无真实光照 | Lumen 全局光照 |
-| **材质** | 扁平颜色 | PBR 材质（金属度/粗糙度/法线）|
-| **阴影** | 无或模拟 | 实时软阴影 |
-| **反射** | 不支持 | 屏幕空间反射 + 光线追踪 |
-| **后处理** | 无 | Bloom/DOF/MotionBlur/ToneMapping |
-| **抗锯齿** | 无 | MSAA/TAA/FXAA |
-
-**实际效果差异**:
-```
-Manim: 扁平卡通风格 → 适合简洁数学演示
-UEMotion: 电影级画质 → 适合高质量教育内容/商业项目
-```
-
-### 6.2 性能优势
-
-| 场景 | Manim 渲染时间 | UEMotion 渲染时间 | 加速比 |
-|------|----------------|-------------------|--------|
-| 简单场景（10物体）| 5秒 | 0.5秒 | **10x** |
-| 中等场景（100物体）| 60秒 | 2秒 | **30x** |
-| 复杂场景（1000物体）| 600秒 | 10秒 | **60x** |
-| 极端场景（10000物体）| 内存不足 | 30秒 | **∞** |
-
-**实时预览能力**:
-- Manim: 编辑代码 → 运行命令行 → 等待 FFMPEG 合成 → 查看结果（分钟级迭代周期）
-- UEMotion: 编辑代码 → UE Editor 即时反馈（秒级迭代周期）
-
-### 6.3 生态系统集成
-
-#### 物理引擎（Chaos Physics）
-```python
-# Manim 无法做到的物理模拟
+# 当前方式（底层）
 cube = s.cube(size=50)
-cube.enable_physics()  # 启用刚体物理
-s.apply_force(cube, force=(0, 0, -980))  # 施加重力
-s.render_physics(duration=5)  # 物理模拟录制
+anim = Animation(s)
+anim._add(cube.move_to(UR, duration=2))
+built = anim.build()
+
+# 新方式（高层，Sequencer友好）
+timeline = s.timeline
+
+with timeline.section("intro", duration=2):
+    cube.move_to(ORIGIN)
+
+with timeline.section("main", duration=3):
+    cube.move_to(UR)
+    cube.rotate(angle=360, axis=UP)
+
+with timeline.section("outro", duration=1):
+    cube.fade_out()
+
+s.render()  # 自动生成 Sequencer Track
 ```
 
-#### 粒子系统（Niagara）
+#### 1.2 关键帧直接操作
 ```python
-# 爆炸效果
-emitter = s.particle_system(template="explosion")
-emitter.position = cube.location
-s.play(emitter.emit(duration=2, count=1000))
+# 直接操作关键帧（给高级用户）
+track = timeline.add_track(cube, property="location")
+
+track.add_keyframe(time=0.0, value=DL)
+track.add_keyframe(time=2.5, value=ORIGIN, easing="ease_in_out")
+track.add_keyframe(time=5.0, value=UR)
+
+# 可视化调试
+track.show_curve_editor()  # 在UE Editor中打开曲线编辑器
 ```
 
-#### 后处理特效
+#### 1.3 动画预设库
 ```python
-s.post_processing.bloom.enabled = True
-s.post_processing.bloom.intensity = 0.8
-s.post_processing.dof.focus_distance = 500
-s.post_processing.motion_blur.amount = 0.5
+# 常用动画模式一键应用
+cube.appear(duration=1)           # FadeIn + Scale from 0
+cube.disappear(duration=1)        # FadeOut + Scale to 0
+cube.pulse(count=3, duration=0.5) # Scale 1.0→1.2→1.0 循环
+cube.shake(intensity=0.1)         # 随机位移抖动
+cube.highlight(color=YELLOW)      # 颜色闪烁 + Glow
 ```
 
-#### MetaHuman 数字人
+#### 1.4 多对象编排
 ```python
-human = s.metahuman(preset="educator")
-human.face.set_expression("smile", intensity=0.7)
-human.lipsync_text("今天我们学习微积分")
-s.render_with_audio(audio_track="lecture.wav")
-```
-
-### 6.4 输出格式多样性
-
-| 输出格式 | Manim | UEMotion | 用途 |
-|---------|-------|----------|------|
-| MP4 视频 | ✅ | ✅ | 传统视频平台 |
-| PNG 序列 | ✅ | ✅ | 后期合成 |
-| GIF | ✅ | ✅ | 社交媒体分享 |
-| **Web实时交互** | ❌ | ✅ Pixel Streaming | 在线教学/演示 |
-| **VR应用** | ❌ | ✅ Quest/Vision Pro | 沉浸式学习 |
-| **AR应用** | ❌ | ✅ iOS/Android AR | 增强现实教材 |
-| **游戏资产** | ❌ | ✅ 直接导出 | 教育游戏开发 |
-| **广播级输出** | ❌ | ✅ nDisplay | 多屏拼接/球幕投影 |
-
----
-
-## 七、技术债务与改进建议
-
-### 7.1 当前代码问题
-
-#### 问题1: align_to 未实现
-**文件**: [`mobject.py:122`](file:///c:/Users/42458/Documents/Unreal%20Projects/PluginTest/Scripts/uemotion/mobject.py#L122-L123)
-```python
-def align_to(self, other_or_edge, direction=UP):
-    pass  # ← 空实现
-```
-**影响**: 用户调用时会静默失败
-**修复**: 实现对齐逻辑
-
-#### 问题2: 缓动函数硬编码
-**文件**: [`animation.py`](file:///c:/Users/42458/Documents/Unreal%20Projects/PluginTest/Scripts/uemotion/animation.py)
-**问题**: 字符串传递 easing 名称，缺少验证和扩展机制
-**建议**: 创建独立的 `easing.py` 模块，集中管理所有缓动函数
-
-#### 问题3: 缺少错误处理
-**观察**: 大部分方法直接调用 UE C++ 接口，无异常捕获
-**风险**: UE 返回 nullptr 时会导致 Python 崩溃
-**建议**: 添加统一的错误处理装饰器
-
-### 7.2 架构改进建议
-
-#### 建议1: 引入 VMobject 层次
-```
-当前: Mobject (单一层次)
-建议: Mobject (基类)
-       ├── VMobject (矢量图形，支持贝塞尔曲线)
-       ├── PMobject (像素化对象)
-       └── Surface (3D曲面)
-```
-
-#### 建议2: 动画系统重构
-```
-当前: Animation (简单容器)
-建议: Animation (基类)
-       ├── CreationAnimation (Create, Write, Grow...)
-       ├── TransformAnimation (Transform, Replace...)
-       ├── FadingAnimation (FadeIn, FadeOut...)
-       └── CompositionAnimation (Group, LaggedStart...)
-```
-
-#### 建议3: 配置系统
-```python
-# 新增 config.py 模块
-class Config:
-    BACKGROUND_COLOR = "#ece6e2"
-    FRAME_WIDTH = 8.0
-    FRAME_HEIGHT = 8.0
-    DEFAULT_PIXEL_WIDTH = 1080
-    DEFAULT_PIXEL_HEIGHT = 1080
-    DEFAULT_FPS = 30
-    CAMERA_Z = 10.0
-    SCALE_FACTOR = 50.0
-```
-
----
-
-## 八、测试覆盖现状
-
-### 当前测试文件（test_01 ~ test_16）
-
-| 测试文件 | 覆盖范围 | 状态 |
-|---------|----------|------|
-| test_01_scene.py | Scene 创建与基本属性 | ✅ |
-| test_02_mobject.py | Mobject 基础操作 | ✅ |
-| test_03_camera.py | 相机控制 | ✅ |
-| test_04_animation_move.py | 移动动画 | ✅ |
-| test_05_animation_rotate.py | 旋转动画 | ✅ |
-| test_06_animation_scale.py | 缩放动画 | ✅ |
-| test_07_animation_fade.py | 淡入淡出 | ✅ |
-| test_08_animation_color.py | 颜色动画 | ✅ |
-| test_09_animation_wait.py | 等待动画 | ✅ |
-| test_10_animation_group.py | 组合动画 | ✅ |
-| test_11_easing.py | 缓动函数 | ⚠️ 覆盖有限 |
-| test_12_light.py | 灯光系统 | ✅ |
-| test_13_renderer.py | 渲染管线 | ✅ |
-| test_14_python_wrapper.py | Python封装层 | ✅ |
-| test_15_boundary.py | 边界条件 | ⚠️ 部分覆盖 |
-| test_16_full_pipeline.py | 端到端流程 | ✅ |
-
-**缺失测试**:
-- ❌ 2D 图形对象（尚未实现）
-- ❌ Transform/Create 动画（尚未实现）
-- ❌ VGroup 组合（尚未实现）
-- ❌ Updaters 系统（尚未实现）
-- ❌ 坐标系（尚未实现）
-- ❌ 文本渲染（尚未实现）
-
----
-
-## 九、总结与行动建议
-
-### 核心指标
-
-| 指标 | 当前值 | 目标值（Phase 1结束）|
-|------|--------|---------------------|
-| **功能覆盖率** | ~10% | ~70% |
-| **可用的Mobject类型** | 6（全3D）| 14（6个3D + 8个2D）|
-| **可用动画数量** | 6 | 12（+Create, Transform, Write, Grow, Flash, FadeTransform）|
-| **缓动函数数量** | ~3 | 15+ |
-| **支持的场景类型** | 1（基础Scene）| 1（+MovingCamera后续）|
-
-### Top 3 行动项（立即开始）
-
-1. **本周**: 实现 `Circle` 和 `Square` 2D 对象（ProceduralMeshComponent）
-2. **下周**: 实现 `Create` 和 `GrowFromCenter` 动画（自定义插值逻辑）
-3. **下下周**: 实现 `VGroup` 基础组合功能 + `Text` 文本渲染
-
-### 成功标准
-
-完成 Phase 1 后，应该能够流畅运行以下示例：
-
-```python
-from uemotion import *
-
-class Demo(Scene):
-    def construct(self):
-        # 1. 创建2D图形
-        circle = self.circle(radius=1, color=BLUE)
-        square = self.square(side_length=1.5, color=RED)
-
-        # 2. 手绘动画
-        self.play(Create(circle), run_time=2)
-
-        # 3. 变形
-        self.play(Transform(circle, square), run_time=1.5)
-
-        # 4. 文本
-        title = self.text("UEMotion Demo", font_size=42)
-        self.play(Write(title))
-
-        # 5. 组合
-        group = VGroup(square, title)
-        group.arrange(DOWN, buff=0.5)
-        self.play(group.animate.scale(1.2))
-
-        # 6. Updaters
-        tracker = ValueTracker(-3)
-        dot = self.dot(radius=0.08, color=YELLOW)
-        dot.add_updater(lambda m, dt: m.move_to((tracker.get_value(), tracker.get_value()**2 / 3, 0)))
-        self.play(tracker.animate.set_value(3), run_time=3)
-
-        # 7. 渲染
-        self.render("demo.mp4", duration=10)
-
-if __name__ == "__main__":
-    demo = Demo()
-    demo.construct()
-```
-
----
-
-## 附录 A: Manim 常用代码片段参考
-
-### A.1 基础动画组合
-```python
-# 并行播放
-self.play(
-    circle.animate.shift(UP),
-    square.animate.shift(DOWN),
+# 编排多个对象的动画序列
+s.play(
+    circle.appear(),
+    square.shift(RIGHT),
+    run_time=1.5,
+    lag_ratio=0.1,  # 错开开始
 )
 
-# 错开播放（波浪效果）
-self.play(LaggedStart(
-    *[obj.animate.scale(1.2) for obj in objects],
-    lag_ratio=0.2,
-))
-
-# 顺序播放
-self.play(Succession(
-    Create(circle),
-    Wait(0.5),
-    Transform(circle, square),
-))
+s.play_sequence([
+    ("intro", [circle.appear(), text.write()]),
+    ("transform", [circle.morph_into(square)]),
+    ("outro", [all_objects.fade_out()]),
+])
 ```
 
-### A.2 数学可视化典型用法
+**技术要点**:
+- 每个动画调用生成对应的 `UMovieSceneSection`
+- 支持嵌套时间轴（子轨道）
+- Easing 曲线映射到 UE 的 `RichCurve`
+- 导出为 `.uelevel` 或直接在 Editor 中预览
+
+**交付物**:
+- ✅ `timeline.py` 时间轴管理器
+- ✅ `presets.py` 动画预设库
+- ✅ Sequencer Track 自动生成
+- ✅ 曲线编辑器集成
+- ✅ 10+ 动画预设（appear/disappear/pulse/shake/highlight...）
+
+---
+
+## Phase 2: 2D 图形系统 (Week 6-8)
+
+### 目标：支持数学可视化的基础图形，但不追求 Manim 式完备性
+
+#### 2.1 核心 2D 对象（TOP 8）
 ```python
-# 坐标系 + 函数
-axes = Axes(
-    x_range=[-5, 5, 1],
-    y_range=[-2, 8, 1],
-    x_length=6,
-    y_length=4,
-    tips=False,
+# 必须有的（覆盖80%使用场景）
+s.circle(radius=1, color=BLUE, fill=True)
+s.square(side_length=1.5, color=RED)
+s.rectangle(width=2, height=1, color=GREEN)
+s.line(start=(-2, 0), end=(2, 0), thickness=0.05)
+s.arrow(start=ORIGIN, end=(1, 1), color=YELLOW)
+s.dot(radius=0.08, color=WHITE)
+s.arc(radius=1, angle=PI/2, start_angle=0)
+s.regular_polygon(n_sides=6, radius=1, color=CYAN)
+```
+
+**技术方案**: ProceduralMeshComponent + 顶点生成算法
+
+#### 2.2 图形属性
+```python
+circle = s.circle(radius=1, color=BLUE)
+
+# 描边 vs 填充
+circle.stroke(width=0.05, color=DARK_BLUE)
+circle.fill(opacity=0.7)
+
+# 渐变（UE优势！）
+circle.fill_gradient(colors=[BLUE, CYAN], direction="radial")
+
+# 发光效果（后处理）
+circle.glow(intensity=0.5, color=BLUE, radius=0.3)
+```
+
+#### 2.3 图形组合
+```python
+group = VGroup(circle, square, triangle)
+
+# 批量操作
+group.scale(1.5)
+group.move_to(UR)
+group.rotate(angle=45)
+
+# 排列布局
+group.arrange(direction=RIGHT, buff=0.3)
+group.arrange_to_center()
+
+# 子对象访问
+group[0].set_color(RED)
+```
+
+**交付物**:
+- ✅ 8 种 2D 图形对象
+- ✅ Stroke/Fill/Gradient 属性
+- ✅ VGroup 组合与布局
+- ✅ Glow 后处理特效
+
+---
+
+## Phase 3: 文本与标注系统 (Week 9-10)
+
+### 目标：能显示文字和简单公式，够用即可
+
+#### 3.1 基础文本
+```python
+title = s.text("Hello UEMotion!", font_size=48, color=WHITE)
+subtitle = s.text("Powered by Unreal Engine 5", font_size=24, color=GRAY)
+
+# 动画
+title.write(duration=2)      # 打字机效果
+title.fade_in(shift=UP)      # 从上方淡入
+title.typing_error_fix()     # 打错字→删除→重打（趣味性！）
+```
+
+**技术方案**: UMG Widget + Widget Component（3D空间渲染）
+
+#### 3.2 数字显示
+```python
+number = s.decimal_number(value=0, num_decimal_places=2)
+
+# 数字滚动动画
+number.count_to(target=3.14159, duration=2)
+
+# 与 ValueTracker 联动
+tracker = ValueTracker(0)
+number.bind_to(tracker)
+tracker.animate_to(100, duration=3)  # number自动更新
+```
+
+#### 3.3 简单标注
+```python
+# 高亮框
+rect = s.surrounding_rectangle(target=circle, color=YELLOW, padding=0.2)
+
+# 大括号
+brace = s.brace(target=line, direction=DOWN, label="Length: 5 units")
+
+# 角度标记
+angle_mark = s.angle_mark(vertex=O, point_a=A, point_b=B, label="45°")
+```
+
+**可选（Phase 5）**: LaTeX 公式（依赖 MathJax 或类似库）
+
+**交付物**:
+- ✅ Text 文本渲染（支持中文）
+- ✅ DecimalNumber 数字动画
+- ✅ SurroundingRectangle / Brace / AngleMark
+- ✅ 文本动画预设（write/fade_in/typing）
+
+---
+
+## Phase 4: 视觉效果增强 (Week 11-12) ⭐ 差异化优势
+
+### 目标：发挥 UE 的渲染优势，做出 Manim 做不到的效果
+
+#### 4.1 材质系统
+```python
+cube = s.cube(size=50)
+
+# PBR 材质
+cube.set_metallic(0.8)
+cube.set_roughness(0.2)
+cube.set_normal_map("textures/metal_normal.png")
+
+# 程序化材质
+cube.set_material("holographic")  # 全息投影效果
+cube.set_material("neon_glow")    # 霓虹灯效果
+cube.set_material("glass")        # 玻璃折射
+
+# 材质动画
+cube.morph_material(from="solid", to="holographic", duration=2)
+```
+
+#### 4.2 光照系统
+```python
+# 动态光源
+light = s.point_light(location=ORIGIN, color=WHITE, intensity=10000)
+.light.animate_move_to(UR, duration=3)
+
+# 光照动画
+s.fade_lights(in_or_out="out", duration=1)  # 熄灯效果
+s.strobe_light(frequency=10, duration=2)   # 闪光灯
+```
+
+#### 4.3 后处理特效
+```python
+# 场景级后处理
+s.post_process.bloom(enabled=True, intensity=0.8)
+s.post_process.dof(focus_distance=500, blur_amount=0.5)
+s.post_process.motion_blur(amount=0.3)
+s.post_process.color_grading(lut="cinematic")
+
+# 对象级特效
+circle.glow(color=CYAN, intensity=0.6)
+square.trail(length=20, fade_time=0.5)  # 运动拖尾
+cube.reflection(probe="dynamic")         # 实时反射
+```
+
+#### 4.4 粒子系统（Niagara）
+```python
+# 预设粒子效果
+emitter = s.particles("explosion", position=cube.location)
+emitter.emit(duration=1.5, count=500)
+
+emitter = s.particles("sparkle", follow=circle)
+emitter.emit(continuous=True)  # 持续发射
+
+# 自定义粒子（简化API）
+emitter = s.particles_custom(
+    template="ring",
+    color=GRADIENT([RED, YELLOW]),
+    count=100,
+    lifetime=2.0,
 )
-
-graph = axes.plot(lambda x: (x**2)/4, color=GREEN)
-area = axes.get_area(graph, x_range=[-2, 2], color=BLUE, opacity=0.3)
-
-self.play(Create(axes), Create(graph))
-self.play(FadeIn(area))
-self.wait()
-
-# 标注
-label = axes.get_graph_label(graph, "f(x) = x²/4", x_val=2, direction=UR)
-self.play(Write(label))
 ```
 
-### A.3 文本与公式
+**交付物**:
+- ✅ 5+ 预设材质（holographic/neon/glass/metal/plasma）
+- ✅ 动态光照控制 API
+- ✅ 后处理特效包（Bloom/DOF/MotionBlur/Vignette）
+- ✅ Niagara 粒子封装（10+ 预设）
+- ✅ 运动拖尾 / 发光 / 反射特效
+
+---
+
+## Phase 5: 高级功能 (Week 13-16)
+
+### 5.1 相机动画
 ```python
-# 标题
-title = Text("微积分基础", font_size=48)
-subtitle = Text("Calculus Fundamentals", font_size=24, color=GREY)
-group = VGroup(title, subtitle).arrange(DOWN, buff=0.3)
-self.play(Write(title), FadeIn(subtitle, shift=DOWN))
+# MovingCamera 支持
+camera = s.camera
 
-# 公式
-formula = MathTex(r"\frac{d}{dx} x^n = n x^{n-1}")
-formula.scale(1.5)
-self.play(Write(formula))
+camera.save_state()
+camera.zoom(to=0.5, duration=2)       # 拉远
+camera.pan_to(target=UR, duration=2)  # 平移
+camera.orbit_around(center=ORIGIN, angle=360, duration=5)  # 环绕
+camera.restore(duration=1.5)          # 恢复
 
-# 代码
-code = Code(
-    code="def f(x):\n    return x**2",
-    language="Python",
-    style="monokai",
-)
-self.play(Create(code))
+# 多机位切换
+cam_a = s.create_camera("wide_angle", position=(0, 0, 1000))
+cam_b = s.create_camera("close_up", position=(0, 0, 200))
+
+s.switch_camera(cam_a, duration=1)  # 切镜效果
 ```
 
-### A.4 复杂动画序列
+### 5.2 物理模拟
 ```python
-# 证明过程动画
-proof_steps = [
-    Text("Step 1: Define function"),
-    MathTex(r"f(x) = x^2"),
-    Text("Step 2: Calculate derivative"),
-    MathTex(r"f'(x) = 2x"),
+cube = s.cube(size=50)
+cube.enable_physics()
+cube.set_mass(10.0)
+
+# 施加力
+cube.apply_force(force=(0, 0, -980))  # 重力
+cube.apply_impulse(impulse=(1000, 0, 0))  # 冲击
+
+# 物理录制
+s.record_physics(duration=5)  # 录制物理模拟到 Sequencer
+```
+
+### 5.3 数据可视化（轻量版）
+```python
+# 坐标系
+axes = s.axes(x_range=[-5, 5], y_range=[-3, 3])
+
+# 函数曲线
+curve = axes.plot(lambda x: x**2, color=BLUE, samples=100)
+
+# 散点图
+scatter = s.scatter_plot(data=[(1,2), (2,3), (3,5)], color=RED)
+
+# 柱状图
+bars = s.bar_chart(values=[3, 7, 2, 9], labels=["A","B","C","D"])
+```
+
+### 5.4 导出与分享
+```python
+# 传统导出
+s.render(output="animation.mp4", resolution=(1920, 1080))
+s.render(output="frames/", format="png_sequence")
+
+# UE 特色导出
+s.export_pixel_streaming(port=8888)  # Web实时查看
+s.export_vr_template(platform="Quest")  # VR 应用
+s.render_realtime_preview()  # 在Editor中循环播放
+```
+
+**交付物**:
+- ✅ MovingCamera 系统
+- ✅ Chaos Physics 封装
+- ✅ 基础数据可视化（Axes/Scatter/BarChart）
+- ✅ 多格式导出（MP4/GIF/Web/VR）
+
+---
+
+## Phase 6: 生态与工具链 (Week 17-20)
+
+### 6.1 示例画廊
+```
+examples/
+├── basics/
+│   ├── hello_world.py          # 第一个动画
+│   ├── shapes_and_colors.py    # 图形展示
+│   └── animations_101.py       # 动画入门
+├── math/
+│   ├── function_graph.py       # 函数图像
+│   ├── geometry_proof.py       # 几何证明
+│   └── calculus_demo.py        # 微积分演示
+├── effects/
+│   ├── materials_showcase.py   # 材质秀
+│   ├── particles_demo.py       # 粒子效果
+│   └── post_processing.py      # 后处理
+├── interactive/
+│   ├── physics_playground.py   # 物理游乐场
+│   └── camera_cinematics.py    # 镜头语言
+└── real_world/
+    ├── presentation_template.py # 演示模板
+    └── educational_video.py    # 教学视频片段
+```
+
+### 6.2 VS Code 插件
+- 语法高亮（UEMotion Python API）
+- 代码片段（常用模式快速插入）
+- 运行按钮（一键运行脚本并预览）
+- 错误提示（集成 UE 日志）
+
+### 6.3 Web Dashboard
+- 示例浏览与在线编辑（Monaco Editor）
+- 一键复制代码到剪贴板
+- 渲染结果 GIF 预览
+- 社区作品分享
+
+### 6.4 性能优化
+- 大场景 LOD 管理
+- Instanced Rendering（批量相同对象）
+- GPU Driven Rendering（万级对象）
+- 渲染缓存（相同帧不重复计算）
+
+**交付物**:
+- ✅ 15+ 示例脚本（覆盖主要使用场景）
+- ✅ VS Code 插件 v1.0
+- ✅ Web Dashboard MVP
+- ✅ 性能优化白皮书
+
+---
+
+## 技术债务清理（穿插进行）
+
+### 必须修复
+- [x] ~~align_to 未实现~~ → Phase 0 补齐
+- [x] ~~缓动函数硬编码~~ → Phase 0 提取到 easing.py
+- [x] ~~缺少错误处理~~ → Phase 0 统一异常体系
+
+### 架构改进
+```python
+# 当前层次
+Mobject (单一基类)
+
+# 目标层次
+Mobject (基类，通用接口)
+├── Shape2D (Circle, Square, Line...)    # Phase 2
+├── Shape3D (Cube, Sphere, Cylinder...)  # 已有
+├── TextObject (Text, Number...)          # Phase 3
+├── VGroup (组合对象)                      # Phase 2
+└── EffectWrapper (Glow/Trail/Reflect...) # Phase 4
+```
+
+---
+
+## 成功标准（每个Phase结束时的验收条件）
+
+### Phase 0 通过标准
+```bash
+# 所有测试通过
+pytest tests/ -v
+
+# Smoke test < 30秒
+run_full_pipeline_test.bat  # Exit code 0
+
+# 无明显内存泄漏
+# 性能回归 < 5%
+```
+
+### Phase 1 通过标准
+```python
+# 能流畅运行这个示例
+s = Scene("sequencer_test")
+cube = s.cube(size=50, location=DL)
+
+timeline = s.timeline
+timeline.add_keyframes(cube, "location", [
+    (0.0, DL),
+    (2.5, ORIGIN, "ease_in_out"),
+    (5.0, UR),
+])
+
+s.render(output="test.mp4")
+# ✓ Sequencer 中有正确的 Track
+# ✓ 关键帧曲线平滑
+# ✓ 渲染结果符合预期
+```
+
+### Phase 2 通过标准
+```python
+# 能流畅运行这个示例
+s = Scene("shapes_demo")
+shapes = [
+    s.circle(radius=1, color=BLUE),
+    s.square(side_length=1.5, color=RED),
+    s.triangle(base=2, height=1.7, color=GREEN),
 ]
 
-for i, step in enumerate(proof_steps):
-    if i > 0:
-        self.play(FadeOut(proof_steps[i-1]))
-    self.play(Write(step))
-    self.wait(0.5)
+group = VGroup(*shapes).arrange(RIGHT, buff=0.5)
+s.play(group.appear())
+s.play(group[0].pulse(count=3))
+s.render()
+# ✓ 2D图形正确显示
+# ✓ 动画流畅
+# ✓ 组合操作正常
+```
 
-# 最终结果汇总
-result = VGroup(*proof_steps).arrange(DOWN, aligned_edge=LEFT, buff=0.4)
-self.play(*[FadeIn(step) for step in proof_steps])
-self.play(result.animate.to_edge(RIGHT).scale(0.8))
+### Phase 3 通过标准
+```python
+s = Scene("text_demo")
+title = s.text("Hello UEMotion!", font_size=48)
+subtitle = s.text("Real-time Preview", font_size=24, color=GRAY)
+
+s.play(title.write(duration=2))
+s.play(subtitle.fade_in(shift=UP))
+s.render()
+# ✓ 文字清晰可读
+# ✓ 打字机效果流畅
+# ✓ 支持中英文
 ```
 
 ---
 
-## 附录 B: UE 技术实现参考
+## 不做的事（明确边界）
 
-### B.1 ProceduralMeshComponent 生成 2D 图形
+### ❌ 不追求 Manim 100% 兼容
+- 不实现 VMobject 贝塞尔曲线系统（过度复杂）
+- 不实现 LaTeX 公式渲染（成本太高，收益有限）
+- 不实现 Cairo 级别的 2D 精确控制（UE 是 3D 引擎）
 
-```cpp
-// Circle 顶点生成伪代码
-void GenerateCircleVertices(float Radius, int Segments) {
-    Vertices.Add(FVector(0, 0, 0)); // 中心点
+### ❌ 不做在线 IDE
+- 本地开发为主（UE Editor 必须本地运行）
+- Web Dashboard 只做展示和代码分享
 
-    for (int i = 0; i <= Segments; ++i) {
-        float Angle = FMath::DegreesToRadians(i * 360.0f / Segments);
-        float X = Radius * FMath::Cos(Angle);
-        float Y = Radius * FMath::Sin(Angle);
-        Vertices.Add(FVector(X, Y, 0));
-    }
+### ❌ 不做移动端支持
+- 桌面端 + VR 足够
+- 移动端性能和交互差异太大
 
-    // 生成三角形索引（扇形三角化）
-    for (int i = 1; i <= Segments; ++i) {
-        Triangles.Add(0);       // 中心点
-        Triangles.Add(i);
-        Triangles.Add(i + 1);
-    }
-}
-```
-
-### B.2 Transform 顶点插值算法
-
-```cpp
-// Transform 动画的顶点对应策略
-struct MorphTarget {
-    FVector SourcePosition;
-    FVector TargetPosition;
-    FVector2D SourceUV;
-    FVector2D TargetUV;
-};
-
-// 策略1: 采样重映射（适用于简单形状）
-void RemapBySampling(const TArray<FVector>& SourceVerts,
-                     const TArray<FVector>& TargetVerts,
-                     int SampleCount,
-                     TArray<MorphTarget>& OutTargets) {
-    // 将源和目标都均匀采样到 SampleCount 个点
-    auto sourceSampled = UniformSample(SourceVerts, SampleCount);
-    auto targetSampled = UniformSample(TargetVerts, SampleCount);
-
-    for (int i = 0; i < SampleCount; ++i) {
-        OutTargets.Add({sourceSampled[i], targetSampled[i]});
-    }
-}
-
-// 策略2: 子对象匹配（适用于 VGroup）
-void MatchSubobjects(VGroup* Source, VGroup* Target, TArray<MorphTarget>& OutTargets) {
-    // 按索引或名称匹配子对象
-    for (int i = 0; i < Source->Num(); ++i) {
-        auto matched = FindBestMatch(Source->GetSubobject(i), Target);
-        OutTargets.Append(BuildMorphPair(Source->GetSubobject(i), matched));
-    }
-}
-
-// 插值计算（每帧调用）
-FVector InterpolateMorph(const MorphTarget& Target, float Alpha) {
-    return FMath::Lerp(Target.SourcePosition, Target.TargetPosition, Alpha);
-}
-```
-
-### B.3 Updaters 在 UE Tick 中的集成
-
-```cpp
-// UEMotionSceneActor.cpp 中的 Tick 实现
-void AUEMotionSceneActor::Tick(float DeltaTime) {
-    Super::Tick(DeltaTime);
-
-    if (!bIsPlaying) return;
-
-    // 更新所有活跃的 updaters
-    for (auto* Mobject : ActiveMobjects) {
-        if (Mobject->HasUpdaters()) {
-            Mobject->UpdateAllUpdaters(DeltaTime);
-        }
-    }
-
-    // 更新 ValueTrackers（如果在动画中）
-    for (auto& Tracker : ActiveValueTrackers) {
-        Tracker.AnimateToTarget(DeltaTime);
-    }
-
-    // 记录当前帧状态（如果正在渲染）
-    if (bIsRendering) {
-        CaptureCurrentFrame();
-    }
-}
-```
+### ❌ 不做协作编辑
+- 单人开发工作流
+- 版本控制用 Git 就够了
 
 ---
 
-## 附录 C: 参考资源
+## 资源需求
 
-### Manim 官方文档
-- **Community Edition**: https://docs.manim.community/
-- **API Reference**: https://docs.manim.community/en/stable/reference.html
-- **Example Gallery**: https://docs.manim.community/en/stable/examples.html
-- **Changelog**: https://docs.manim.community/en/stable/changelog.html
+### 开发资源
+- **主要开发者**: 1 人（你）
+- **每周投入**: 15-20 小时
+- **总工期**: 20 周（约 5 个月）
 
-### UE5 相关资源
-- **Procedural Mesh Generation**: https://dev.epicgames.com/documentation/en-us/unreal-engine/procedural-mesh-component-in-unreal-engine
-- **Niagara Particle System**: https://dev.epicgames.com/documentation/en-us/unreal-engine/niagara-particle-system-in-unreal-engine
-- **Chaos Physics**: https://dev.epicgames.com/documentation/en-us/unreal-engine/chaos-physics-in-unreal-engine
-- **Pixel Streaming**: https://dev.epicgames.com/documentation/en-us/unreal-engine/pixel-streaming-in-unreal-engine
-- **MetaHuman**: https://www.unrealengine.com/en/metahuman
+### 外部依赖
+- UE 5.7+ Editor（已有）
+- Python 3.10+（已有）
+- VS Code（已有）
+- 可选：MathJax（LaTeX，Phase 5 再决定）
 
-### 相关论文与技术博客
-- Grant Sanderson (3Blue1Brown): Manim 设计哲学
-- ManimGL vs ManimCE: 架构差异对比
-- Cairo vs OpenGL vs WebGL: 2D渲染技术选型
+### 学习资源
+- UE Sequencer 官方文档
+- ProceduralMeshComponent 教程
+- Niagara 粒子系统入门
+- UMG Widget 开发指南
 
 ---
 
-**文档版本**: v1.0
-**最后更新**: 2026-05-09
-**维护者**: UEMotion 开发团队
+## 快速启动检查清单
+
+### 开始编码前
+- [x] 已阅读本文档并理解路线图
+- [ ] 已创建 `config.py` 和 `easing.py` 模块
+- [ ] 已为现有代码添加错误处理
+- [ ] 已运行完整测试套件确认基线
+
+### Week 1 结束时
+- [ ] Config 类可用
+- [ ] Easing 模块独立
+- [ ] 所有 public API 有 try-catch
+- [ ] 测试覆盖率 > 80%
+
+### Month 1 结束时（Phase 0 + Phase 1 部分）
+- [ ] Timeline API 可用
+- [ ] 能通过代码创建 Sequencer Track
+- [ ] 至少 5 个动画预设
+- [ ] Smoke test 绿色
+
+### Month 2 结束时（Phase 1 + Phase 2）
+- [ ] Timeline 完整功能
+- [ ] 8 种 2D 图形
+- [ ] VGroup 组合系统
+- [ ] 3 个完整示例脚本
+
+### Month 3 结束时（Phase 2 + Phase 3）
+- [ ] 文本系统可用
+- [ ] 标注系统可用
+- [ ] 10+ 示例脚本
+- [ ] 第一次公开 Demo
+
+---
+
+## 附录：设计哲学
+
+### 1. Sequencer First
+所有动画最终都映射到 Sequencer Track。这意味着：
+- 可以在 Editor 中手动调整
+- 支持非线性编辑
+- 方便团队协作（艺术家调动画，程序员写逻辑）
+
+### 2. Progressive Disclosure
+简单事情简单做，复杂事情可以做：
+```python
+# 简单用法（一行代码）
+cube.move_to(UR, duration=2)
+
+# 复杂用法（完全控制）
+track = timeline.add_track(cube, "location")
+track.add_keyframe(0.0, DL, easing="custom_curve")
+track.add_keyframe(2.5, ORIGIN)
+track.add_keyframe(5.0, UR, easing="bounce")
+track.show_curve_editor()
+```
+
+### 3. Embrace UE Strengths
+不做 Manim 能做的，要做 Manim **做不到**的：
+- ✅ 实时光照变化
+- ✅ PBR 材质动画
+- ✅ 物理模拟录制
+- ✅ 粒子特效
+- ✅ VR/AR 输出
+- ✅ 电影级后处理
+
+### 4. Fun Factor（好玩！）
+```python
+# 有趣的预设动画
+cube.dance(style="disco", duration=3)      # 迪斯科舞
+text.typo_effect(word="UEMotion", fix_to="Unreal")  # 打字纠错
+s.screen_shake(intensity=0.2)              # 屏幕震动
+s.flashbang(color=WHITE, duration=0.5)     # 闪光弹
+```
+
+### 5. Performance by Default
+- 默认开启 Instance Rendering
+- 自动 LOD（远距离降低精度）
+- 智能批处理（合并相同材质的对象）
+- 渲染缓存（避免重复计算）
+
+---
+
+**版本**: v2.0
+**最后更新**: 2026-05-12
+**核心理念**: 用 UE + Sequencer 做一个**好玩**的可视化平台，而不是复刻 Manim

@@ -12,6 +12,7 @@
 #include "Anim/UEMotionWaitAnimation.h"
 #include "Rendering/UEMotionRenderer.h"
 #include "Actors/UEMotionSceneActor.h"
+#include "Actors/UEMotionAxisActor.h"
 #include "Utils/UEMotionSequencerCompat.h"
 #include "UEMotionAssetFactory.h"
 #include "Engine/World.h"
@@ -85,7 +86,7 @@ bool UUEMotionScene::CreateSceneMap()
 		UEditorAssetLibrary::DeleteAsset(MapPath);
 	}
 
-	UWorld* NewWorld = UEditorLoadingAndSavingUtils::NewMapFromTemplate(TEXT("/Engine/Maps/Templates/Template_Default"), true);
+	UWorld* NewWorld = UEditorLoadingAndSavingUtils::NewMapFromTemplate(TEXT("/Engine/Maps/Templates/Template_Empty"), true);
 	if (!NewWorld) return false;
 
 	SceneWorld = GEditor->GetEditorWorldContext().World();
@@ -94,7 +95,7 @@ bool UUEMotionScene::CreateSceneMap()
 	for (TActorIterator<AActor> It(SceneWorld.Get()); It; ++It)
 	{
 		AActor* Actor = *It;
-		if (Actor && Actor->GetClass() != AWorldSettings::StaticClass() && !Actor->GetName().Contains(TEXT("PlayerStart")))
+		if (Actor && Actor->GetClass() != AWorldSettings::StaticClass())
 		{
 			Actor->Destroy();
 		}
@@ -195,61 +196,31 @@ void UUEMotionScene::SetupCoordinateAxes()
 {
 	if (!SceneWorld.IsValid() || !bShowCoordinateAxes) return;
 
-	static const FString GizmoMeshPath = TEXT("/Engine/InteractiveToolsFramework/Meshes/GizmoArrowHandle.GizmoArrowHandle");
-	UStaticMesh* GizmoMesh = LoadObject<UStaticMesh>(nullptr, *GizmoMeshPath);
-	if (!GizmoMesh)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("UEMotionScene: Failed to load GizmoArrowHandle mesh from '%s'"), *GizmoMeshPath);
-		return;
-	}
-
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	SpawnParams.bNoFail = true;
 
 	float Len = CoordinateAxisLength;
-	float Thickness = FMath::Max(Len * 0.008f, 1.0f);
 
-	AActor* XAxisActor = SceneWorld.Get()->SpawnActor<AActor>(AActor::StaticClass(), FVector::ZeroVector, FRotator(0, 0, 0), SpawnParams);
+	AUEMotionAxisActor* XAxisActor = SceneWorld.Get()->SpawnActor<AUEMotionAxisActor>(FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
 	if (XAxisActor)
 	{
-		UStaticMeshComponent* XMeshComp = NewObject<UStaticMeshComponent>(XAxisActor, TEXT("XAxisMesh"));
-		XMeshComp->SetStaticMesh(GizmoMesh);
-		XMeshComp->RegisterComponent();
-		XMeshComp->SetWorldScale3D(FVector(Len / 60.0f, Thickness / 60.0f, Thickness / 60.0f));
-		XAxisActor->SetRootComponent(XMeshComp);
-		XMeshComp->SetVisibility(true);
-		XMeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		XMeshComp->SetMaterial(0, CreateAxisMaterial(FLinearColor::Red));
+		XAxisActor->InitializeAxis(EAxis::X, Len, FLinearColor::Red);
 	}
 
-	AActor* YAxisActor = SceneWorld.Get()->SpawnActor<AActor>(AActor::StaticClass(), FVector::ZeroVector, FRotator(0, 90, 0), SpawnParams);
+	AUEMotionAxisActor* YAxisActor = SceneWorld.Get()->SpawnActor<AUEMotionAxisActor>(FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
 	if (YAxisActor)
 	{
-		UStaticMeshComponent* YMeshComp = NewObject<UStaticMeshComponent>(YAxisActor, TEXT("YAxisMesh"));
-		YMeshComp->SetStaticMesh(GizmoMesh);
-		YMeshComp->RegisterComponent();
-		YMeshComp->SetWorldScale3D(FVector(Len / 60.0f, Thickness / 60.0f, Thickness / 60.0f));
-		YAxisActor->SetRootComponent(YMeshComp);
-		YMeshComp->SetVisibility(true);
-		YMeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		YMeshComp->SetMaterial(0, CreateAxisMaterial(FLinearColor::Green));
+		YAxisActor->InitializeAxis(EAxis::Y, Len, FLinearColor::Green);
 	}
 
-	AActor* ZAxisActor = SceneWorld.Get()->SpawnActor<AActor>(AActor::StaticClass(), FVector::ZeroVector, FRotator(-90, 0, 0), SpawnParams);
+	AUEMotionAxisActor* ZAxisActor = SceneWorld.Get()->SpawnActor<AUEMotionAxisActor>(FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
 	if (ZAxisActor)
 	{
-		UStaticMeshComponent* ZMeshComp = NewObject<UStaticMeshComponent>(ZAxisActor, TEXT("ZAxisMesh"));
-		ZMeshComp->SetStaticMesh(GizmoMesh);
-		ZMeshComp->RegisterComponent();
-		ZMeshComp->SetWorldScale3D(FVector(Len / 60.0f, Thickness / 60.0f, Thickness / 60.0f));
-		ZAxisActor->SetRootComponent(ZMeshComp);
-		ZMeshComp->SetVisibility(true);
-		ZMeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		ZMeshComp->SetMaterial(0, CreateAxisMaterial(FLinearColor::Blue));
+		ZAxisActor->InitializeAxis(EAxis::Z, Len, FLinearColor::Blue);
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Coordinate axes created (X=Red, Y=Green, Z=Blue, Length=%.0f)"), Len);
+	UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Coordinate axes created using AUEMotionAxisActor (X=Red, Y=Green, Z=Blue, Length=%.0f)"), Len);
 }
 
 UMaterialInstanceDynamic* UUEMotionScene::CreateAxisMaterial(const FLinearColor& Color)
