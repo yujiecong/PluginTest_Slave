@@ -70,7 +70,7 @@ void AUEMotionAxisActor::SetupMesh()
 		MeshComponent->SetStaticMesh(GizmoMesh);
 
 		float Len = AxisLength;
-		float Thickness = FMath::Max(Len * 0.008f, 1.0f);
+		float Thickness = 0.6f;
 		MeshComponent->SetWorldScale3D(FVector(Len / 60.0f, Thickness / 60.0f, Thickness / 60.0f));
 	}
 
@@ -126,6 +126,10 @@ void AUEMotionAxisActor::CreateAxisMaterial()
 		{
 			EditorData->EmissiveColor.Expression = ColorParam;
 			EditorData->EmissiveColor.OutputIndex = 0;
+			EditorData->BaseColor.Expression = ColorParam;
+			EditorData->Metallic.Expression = nullptr;
+			EditorData->Roughness.Expression = nullptr;
+			EditorData->Specular.Expression = nullptr;
 		}
 
 		AxisBaseMaterial->MarkPackageDirty();
@@ -137,7 +141,8 @@ void AUEMotionAxisActor::CreateAxisMaterial()
 	DynamicMaterial = UMaterialInstanceDynamic::Create(AxisBaseMaterial, this);
 	if (DynamicMaterial)
 	{
-		DynamicMaterial->SetVectorParameterValue(FName("AxisColor"), AxisColor);
+		FLinearColor EnhancedColor = AxisColor * 3.0f;
+		DynamicMaterial->SetVectorParameterValue(FName("AxisColor"), EnhancedColor);
 		MeshComponent->SetMaterial(0, DynamicMaterial);
 	}
 }

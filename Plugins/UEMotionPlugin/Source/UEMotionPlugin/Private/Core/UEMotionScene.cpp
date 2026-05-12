@@ -86,7 +86,7 @@ bool UUEMotionScene::CreateSceneMap()
 		UEditorAssetLibrary::DeleteAsset(MapPath);
 	}
 
-	UWorld* NewWorld = UEditorLoadingAndSavingUtils::NewMapFromTemplate(TEXT("/Engine/Maps/Templates/Template_Empty"), true);
+	UWorld* NewWorld = UEditorLoadingAndSavingUtils::NewMapFromTemplate(TEXT("/Engine/Maps/Templates/Template_Default"), true);
 	if (!NewWorld) return false;
 
 	SceneWorld = GEditor->GetEditorWorldContext().World();
