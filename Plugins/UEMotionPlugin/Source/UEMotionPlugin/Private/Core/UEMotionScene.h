@@ -227,6 +227,7 @@ private:
 	bool CreateLevelSequenceAsset();
 	void SetupDefaultLighting();
 	void SetupCoordinateAxes();
+	void SetupSkyEnvironment();
 	void OpenLevelSequenceInEditor();
 
 	FGuid AddActorToSequencer(AActor* Actor);

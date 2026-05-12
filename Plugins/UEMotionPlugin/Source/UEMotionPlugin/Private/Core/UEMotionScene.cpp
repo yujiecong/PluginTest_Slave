@@ -18,6 +18,10 @@
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "Engine/DirectionalLight.h"
+#include "Engine/PointLight.h"
+#include "Engine/SkyLight.h"
+#include "Components/SkyAtmosphereComponent.h"
+#include "Components/SkyLightComponent.h"
 #include "Engine/StaticMesh.h"
 #include "GameFramework/WorldSettings.h"
 #include "Components/DirectionalLightComponent.h"
@@ -29,6 +33,8 @@
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "AssetToolsModule.h"
 #include "EditorAssetLibrary.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "Factories/BlueprintFactory.h"
 #include "Kismet/GameplayStatics.h"
 #include "UObject/Package.h"
 #include "Misc/PackageName.h"
@@ -203,25 +209,134 @@ void UUEMotionScene::SetupCoordinateAxes()
 
 	float Len = CoordinateAxisLength;
 
-	AUEMotionAxisActor* XAxisActor = SceneWorld.Get()->SpawnActor<AUEMotionAxisActor>(FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
-	if (XAxisActor)
+	TArray<TPair<FString, FLinearColor>> AxisConfigs;
+	AxisConfigs.Add(TPair<FString, FLinearColor>(TEXT("BP_Axis_X"), FLinearColor(1.0f, 0.25f, 0.25f, 1.0f)));
+	AxisConfigs.Add(TPair<FString, FLinearColor>(TEXT("BP_Axis_Y"), FLinearColor(0.25f, 1.0f, 0.25f, 1.0f)));
+	AxisConfigs.Add(TPair<FString, FLinearColor>(TEXT("BP_Axis_Z"), FLinearColor(0.25f, 0.5f, 1.0f, 1.0f)));
+
+	for (int32 i = 0; i < AxisConfigs.Num(); i++)
 	{
-		XAxisActor->InitializeAxis(EAxis::X, Len, FLinearColor(1.0f, 0.25f, 0.25f, 1.0f));
+		const FString& BPName = AxisConfigs[i].Key;
+		const FLinearColor& Color = AxisConfigs[i].Value;
+
+		FString BlueprintPath = FString::Printf(TEXT("/Game/UEMotion/Blueprints/%s"), *BPName);
+		UClass* AxisClass = nullptr;
+
+		if (UEditorAssetLibrary::DoesAssetExist(BlueprintPath))
+		{
+			UBlueprint* ExistingBP = LoadObject<UBlueprint>(nullptr, *BlueprintPath);
+			if (ExistingBP && ExistingBP->GeneratedClass)
+			{
+				AxisClass = ExistingBP->GeneratedClass;
+				UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Reusing existing axis blueprint '%s'"), *BlueprintPath);
+			}
+		}
+
+		if (!AxisClass)
+		{
+			UPackage* Package = CreatePackage(*BlueprintPath);
+			if (Package)
+			{
+				UBlueprintFactory* BPFactory = NewObject<UBlueprintFactory>();
+				BPFactory->ParentClass = AUEMotionAxisActor::StaticClass();
+
+				UBlueprint* NewBP = Cast<UBlueprint>(BPFactory->FactoryCreateNew(
+					UBlueprint::StaticClass(), Package, *BPName,
+					RF_Public | RF_Standalone, nullptr, GWarn));
+
+				if (NewBP)
+				{
+					FAssetRegistryModule::AssetCreated(NewBP);
+					Package->MarkPackageDirty();
+
+					TArray<UPackage*> PackagesToSave;
+					PackagesToSave.Add(Package);
+					FEditorFileUtils::PromptForCheckoutAndSave(PackagesToSave, false, true);
+
+					AxisClass = NewBP->GeneratedClass;
+					UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Created axis blueprint '%s'"), *BlueprintPath);
+				}
+			}
+		}
+
+		if (AxisClass)
+		{
+			AActor* SpawnedActor = SceneWorld.Get()->SpawnActor<AActor>(AxisClass, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
+			if (AUEMotionAxisActor* AxisActor = Cast<AUEMotionAxisActor>(SpawnedActor))
+			{
+				EAxis::Type AxisType = static_cast<EAxis::Type>(i);
+				AxisActor->InitializeAxis(AxisType, Len, Color);
+			}
+		}
 	}
 
-	AUEMotionAxisActor* YAxisActor = SceneWorld.Get()->SpawnActor<AUEMotionAxisActor>(FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
-	if (YAxisActor)
+	UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Coordinate axes created from blueprints (X=Red, Y=Green, Z=Blue, Length=%.0f)"), Len);
+}
+
+void UUEMotionScene::SetupSkyEnvironment()
+{
+	if (!SceneWorld.IsValid()) return;
+
+	AActor* AtmosphereActor = SceneWorld->SpawnActor<AActor>(FVector(0, 0, 500), FRotator::ZeroRotator);
+	if (AtmosphereActor)
 	{
-		YAxisActor->InitializeAxis(EAxis::Y, Len, FLinearColor(0.25f, 1.0f, 0.25f, 1.0f));
+		USkyAtmosphereComponent* AtmoComp = NewObject<USkyAtmosphereComponent>(AtmosphereActor);
+		if (AtmoComp)
+		{
+			AtmoComp->RegisterComponent();
+			AtmoComp->AttachToComponent(AtmosphereActor->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+
+			UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Created SkyAtmosphere"));
+		}
 	}
 
-	AUEMotionAxisActor* ZAxisActor = SceneWorld.Get()->SpawnActor<AUEMotionAxisActor>(FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
-	if (ZAxisActor)
+	ASkyLight* SkyLight = SceneWorld->SpawnActor<ASkyLight>(FVector(0, 0, 1000), FRotator::ZeroRotator);
+	if (SkyLight)
 	{
-		ZAxisActor->InitializeAxis(EAxis::Z, Len, FLinearColor(0.25f, 0.5f, 1.0f, 1.0f));
+		USkyLightComponent* SkyComp = Cast<USkyLightComponent>(SkyLight->GetComponentByClass(USkyLightComponent::StaticClass()));
+		if (SkyComp)
+		{
+			SkyComp->SetIntensity(10.0f);
+			SkyComp->SetRealTimeCaptureEnabled(true);
+			SkyComp->SetMobility(EComponentMobility::Movable);
+
+			UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Created SkyLight (Real-time)"));
+		}
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Coordinate axes created using AUEMotionAxisActor (X=Red, Y=Green, Z=Blue, Length=%.0f)"), Len);
+	AActor* SkySphere = SceneWorld->SpawnActor<AActor>(FVector(0, 0, 0), FRotator::ZeroRotator);
+	if (SkySphere)
+	{
+		UStaticMeshComponent* SphereMesh = NewObject<UStaticMeshComponent>(SkySphere);
+		if (SphereMesh)
+		{
+			SphereMesh->RegisterComponent();
+			SphereMesh->AttachToComponent(SkySphere->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+
+			UStaticMesh* SkyMesh = LoadObject<UStaticMesh>(
+				nullptr, TEXT("/Engine/EngineSky/SM_Sky_Sphere.SM_Sky_Sphere"));
+
+			if (SkyMesh)
+			{
+				SphereMesh->SetStaticMesh(SkyMesh);
+				SphereMesh->SetWorldScale3D(FVector(100.0f));
+				SphereMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+				SphereMesh->CastShadow = false;
+
+				UMaterialInterface* SkyMaterial = LoadObject<UMaterialInterface>(
+					nullptr, TEXT("/Engine/EngineMaterials/M_Sky_M.P_PANORAMA"));
+
+				if (SkyMaterial)
+				{
+					SphereMesh->SetMaterial(0, SkyMaterial);
+				}
+
+				UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Created Sky Sphere with panoramic material"));
+			}
+		}
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Sky environment setup complete (Atmosphere + SkyLight + SkySphere)"));
 }
 
 void UUEMotionScene::OpenLevelSequenceInEditor()
@@ -332,6 +447,7 @@ void UUEMotionScene::Initialize(const FString& InSceneName, int32 Width, int32 H
 
 		SetupDefaultLighting();
 		SetupCoordinateAxes();
+		SetupSkyEnvironment();
 		bInitialized = true;
 
 		UEditorLoadingAndSavingUtils::SaveMap(SceneWorld.Get(), GetMapPath());
@@ -586,14 +702,12 @@ void UUEMotionScene::AddPointLight(const FVector& Location, const FLinearColor& 
 {
 	if (!bInitialized || !SceneWorld.IsValid()) return;
 
-	AActor* PointLight = SceneWorld->SpawnActor<AActor>(Location, FRotator::ZeroRotator);
+	APointLight* PointLight = SceneWorld->SpawnActor<APointLight>(Location, FRotator::ZeroRotator);
 	if (PointLight)
 	{
-		UPointLightComponent* LightComp = NewObject<UPointLightComponent>(PointLight);
+		UPointLightComponent* LightComp = Cast<UPointLightComponent>(PointLight->GetLightComponent());
 		if (LightComp)
 		{
-			LightComp->RegisterComponent();
-			LightComp->AttachToComponent(PointLight->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
 			LightComp->SetIntensity(Intensity);
 			LightComp->SetLightColor(Color);
 

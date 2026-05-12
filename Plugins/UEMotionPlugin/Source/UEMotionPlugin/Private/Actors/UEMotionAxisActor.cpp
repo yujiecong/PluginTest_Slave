@@ -2,9 +2,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Materials/MaterialInterface.h"
 #include "Materials/MaterialInstanceDynamic.h"
-#include "Materials/Material.h"
-#include "Materials/MaterialExpressionVectorParameter.h"
-#include "Materials/MaterialExpressionConstant.h"
+#include "Materials/MaterialInstanceConstant.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
 #include "UObject/ConstructorHelpers.h"
@@ -12,6 +10,7 @@
 #include "EditorAssetLibrary.h"
 #include "PackageTools.h"
 #include "FileHelpers.h"
+#include "Utils/UEMotionSequencerCompat.h"
 
 AUEMotionAxisActor::AUEMotionAxisActor()
 {
@@ -188,6 +187,19 @@ UMaterialInterface* AUEMotionAxisActor::CreateStaticAxisMaterial(const FString& 
 		return LoadObject<UMaterialInterface>(nullptr, *MaterialPath);
 	}
 
+	static UMaterialInterface* BaseMaterial = nullptr;
+	if (!BaseMaterial)
+	{
+		BaseMaterial = LoadObject<UMaterialInterface>(
+			nullptr, TEXT("/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"));
+	}
+
+	if (!BaseMaterial)
+	{
+		UE_LOG(LogTemp, Error, TEXT("UEMotionAxisActor: Failed to load base material"));
+		return nullptr;
+	}
+
 	UPackage* MaterialPackage = CreatePackage(*MaterialPath);
 	if (!MaterialPackage)
 	{
@@ -195,47 +207,30 @@ UMaterialInterface* AUEMotionAxisActor::CreateStaticAxisMaterial(const FString& 
 		return nullptr;
 	}
 
-	UMaterial* NewMaterial = NewObject<UMaterial>(MaterialPackage, *MaterialName, RF_Public | RF_Standalone | RF_Transactional);
-	if (!NewMaterial)
+	UMaterialInstanceConstant* NewMaterialInstance = NewObject<UMaterialInstanceConstant>(
+		MaterialPackage, *MaterialName, RF_Public | RF_Standalone | RF_Transactional);
+
+	if (!NewMaterialInstance)
 	{
-		UE_LOG(LogTemp, Error, TEXT("UEMotionAxisActor: Failed to create material object '%s'"), *MaterialName);
+		UE_LOG(LogTemp, Error, TEXT("UEMotionAxisActor: Failed to create material instance '%s'"), *MaterialName);
 		return nullptr;
 	}
 
-	NewMaterial->SetShadingModel(MSM_Unlit);
-	NewMaterial->SetMaterialUsageFlag(MATUSAGE_Scene);
+	NewMaterialInstance->SetParentEditorOnly(BaseMaterial);
 
-	UMaterialExpressionVectorParameter* BaseColorParam = NewMaterial->MaterialEditorOnly.CreateExpressionParameter<UMaterialExpressionVectorParameter>();
-	BaseColorParam->ParameterName = FName("BaseColor");
-	BaseColorParam->DefaultValue = Color;
-	BaseColorParam->Desc = TEXT("Base Color");
+#if WITH_EDITOR
+	NewMaterialInstance->SetVectorParameterValueEditorOnly(FName("BaseColor"), Color);
+#endif
 
-	UMaterialExpressionConstant* OpacityConstant = NewMaterial->MaterialEditorOnly.CreateExpressionParameter<UMaterialExpressionConstant>();
-	OpacityConstant->Constant = 1.0f;
+	FAssetRegistryModule::AssetCreated(NewMaterialInstance);
+	MaterialPackage->MarkPackageDirty();
 
-	UMaterialExpressionVectorParameter* EmissiveColorParam = NewMaterial->MaterialEditorOnly.CreateExpressionParameter<UMaterialExpressionVectorParameter>();
-	EmissiveColorParam->ParameterName = FName("EmissiveColor");
-	EmissiveColorParam->DefaultValue = Color;
-	EmissiveColorParam->Desc = TEXT("Emissive Color");
+	TArray<UPackage*> PackagesToSave;
+	PackagesToSave.Add(MaterialPackage);
+	FEditorFileUtils::PromptForCheckoutAndSave(PackagesToSave, false, true);
 
-	NewMaterial->BaseColor.Expression = BaseColorParam;
-	NewMaterial->EmissiveColor.Expression = EmissiveColorParam;
-	NewMaterial->Opacity.Expression = OpacityConstant;
-	NewMaterial->MaterialDomain = MD_Surface;
-	NewMaterial->BlendMode = BLEND_Opaque;
+	UE_LOG(LogTemp, Log, TEXT("UEMotionAxisActor: Created and saved axis material instance '%s' to '%s' with color (%.2f, %.2f, %.2f)"),
+		*MaterialName, *MaterialPath, Color.R, Color.G, Color.B);
 
-	FAssetRegistryModule::AssetCreated(NewMaterial);
-	UEMotionCompat::MarkPackageDirty(MaterialPackage);
-
-	if (!UEditorLoadingAndSavingUtils::SaveAsset(MaterialPath, false))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("UEMotionAxisActor: Failed to save material '%s' to disk"), *MaterialName);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Log, TEXT("UEMotionAxisActor: Created and saved axis material '%s' to '%s' with color (%.2f, %.2f, %.2f)"),
-			*MaterialName, *MaterialPath, Color.R, Color.G, Color.B);
-	}
-
-	return NewMaterial;
+	return NewMaterialInstance;
 }
