@@ -502,7 +502,8 @@ UMaterialInterface* UUEMotionScene::CreateOrLoadBlackMaterial()
 	BlackMIC->SetParentEditorOnly(BaseMat);
 
 #if WITH_EDITOR
-	BlackMIC->SetVectorParameterValueEditorOnly(FName("BaseColor"), FLinearColor(0.0f, 0.0f, 0.0f, 1.0f));
+	FLinearColor DefaultBlack(0.0f, 0.0f, 0.0f, 1.0f);
+	BlackMIC->SetVectorParameterValueEditorOnly(FName("BaseColor"), DefaultBlack);
 #endif
 
 	FAssetRegistryModule::AssetCreated(BlackMIC);
@@ -524,7 +525,12 @@ UMaterialInterface* UUEMotionScene::CreateOrLoadBlackMaterial()
 
 	if (bSaveSuccess)
 	{
-		UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Created and saved black background material to '%s'"), *FilePath);
+		UE_LOG(LogTemp, Log,
+			TEXT("UEMotionScene: Created custom black material instance '%s'")
+			TEXT("\n  Parent: M_Unlit (Engine Built-in Unlit)")
+			TEXT("\n  Parameter: BaseColor = (0, 0, 0, 1) [Pure Black]")
+			TEXT("\n  Usage: Adjust 'BaseColor' parameter in Material Editor"),
+			*FilePath);
 	}
 	else
 	{
