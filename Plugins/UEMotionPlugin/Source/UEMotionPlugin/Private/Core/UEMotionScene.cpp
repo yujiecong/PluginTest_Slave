@@ -208,6 +208,11 @@ void UUEMotionScene::SetupCoordinateAxes()
 {
 	if (!SceneWorld.IsValid() || !bShowCoordinateAxes) return;
 
+	UE_LOG(LogTemp, Log,
+		TEXT("UEMotionScene: SetupCoordinateAxes() called - bIs2DView=%s, bShowCoordinateAxes=%s"),
+		bIs2DView ? TEXT("TRUE") : TEXT("FALSE"),
+		bShowCoordinateAxes ? TEXT("TRUE") : TEXT("FALSE"));
+
 	AUEMotionAxisActor::CreateAxisMaterials();
 
 	FActorSpawnParameters SpawnParams;
@@ -226,8 +231,14 @@ void UUEMotionScene::SetupCoordinateAxes()
 	}
 	else
 	{
-		UE_LOG(LogTemp, Log, TEXT("UEMotionScene: 2D view mode enabled - Z-axis will not be created"));
+		UE_LOG(LogTemp, Log, TEXT("UEMotionScene: 2D view mode enabled - Z-axis will NOT be created (total axes: %d)"), AxisConfigs.Num());
 	}
+
+	UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Creating %d axis(es) - Config: X=%s, Y=%s, Z=%s"),
+		AxisConfigs.Num(),
+		TEXT("YES"),
+		TEXT("YES"),
+		bIs2DView ? TEXT("NO (2D MODE)") : TEXT("YES"));
 
 	for (int32 i = 0; i < AxisConfigs.Num(); i++)
 	{
@@ -352,6 +363,50 @@ void UUEMotionScene::SetupCoordinateAxes()
 			{
 				EAxis::Type AxisType = static_cast<EAxis::Type>(i);
 				AxisActor->InitializeAxis(AxisType, Len, Color);
+
+				UStaticMeshComponent* AxisMesh = AxisActor->GetMeshComponent();
+				if (AxisMesh)
+				{
+					FString MaterialName;
+					switch (AxisType)
+					{
+					case EAxis::X:
+						MaterialName = TEXT("M_Axis_X");
+						break;
+					case EAxis::Y:
+						MaterialName = TEXT("M_Axis_Y");
+						break;
+					case EAxis::Z:
+						MaterialName = TEXT("M_Axis_Z");
+						break;
+					default:
+						MaterialName = TEXT("M_Axis_X");
+						break;
+					}
+
+					FString MaterialPath = FString::Printf(TEXT("/Game/UEMotion/Materials/%s"), *MaterialName);
+					UMaterialInterface* AxisMaterial = LoadObject<UMaterialInterface>(nullptr, *MaterialPath);
+
+					if (!AxisMaterial)
+					{
+						AxisActor->CreateAxisMaterials();
+						AxisMaterial = LoadObject<UMaterialInterface>(nullptr, *MaterialPath);
+					}
+
+					if (AxisMaterial)
+					{
+						AxisMesh->SetMaterial(0, AxisMaterial);
+						UE_LOG(LogTemp, Log,
+							TEXT("UEMotionScene: Applied material '%s' to %s axis mesh"),
+							*MaterialName, *BPName);
+					}
+					else
+					{
+						UE_LOG(LogTemp, Warning,
+							TEXT("UEMotionScene: Failed to apply material '%s' to %s axis"),
+							*MaterialName, *BPName);
+					}
+				}
 			}
 		}
 	}
