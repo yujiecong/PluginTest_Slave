@@ -406,3 +406,386 @@ mesh_component.set_static_mesh(runtime_mesh)  # 运行时创建的 Mesh
 | `Scripts/uemotion/mobject.py` | Updated | Added shift/to_edge/next_to methods |
 | `Scripts/run_full_pipeline_test.py` | **REWRITTEN** | Four-quadrant smoke test (DL→UR) |
 | `AGENTS.md` | Updated | This documentation |
+
+---
+
+## Asset Creation Best Practices (经验总结)
+
+### 🎯 核心原则：一切皆UAsset
+
+**日期**: 2026-05-12
+**背景**: 修复地板、材质、灯光等场景元素的实现问题
+
+#### ✅ 正确的资产创建流程
+
+##### 1. Blueprint UAsset 创建（以地板为例）
+
+```cpp
+// UEMotionScene.cpp - SetupBlackBackgroundFloor()
+
+// Step 1: 检查是否已存在
+FString FloorBlueprintPath = TEXT("/Game/UEMotion/Blueprints/BP_BlackFloor");
+UClass* FloorClass = nullptr;
+
+if (UEditorAssetLibrary::DoesAssetExist(FloorBlueprintPath))
+{
+    // 加载已存在的蓝图
+    UBlueprint* ExistingBP = LoadObject<UBlueprint>(nullptr, *FloorBlueprintPath);
+    if (ExistingBP && ExistingBP->GeneratedClass)
+    {
+        FloorClass = ExistingBP->GeneratedClass;
+    }
+}
+
+// Step 2: 如果不存在，创建新蓝图
+if (!FloorClass)
+{
+    UPackage* Package = CreatePackage(*FloorBlueprintPath);
+    
+    UBlueprintFactory* BPFactory = NewObject<UBlueprintFactory>();
+    BPFactory->ParentClass = AActor::StaticClass();  // 或其他基类
+    
+    UBlueprint* NewBP = Cast<UBlueprint>(BPFactory->FactoryCreateNew(
+        UBlueprint::StaticClass(), Package, TEXT("BP_BlackFloor"),
+        RF_Public | RF_Standalone, nullptr, GWarn));
+    
+    if (NewBP)
+    {
+        // Step 3: 配置 SCS (SimpleConstructionScript)
+        USimpleConstructionScript* SCS = NewBP->SimpleConstructionScript;
+        if (SCS)
+        {
+            // 创建根组件
+            USCS_Node* RootNode = SCS->CreateNode(USceneComponent::StaticClass(), TEXT("DefaultSceneRoot"));
+            SCS->AddNode(RootNode);
+            
+            // 创建子组件（如 StaticMeshComponent）
+            USCS_Node* MeshNode = SCS->CreateNode(UStaticMeshComponent::StaticClass(), TEXT("FloorMesh"));
+            RootNode->AddChildNode(MeshNode);
+            
+            // 配置组件模板
+            UStaticMeshComponent* MeshTemplate = Cast<UStaticMeshComponent>(MeshNode->ComponentTemplate);
+            if (MeshTemplate)
+            {
+                MeshTemplate->SetStaticMesh(PlaneMesh);
+                MeshTemplate->SetRelativeScale3D(FVector(ScaleX, ScaleY, 1.0f));
+                MeshTemplate->SetMaterial(0, BlackMaterial);  // 应用材质
+                MeshTemplate->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+            }
+        }
+        
+        // Step 4: 编译蓝图
+        FKismetEditorUtilities::CompileBlueprint(NewBP);
+        
+        // Step 5: 自动保存（无弹窗）
+        FAssetRegistryModule::AssetCreated(NewBP);
+        Package->MarkPackageDirty();
+        
+        FSavePackageArgs SaveArgs;
+        SaveArgs.SaveFlags = RF_Public | RF_Standalone;
+        
+        FString PkgFilename = FPackageName::LongPackageNameToFilename(
+            Package->GetName(), 
+            FPackageName::GetAssetPackageExtension()
+        );
+        
+        UPackage::SavePackage(Package, nullptr, *PkgFilename, SaveArgs);
+        
+        FloorClass = NewBP->GeneratedClass;
+    }
+}
+
+// Step 6: 从蓝图UAsset Spawn Actor
+AActor* FloorActor = SceneWorld->SpawnActor<AActor>(
+    FloorClass,
+    FVector(0, 0, -0.01),
+    FRotator::ZeroRotator,  // ⚠️ 注意：不要随意旋转
+    SpawnParams
+);
+```
+
+##### 2. Material Instance UAsset 创建
+
+```cpp
+// UEMotionScene.cpp - CreateOrLoadBlackMaterial()
+
+UMaterialInterface* UUEMotionScene::CreateOrLoadBlackMaterial()
+{
+    const FString MaterialPath = TEXT("/Game/UEMotion/Materials/M_BlackBackground");
+
+    // Step 1: 检查并验证现有材质
+    if (UEditorAssetLibrary::DoesAssetExist(MaterialPath))
+    {
+        UMaterialInterface* ExistingMat = LoadObject<UMaterialInterface>(nullptr, *MaterialPath);
+        if (ExistingMat)
+        {
+            return ExistingMat;  // 成功加载
+        }
+        else
+        {
+            // ⚠️ 材质损坏，删除并重建
+            UE_LOG(LogTemp, Warning, TEXT("Material exists but corrupted, recreating..."));
+            UEditorAssetLibrary::DeleteAsset(MaterialPath);
+        }
+    }
+
+    // Step 2: 创建 Package
+    UPackage* Package = CreatePackage(*MaterialPath);
+    if (!Package) return nullptr;
+
+    // Step 3: 创建 MaterialInstanceConstant
+    UMaterialInstanceConstant* BlackMIC = NewObject<UMaterialInstanceConstant>(
+        Package, 
+        TEXT("M_BlackBackground"), 
+        RF_Public | RF_Standalone | RF_Transactional
+    );
+
+    if (!BlackMIC) return nullptr;
+
+    // Step 4: 设置父材质和参数
+    UMaterialInterface* BaseMat = LoadObject<UMaterialInterface>(
+        nullptr, 
+        TEXT("/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial")
+    );
+
+    if (!BaseMat) return nullptr;
+
+    BlackMIC->SetParentEditorOnly(BaseMat);
+
+#if WITH_EDITOR
+    BlackMIC->SetVectorParameterValueEditorOnly(
+        FName("BaseColor"), 
+        FLinearColor(0.0f, 0.0f, 0.0f, 1.0f)  // 纯黑 + 不透明
+    );
+#endif
+
+    // Step 5: 注册并保存
+    FAssetRegistryModule::AssetCreated(BlackMIC);
+    Package->MarkPackageDirty();
+
+    FString FilePath = FPaths::Combine(
+        FPaths::ProjectContentDir(),
+        TEXT("UEMotion/Materials/"),
+        TEXT("M_BlackBackground.uasset")
+    );
+
+    FSavePackageArgs SaveArgs;
+    SaveArgs.SaveFlags = RF_Public | RF_Standalone;
+
+    bool bSaveSuccess = UPackage::SavePackage(Package, nullptr, *FilePath, SaveArgs);
+    
+    if (!bSaveSuccess)
+    {
+        UE_LOG(LogTemp, Error, TEXT("Failed to save material"));
+        return nullptr;  // ❌ 失败时返回空，不要使用无效材质
+    }
+
+    return BlackMIC;
+}
+```
+
+---
+
+### ⚠️ 常见陷阱与解决方案
+
+#### 1. **保存弹窗问题**
+
+**问题**: 使用 `FEditorFileUtils::PromptForCheckoutAndSave()` 会弹出"是否保存"对话框
+
+**❌ 错误做法**:
+```cpp
+TArray<UPackage*> PackagesToSave;
+PackagesToSave.Add(Package);
+FEditorFileUtils::PromptForCheckoutAndSave(PackagesToSave, false, true);  // 弹窗！
+```
+
+**✅ 正确做法**:
+```cpp
+FSavePackageArgs SaveArgs;
+SaveArgs.SaveFlags = RF_Public | RF_Standalone;
+
+FString PkgFilename = FPackageName::LongPackageNameToFilename(
+    Package->GetName(),
+    FPackageName::GetAssetPackageExtension()
+);
+
+UPackage::SavePackage(Package, nullptr, *PkgFilename, SaveArgs);  // 静默保存
+```
+
+#### 2. **材质参数名错误**
+
+**问题**: 使用错误的参数名导致材质颜色不生效
+
+**❌ 错误做法**:
+```cpp
+NewMaterialInstance->SetVectorParameterValueEditorOnly(FName("Color"), Color);  // 参数名错误
+NewMaterialInstance->SetVectorParameterValueEditorOnly(FName("BaseColor"), FLinearColor::Black);  // 可能不明确
+```
+
+**✅ 正确做法**:
+```cpp
+// 使用明确的RGBA值
+NewMaterialInstance->SetVectorParameterValueEditorOnly(
+    FName("BaseColor"), 
+    FLinearColor(0.0f, 0.0f, 0.0f, 1.0f)  // R, G, B, A
+);
+```
+
+#### 3. **地板旋转问题**
+
+**问题**: Spawn时使用 `FRotator(90, 0, 0)` 导致地板倾斜
+
+**❌ 错误做法**:
+```cpp
+AActor* FloorActor = SceneWorld->SpawnActor<AActor>(
+    FloorClass,
+    FVector(0, 0, -0.01),
+    FRotator(90, 0, 0),  // ❌ 导致地板垂直！
+    SpawnParams
+);
+```
+
+**✅ 正确做法**:
+```cpp
+AActor* FloorActor = SceneWorld->SpawnActor<AActor>(
+    FloorClass,
+    FVector(0, 0, -0.01),      // Z=-0.01 避免z-fighting
+    FRotator::ZeroRotator,     // ✅ 地板水平放置
+    SpawnParams
+);
+```
+
+**💡 原因**: Plane mesh 默认就是水平的，不需要额外旋转！
+
+#### 4. **Scale 设置错误**
+
+**问题**: 使用统一的scale值导致XY方向尺寸不够大
+
+**❌ 错误做法**:
+```cpp
+float FloorSize = 8.0f * 50.0f;  // = 400 cm (太小)
+MeshTemplate->SetRelativeScale3D(FVector(FloorSize / 200.0f));  // 统一缩放
+```
+
+**✅ 正确做法**:
+```cpp
+float FloorSizeX = 20.0f * 50.0f;  // = 1000 cm (10米)
+float FloorSizeY = 20.0f * 50.0f;  // = 1000 cm (10米)
+
+MeshTemplate->SetRelativeScale3D(FVector(
+    FloorSizeX / 200.0f,  // X: 5.0
+    FloorSizeY / 200.0f,  // Y: 5.0
+    1.0f                  // Z: 保持厚度不变
+));
+// 实际大小: 1000cm × 1000cm × 200cm (Plane默认200×200)
+```
+
+#### 5. **灯光配置（纯黑背景场景）**
+
+**目标**: Manim风格的纯黑数学可视化环境
+
+```cpp
+// DirectionalLight - 关闭主光源
+LightComp->SetIntensity(0.0f);           // 关闭光照
+LightComp->SetLightColor(FLinearColor::Black);  // 黑色光
+
+// SkyLight - 关闭天空光
+SkyComp->SetIntensity(0.0f);             // 关闭天空光
+SkyComp->SetRealTimeCaptureEnabled(false);  // 禁用实时捕获
+SkyComp->SetMobility(EComponentMobility::Movable);
+```
+
+---
+
+### 🔧 资产创建模板代码
+
+#### 完整的蓝图+材质创建流程
+
+```cpp
+// 1. 先创建材质uasset
+UMaterialInterface* Material = CreateOrLoadBlackMaterial();
+
+// 2. 再创建蓝图uasset（引用材质）
+UBlueprint* NewBP = CreateBlueprintWithMaterial(Material);
+
+// 3. 最后从蓝图spawn actor
+AActor* Actor = World->SpawnActor<AActor>(NewBP->GeneratedClass, ...);
+```
+
+#### 必要的头文件
+
+```cpp
+#include "Engine/Blueprint.h"
+#include "Factories/BlueprintFactory.h"
+#include "Kismet2/KismetEditorUtilities.h"
+#include "Engine/SimpleConstructionScript.h"
+#include "Engine/SCS_Node.h"
+#include "Materials/MaterialInstanceConstant.h"
+#include "Misc/PackageName.h"
+#include "AssetRegistry/AssetRegistryModule.h"
+#include "EditorAssetLibrary.h"
+```
+
+---
+
+### 📊 资产清单示例
+
+运行脚本后应生成的标准资产结构：
+
+```
+/Game/UEMotion/
+├── Blueprints/
+│   ├── BP_Axis_X.uasset          # X轴蓝图 (红色)
+│   ├── BP_Axis_Y.uasset          # Y轴蓝图 (绿色)
+│   ├── BP_Axis_Z.uasset          # Z轴蓝图 (蓝色)
+│   └── BP_BlackFloor.uasset      # 黑色地板蓝图
+├── Materials/
+│   ├── M_Axis_X.uasset           # X轴红色材质实例
+│   ├── M_Axis_Y.uasset           # Y轴绿色材质实例
+│   ├── M_Axis_Z.uasset           # Z轴蓝色材质实例
+│   └── M_BlackBackground.uasset  # 纯黑背景材质实例
+├── Scenes/
+│   └── {SceneName}.umap          # 场景地图
+└── Sequences/
+    └── LS_{Sequence}.uasset      # Level Sequence
+```
+
+---
+
+### ✅ 质量检查清单
+
+每次创建新资产时，确保：
+
+- [ ] 资产路径符合 `/Game/UEMotion/{Type}/{Name}` 规范
+- [ ] 使用 `RF_Public | RF_Standalone | RF_Transactional` 标志
+- [ ] 调用 `FAssetRegistryModule::AssetCreated()` 注册资产
+- [ ] 调用 `Package->MarkPackageDirty()` 标记为脏
+- [ ] 使用 `UPackage::SavePackage()` 静默保存（不用PromptForCheckoutAndSave）
+- [ ] 验证保存返回值 (`bool bSaveSuccess`)
+- [ ] 加载时检查返回值是否为nullptr
+- [ ] 损坏的资产自动删除并重建
+- [ ] 所有日志输出包含详细上下文信息
+
+---
+
+### 🚀 性能优化建议
+
+1. **缓存静态资源**: BaseMaterial等引擎内置资源只需加载一次
+2. **复用已有资产**: 先检查 `DoesAssetExist()` 避免重复创建
+3. **批量保存**: 多个资产可以收集后一次性保存
+4. **延迟编译**: 蓝图可以在所有SCS节点配置完成后再编译
+
+---
+
+### 📝 相关文件索引
+
+| 文件 | 功能 | 关键函数 |
+|------|------|----------|
+| `UEMotionScene.cpp` | 场景初始化与资产管理 | `SetupBlackBackgroundFloor()`, `CreateOrLoadBlackMaterial()`, `SetupCoordinateAxes()` |
+| `UEMotionAxisActor.cpp` | 坐标轴actor与材质 | `CreateAxisMaterials()`, `CreateStaticAxisMaterial()` |
+| `UEMotionScene.h` | 场景类声明 | 方法声明 |
+| `UEMotionAxisActor.h` | Axis actor类声明 | 方法声明 |
+
+---
+
+**维护者备注**: 此文档应随着插件开发持续更新，确保最佳实践得到遵循。

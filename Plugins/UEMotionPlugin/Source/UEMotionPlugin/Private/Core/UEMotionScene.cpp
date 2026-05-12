@@ -20,7 +20,6 @@
 #include "Engine/DirectionalLight.h"
 #include "Engine/PointLight.h"
 #include "Engine/SkyLight.h"
-#include "Components/SkyAtmosphereComponent.h"
 #include "Components/SkyLightComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Materials/MaterialInstanceConstant.h"
@@ -321,19 +320,6 @@ void UUEMotionScene::SetupSkyEnvironment()
 {
 	if (!SceneWorld.IsValid()) return;
 
-	AActor* AtmosphereActor = SceneWorld->SpawnActor<AActor>(FVector(0, 0, 500), FRotator::ZeroRotator);
-	if (AtmosphereActor)
-	{
-		USkyAtmosphereComponent* AtmoComp = NewObject<USkyAtmosphereComponent>(AtmosphereActor);
-		if (AtmoComp)
-		{
-			AtmoComp->RegisterComponent();
-			AtmoComp->AttachToComponent(AtmosphereActor->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
-
-			UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Created SkyAtmosphere"));
-		}
-	}
-
 	ASkyLight* SkyLight = SceneWorld->SpawnActor<ASkyLight>(FVector(0, 0, 1000), FRotator::ZeroRotator);
 	if (SkyLight)
 	{
@@ -348,39 +334,7 @@ void UUEMotionScene::SetupSkyEnvironment()
 		}
 	}
 
-	AActor* SkySphere = SceneWorld->SpawnActor<AActor>(FVector(0, 0, 0), FRotator::ZeroRotator);
-	if (SkySphere)
-	{
-		UStaticMeshComponent* SphereMesh = NewObject<UStaticMeshComponent>(SkySphere);
-		if (SphereMesh)
-		{
-			SphereMesh->RegisterComponent();
-			SphereMesh->AttachToComponent(SkySphere->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
-
-			UStaticMesh* SkyMesh = LoadObject<UStaticMesh>(
-				nullptr, TEXT("/Engine/EngineSky/SM_Sky_Sphere.SM_Sky_Sphere"));
-
-			if (SkyMesh)
-			{
-				SphereMesh->SetStaticMesh(SkyMesh);
-				SphereMesh->SetWorldScale3D(FVector(100.0f));
-				SphereMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-				SphereMesh->CastShadow = false;
-
-				UMaterialInterface* SkyMaterial = LoadObject<UMaterialInterface>(
-					nullptr, TEXT("/Engine/EngineMaterials/M_Sky_M.P_PANORAMA"));
-
-				if (SkyMaterial)
-				{
-					SphereMesh->SetMaterial(0, SkyMaterial);
-				}
-
-				UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Created Sky Sphere with panoramic material"));
-			}
-		}
-	}
-
-	UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Sky environment setup complete (Atmosphere + SkyLight + SkySphere)"));
+	UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Sky environment setup complete (SkyLight only, no Atmosphere/Sphere)"));
 }
 
 void UUEMotionScene::SetupBlackBackgroundFloor()
@@ -537,11 +491,11 @@ UMaterialInterface* UUEMotionScene::CreateOrLoadBlackMaterial()
 	}
 
 	UMaterialInterface* BaseMat = LoadObject<UMaterialInterface>(
-		nullptr, TEXT("/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"));
+		nullptr, TEXT("/Engine/EngineMaterials/M_Unlit.M_Unlit"));
 
 	if (!BaseMat)
 	{
-		UE_LOG(LogTemp, Error, TEXT("UEMotionScene: Failed to load base material 'BasicShapeMaterial'"));
+		UE_LOG(LogTemp, Error, TEXT("UEMotionScene: Failed to load unlit base material 'M_Unlit'"));
 		return nullptr;
 	}
 
@@ -549,7 +503,6 @@ UMaterialInterface* UUEMotionScene::CreateOrLoadBlackMaterial()
 
 #if WITH_EDITOR
 	BlackMIC->SetVectorParameterValueEditorOnly(FName("BaseColor"), FLinearColor(0.0f, 0.0f, 0.0f, 1.0f));
-	BlackMIC->SetScalarParameterValueEditorOnly(FName("Opacity"), 1.0f);
 #endif
 
 	FAssetRegistryModule::AssetCreated(BlackMIC);

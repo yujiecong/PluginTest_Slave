@@ -7,7 +7,7 @@ from uemotion import Scene, ORIGIN, UP, DOWN, LEFT, RIGHT, MVector
 
 s = Scene("cube_basic_animations", 1920, 1080, mode="2d")
 s.directional_light(direction=(0, -1, -1), color="white", intensity=10)
-s.point_light(location=ORIGIN, color="white", intensity=5000)
+# s.point_light(location=ORIGIN, color="white", intensity=5000)  # Disabled for dark background
 
 FPS = 30
 FRAME_DURATION = 1.0
