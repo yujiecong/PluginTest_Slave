@@ -219,16 +219,18 @@ void UUEMotionScene::SetupCoordinateAxes()
 	TArray<TPair<FString, FLinearColor>> AxisConfigs;
 	AxisConfigs.Add(TPair<FString, FLinearColor>(TEXT("BP_Axis_X"), FLinearColor(1.0f, 0.25f, 0.25f, 1.0f)));
 	AxisConfigs.Add(TPair<FString, FLinearColor>(TEXT("BP_Axis_Y"), FLinearColor(0.25f, 1.0f, 0.25f, 1.0f)));
-	AxisConfigs.Add(TPair<FString, FLinearColor>(TEXT("BP_Axis_Z"), FLinearColor(0.25f, 0.5f, 1.0f, 1.0f)));
+
+	if (!bIs2DView)
+	{
+		AxisConfigs.Add(TPair<FString, FLinearColor>(TEXT("BP_Axis_Z"), FLinearColor(0.25f, 0.5f, 1.0f, 1.0f)));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("UEMotionScene: 2D view mode enabled - Z-axis will not be created"));
+	}
 
 	for (int32 i = 0; i < AxisConfigs.Num(); i++)
 	{
-		if (bIs2DView && i == 2)
-		{
-			UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Skipping Z-axis in 2D view mode"));
-			continue;
-		}
-
 		const FString& BPName = AxisConfigs[i].Key;
 		const FLinearColor& Color = AxisConfigs[i].Value;
 

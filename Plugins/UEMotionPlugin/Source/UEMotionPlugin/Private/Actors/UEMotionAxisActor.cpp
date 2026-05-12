@@ -44,6 +44,27 @@ void AUEMotionAxisActor::InitializeAxis(EAxis::Type InAxis, float InLength, cons
 	AxisColor = InColor;
 
 	SetupMesh();
+
+	if (MeshComponent)
+	{
+		FRotator TargetRotation = FRotator::ZeroRotator;
+		switch (InAxis)
+		{
+		case EAxis::X:
+			TargetRotation = FRotator(0, 0, 0);
+			break;
+		case EAxis::Y:
+			TargetRotation = FRotator(0, 90, 0);
+			break;
+		case EAxis::Z:
+			TargetRotation = FRotator(90, 0, 0);
+			break;
+		default:
+			TargetRotation = FRotator::ZeroRotator;
+			break;
+		}
+		MeshComponent->SetRelativeRotation(TargetRotation);
+	}
 }
 
 void AUEMotionAxisActor::SetAxisColor(const FLinearColor& InColor)
