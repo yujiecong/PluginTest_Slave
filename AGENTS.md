@@ -409,383 +409,384 @@ mesh_component.set_static_mesh(runtime_mesh)  # 运行时创建的 Mesh
 
 ---
 
-## Asset Creation Best Practices (经验总结)
+## Asset Creation Best Practices (血泪教训)
 
-### 🎯 核心原则：一切皆UAsset
+### 🎯 **铁律：一切皆UAsset，禁止运行时动态生成！**
 
-**日期**: 2026-05-12
-**背景**: 修复地板、材质、灯光等场景元素的实现问题
+**日期**: 2026-05-13
+**背景**: 修复BP_Axis材质分配bug + BP_BlackFloor材质问题
+**痛苦指数**: ⭐⭐⭐⭐⭐ (浪费3小时debug)
 
-#### ✅ 正确的资产创建流程
+#### 💔 **我踩过的坑（真实案例）**
 
-##### 1. Blueprint UAsset 创建（以地板为例）
+##### **Bug #1: 动态材质导致蓝图显示异常**
 
+**问题描述**:
+- BP_Axis_X 和 BP_Axis_Y 都使用了**相同的红色材质M_Axis_X**
+- 在UE编辑器中打开蓝图，Material Slot显示为空或错误
+- 运行时材质颜色正确，但无法在编辑器预览
+
+**根本原因**:
 ```cpp
-// UEMotionScene.cpp - SetupBlackBackgroundFloor()
+// ❌ 错误代码：使用Contains()模糊匹配
+if (BPName.Contains(TEXT("X")))  // "BP_Axis_Y" 也包含 "X"！
+    MaterialName = TEXT("M_Axis_X");  // Y轴也用了X轴材质
 
-// Step 1: 检查是否已存在
-FString FloorBlueprintPath = TEXT("/Game/UEMotion/Blueprints/BP_BlackFloor");
-UClass* FloorClass = nullptr;
-
-if (UEditorAssetLibrary::DoesAssetExist(FloorBlueprintPath))
-{
-    // 加载已存在的蓝图
-    UBlueprint* ExistingBP = LoadObject<UBlueprint>(nullptr, *FloorBlueprintPath);
-    if (ExistingBP && ExistingBP->GeneratedClass)
-    {
-        FloorClass = ExistingBP->GeneratedClass;
-    }
-}
-
-// Step 2: 如果不存在，创建新蓝图
-if (!FloorClass)
-{
-    UPackage* Package = CreatePackage(*FloorBlueprintPath);
-    
-    UBlueprintFactory* BPFactory = NewObject<UBlueprintFactory>();
-    BPFactory->ParentClass = AActor::StaticClass();  // 或其他基类
-    
-    UBlueprint* NewBP = Cast<UBlueprint>(BPFactory->FactoryCreateNew(
-        UBlueprint::StaticClass(), Package, TEXT("BP_BlackFloor"),
-        RF_Public | RF_Standalone, nullptr, GWarn));
-    
-    if (NewBP)
-    {
-        // Step 3: 配置 SCS (SimpleConstructionScript)
-        USimpleConstructionScript* SCS = NewBP->SimpleConstructionScript;
-        if (SCS)
-        {
-            // 创建根组件
-            USCS_Node* RootNode = SCS->CreateNode(USceneComponent::StaticClass(), TEXT("DefaultSceneRoot"));
-            SCS->AddNode(RootNode);
-            
-            // 创建子组件（如 StaticMeshComponent）
-            USCS_Node* MeshNode = SCS->CreateNode(UStaticMeshComponent::StaticClass(), TEXT("FloorMesh"));
-            RootNode->AddChildNode(MeshNode);
-            
-            // 配置组件模板
-            UStaticMeshComponent* MeshTemplate = Cast<UStaticMeshComponent>(MeshNode->ComponentTemplate);
-            if (MeshTemplate)
-            {
-                MeshTemplate->SetStaticMesh(PlaneMesh);
-                MeshTemplate->SetRelativeScale3D(FVector(ScaleX, ScaleY, 1.0f));
-                MeshTemplate->SetMaterial(0, BlackMaterial);  // 应用材质
-                MeshTemplate->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-            }
-        }
-        
-        // Step 4: 编译蓝图
-        FKismetEditorUtilities::CompileBlueprint(NewBP);
-        
-        // Step 5: 自动保存（无弹窗）
-        FAssetRegistryModule::AssetCreated(NewBP);
-        Package->MarkPackageDirty();
-        
-        FSavePackageArgs SaveArgs;
-        SaveArgs.SaveFlags = RF_Public | RF_Standalone;
-        
-        FString PkgFilename = FPackageName::LongPackageNameToFilename(
-            Package->GetName(), 
-            FPackageName::GetAssetPackageExtension()
-        );
-        
-        UPackage::SavePackage(Package, nullptr, *PkgFilename, SaveArgs);
-        
-        FloorClass = NewBP->GeneratedClass;
-    }
-}
-
-// Step 6: 从蓝图UAsset Spawn Actor
-AActor* FloorActor = SceneWorld->SpawnActor<AActor>(
-    FloorClass,
-    FVector(0, 0, -0.01),
-    FRotator::ZeroRotator,  // ⚠️ 注意：不要随意旋转
-    SpawnParams
-);
+// ❌ 错误代码：运行时创建动态材质
+UMaterialInstanceDynamic* DynamicMat = UMaterialInstanceDynamic::Create(AxisMaterial, this);
+DynamicMat->SetVectorParameterValue(FName("Color"), AxisColor);
+MeshComponent->SetMaterial(0, DynamicMat);  // 每次运行都新建，不保存到蓝图！
 ```
 
-##### 2. Material Instance UAsset 创建
+**后果**:
+1. 材质是**内存临时对象**，不会序列化到蓝图的SCS
+2. Content Browser看不到材质引用
+3. 无法在编辑器中调整材质参数
+4. 其他开发者打开项目一脸懵逼："材质呢？"
 
+**✅ 正确方案：静态UAsset + 精确匹配**
 ```cpp
-// UEMotionScene.cpp - CreateOrLoadBlackMaterial()
+// ✅ 使用EndsWith精确匹配轴名称
+if (BPName.EndsWith(TEXT("X")))
+    MaterialName = TEXT("M_Axis_X");
+else if (BPName.EndsWith(TEXT("Y")))
+    MaterialName = TEXT("M_Axis_Y");
+else if (BPName.EndsWith(TEXT("Z")))
+    MaterialName = TEXT("M_Axis_Z");
 
-UMaterialInterface* UUEMotionScene::CreateOrLoadBlackMaterial()
+// ✅ 先加载/创建UAsset
+UMaterialInterface* AxisMaterial = LoadObject<UMaterialInterface>(nullptr, *MaterialPath);
+if (!AxisMaterial)
 {
-    const FString MaterialPath = TEXT("/Game/UEMotion/Materials/M_BlackBackground");
+    // 创建并保存为UAsset文件
+    AxisMaterial = CreateStaticAxisMaterial(MaterialName, Color);  // 返回UAsset
+}
 
-    // Step 1: 检查并验证现有材质
-    if (UEditorAssetLibrary::DoesAssetExist(MaterialPath))
-    {
-        UMaterialInterface* ExistingMat = LoadObject<UMaterialInterface>(nullptr, *MaterialPath);
-        if (ExistingMat)
-        {
-            return ExistingMat;  // 成功加载
-        }
-        else
-        {
-            // ⚠️ 材质损坏，删除并重建
-            UE_LOG(LogTemp, Warning, TEXT("Material exists but corrupted, recreating..."));
-            UEditorAssetLibrary::DeleteAsset(MaterialPath);
-        }
-    }
+// ✅ 分配到蓝图的MeshTemplate（不是运行时Component！）
+MeshTemplate->SetMaterial(0, AxisMaterial);  // 写入SCS模板，保存到.uasset
+```
 
-    // Step 2: 创建 Package
-    UPackage* Package = CreatePackage(*MaterialPath);
-    if (!Package) return nullptr;
+---
 
-    // Step 3: 创建 MaterialInstanceConstant
-    UMaterialInstanceConstant* BlackMIC = NewObject<UMaterialInstanceConstant>(
-        Package, 
-        TEXT("M_BlackBackground"), 
-        RF_Public | RF_Standalone | RF_Transactional
-    );
+##### **Bug #2: 黑色地板材质不反光需求**
 
-    if (!BlackMIC) return nullptr;
+**用户需求**:
+> "现在的BP_BlackFloor用的是内存生成的material，我要求自己创建父材质球，用纯黑的不反光的材质"
 
-    // Step 4: 设置父材质和参数
-    UMaterialInterface* BaseMat = LoadObject<UMaterialInterface>(
-        nullptr, 
-        TEXT("/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial")
-    );
-
-    if (!BaseMat) return nullptr;
-
-    BlackMIC->SetParentEditorOnly(BaseMat);
+**我的第一次尝试（❌ 失败）**:
+```cpp
+// 尝试自定义UMaterial作为父材质
+UMaterial* ParentMaterial = NewObject<UMaterial>(...);
+ParentMaterial->SetShadingModel(MSM_Unlit);
 
 #if WITH_EDITOR
-    BlackMIC->SetVectorParameterValueEditorOnly(
-        FName("BaseColor"), 
-        FLinearColor(0.0f, 0.0f, 0.0f, 1.0f)  // 纯黑 + 不透明
-    );
+// ❌ UE 5.7编译错误！Expressions和BaseColor不可访问
+ParentMaterial->Expressions.Add(ColorParam);      // error C2039: "Expressions": 不是 "UMaterial" 的成员
+ParentMaterial->BaseColor.Expression = ColorParam;  // error C2039: "BaseColor": 不是 "UMaterial" 的成员
+#endif
+```
+
+**错误原因**:
+- UE 5.7对`UMaterial`的API做了限制，不允许直接操作表达式图
+- 这是Epic的安全措施，防止底层材质被篡改
+
+**✅ 最终解决方案：使用M_Unlit + MaterialInstanceConstant**
+```cpp
+// 直接使用UE内置的Unlit材质作为parent（天然不反光）
+UMaterialInterface* BaseMat = LoadObject<UMaterialInterface>(
+    nullptr, TEXT("/Engine/EngineMaterials/M_Unlit.M_Unlit"));
+
+UMaterialInstanceConstant* BlackMIC = NewObject<UMaterialInstanceConstant>(...);
+BlackMIC->SetParentEditorOnly(BaseMat);
+
+#if WITH_EDITOR
+BlackMIC->SetVectorParameterValueEditorOnly(FName("BaseColor"), FLinearColor::Black);
+BlackMIC->PostEditChange();  // 关键：触发参数序列化
 #endif
 
-    // Step 5: 注册并保存
-    FAssetRegistryModule::AssetCreated(BlackMIC);
-    Package->MarkPackageDirty();
+// 保存为UAsset
+UPackage::SavePackage(Package, BlackMIC, *FilePath, SaveArgs);  // 传入对象引用！
+```
 
-    FString FilePath = FPaths::Combine(
-        FPaths::ProjectContentDir(),
-        TEXT("UEMotion/Materials/"),
-        TEXT("M_BlackBackground.uasset")
-    );
+**为什么这样更好？**
+1. ✅ M_Unlit是引擎内置的，100%稳定
+2. ✅ Unlit shading model = 零光照计算 = 天然不反光
+3. ✅ MaterialInstanceConstant可以覆盖参数（BaseColor等）
+4. ✅ 保存为`.uasset`后可在编辑器自由调整
 
-    FSavePackageArgs SaveArgs;
-    SaveArgs.SaveFlags = RF_Public | RF_Standalone;
+---
 
-    bool bSaveSuccess = UPackage::SavePackage(Package, nullptr, *FilePath, SaveArgs);
-    
-    if (!bSaveSuccess)
+### 🏆 **核心原则（刻在DNA里）**
+
+#### **原则 #1: UAsset优先于一切**
+
+```
+优先级排序：
+1. 🥇 从Content Browser加载已有UAsset（最快最稳）
+2. 🥈 创建新UAsset并保存到磁盘（可复用）
+3. 🉐 运行时动态创建（仅用于测试/临时对象）
+4. ❌ 禁止：动态对象不保存就使用（必出bug）
+```
+
+**为什么必须用UAsset？**
+
+| 特性 | UAsset（静态） | 动态创建 |
+|------|---------------|---------|
+| 编辑器可见性 | ✅ Content Browser显示 | ❌ 内存幽灵对象 |
+| 蓝图引用 | ✅ SCS自动记录 | ❌ 每次运行都丢失 |
+| 参数调整 | ✅ 双击即可编辑 | ❌ 必须改代码重新编译 |
+| 团队协作 | ✅ 提交Git即可共享 | ❌ 别人电脑上没有 |
+| 调试难度 | 🔴 简单 | 🔴🔴🔴 极难（找不到对象） |
+| 性能影响 | ✅ 加载一次缓存 | ❌ 每帧/每次都重建 |
+
+**实际案例对比**:
+```cpp
+// ❌ 动态材质（我之前的错误实现）
+void AUEMotionAxisActor::CreateOrLoadAxisMaterial()
+{
+    if (UMaterialInstanceDynamic* DynamicMat = UMaterialInstanceDynamic::Create(AxisMaterial, this))
     {
-        UE_LOG(LogTemp, Error, TEXT("Failed to save material"));
-        return nullptr;  // ❌ 失败时返回空，不要使用无效材质
+        DynamicMat->SetVectorParameterValue(FName("Color"), AxisColor);
+        MeshComponent->SetMaterial(0, DynamicMat);  // 运行时才存在
+    }
+}
+// 问题：蓝图里看不到材质，每次运行都重新创建
+
+// ✅ 静态UAsset（修复后的正确实现）
+void AUEMotionAxisActor::CreateOrLoadAxisMaterial()
+{
+    if (MeshComponent->GetMaterial(0))
+    {
+        AxisMaterial = MeshComponent->GetMaterial(0);  // 直接使用蓝图已分配的
+        return;
+    }
+    
+    AxisMaterial = CreateStaticAxisMaterial(...);  // 创建UAsset
+    MeshComponent->SetMaterial(0, AxisMaterial);   // 应用静态材质
+}
+// 优势：蓝图里有材质引用，编辑器可直接查看
+```
+
+---
+
+#### **原则 #2: 字符串匹配必须精确**
+
+**血的教训**：
+```cpp
+// ❌ Contains() - 模糊匹配（坑死我）
+"BP_Axis_X".Contains("X")  → true  ✓
+"BP_Axis_Y".Contains("X")  → true  ✗ （Y轴被当成X轴！）
+"BP_Axis_Z".Contains("X")  → false ✓
+
+// ✅ EndsWith() - 精确匹配（救了我）
+"BP_Axis_X".EndsWith("X")  → true  ✓
+"BP_Axis_Y".EndsWith("X")  → false ✓
+"BP_Axis_Z".EndsWith("X")  → false ✓
+```
+
+**通用规则**:
+- 用 `EndsWith()` 匹配后缀（如轴名称X/Y/Z）
+- 用 `StartsWith()` 匹配前缀（如BP_前缀）
+- 用 `==` 或 `Equals()` 做完全匹配
+- **永远不要用 `Contains()` 做关键逻辑判断**（除非你真的想模糊搜索）
+
+---
+
+#### **原则 #3: 保存时必须传入对象引用**
+
+**又一个坑**:
+```cpp
+// ❌ 错误：传nullptr（资产可能损坏或无法加载）
+UPackage::SavePackage(Package, nullptr, *FilePath, SaveArgs);
+
+// ✅ 正确：传入具体的对象指针
+UPackage::SavePackage(Package, BlackMIC, *FilePath, SaveArgs);  // BlackMIC是要保存的对象
+UPackage::SavePackage(Package, NewBP, *BPFilename, SaveArgs);     // NewBP是要保存的蓝图
+```
+
+**为什么？**
+- UE需要知道你要保存哪个对象来更新资产注册表
+- 传nullptr可能导致资产元数据丢失
+- 后续`LoadObject()`可能返回nullptr或损坏的对象
+
+---
+
+#### **原则 #4: PostEditChange()是救命稻草**
+
+**什么时候必须调用？**
+```cpp
+#if WITH_EDITOR
+BlackMIC->SetVectorParameterValueEditorOnly(FName("BaseColor"), FLinearColor::Black);
+BlackMIC->PostEditChange();  // ✅ 触发完整序列化流程
+#endif
+```
+
+**不调用的后果**:
+- 参数值只在内存中，未写入磁盘
+- 下次加载UAsset时参数丢失（变回默认值）
+- 编辑器中双击材质看到的值与代码设置的不一致
+
+**适用场景**:
+- 设置材质参数后（颜色、纹理、标量等）
+- 修改组件属性后（Scale、Collision等）
+- 配置SCS节点后
+
+---
+
+### 📋 **标准资产创建流程（5步法）**
+
+以创建坐标轴为例：
+
+```cpp
+UMaterialInterface* CreateAxisMaterialUAsset(const FString& Name, const FLinearColor& Color)
+{
+    // Step 1: 检查是否已存在（避免重复创建）
+    FString Path = FString::Printf(TEXT("/Game/UEMotion/Materials/%s"), *Name);
+    if (UEditorAssetLibrary::DoesAssetExist(Path))
+    {
+        UMaterialInterface* Existing = LoadObject<UMaterialInterface>(nullptr, *Path);
+        if (Existing) return Existing;  // ✅ 复用已有UAsset
+        
+        // 损坏处理
+        UE_LOG(LogTemp, Warning, TEXT("Corrupted asset detected: %s"), *Path);
+        UEditorAssetLibrary::DeleteAsset(Path);
     }
 
-    return BlackMIC;
+    // Step 2: 创建Package和对象
+    UPackage* Pkg = CreatePackage(*Path);
+    UMaterialInstanceConstant* MIC = NewObject<UMaterialInstanceConstant>(
+        Pkg, *Name, RF_Public | RF_Standalone | RF_Transactional
+    );
+
+    // Step 3: 配置属性
+    MIC->SetParentEditorOnly(BaseMaterial);  // 使用稳定的parent
+    
+#if WITH_EDITOR
+    MIC->SetVectorParameterValueEditorOnly(FName("Color"), Color);
+    MIC->PostEditChange();  // ✅ 必须调用！
+#endif
+
+    // Step 4: 注册到资产系统
+    MIC->SetFlags(RF_Public | RF_Standalone);
+    FAssetRegistryModule::AssetCreated(MIC);
+    Pkg->MarkPackageDirty();
+
+    // Step 5: 保存到磁盘（传入对象引用！）
+    FString FilePath = GetUAssetFilePath(Path);
+    FSavePackageArgs Args;
+    Args.SaveFlags = RF_Public | RF_Standalone;
+    
+    bool bSuccess = UPackage::SavePackage(Pkg, MIC, *FilePath, Args);  // ✅ 传MIC不是nullptr
+    if (!bSuccess)
+    {
+        UE_LOG(LogTemp, Error, TEXT("Failed to save: %s"), *Path);
+        return nullptr;
+    }
+
+    return MIC;  // 返回有效的UAsset指针
 }
 ```
 
 ---
 
-### ⚠️ 常见陷阱与解决方案
+### 🎨 **蓝图+材质集成最佳实践**
 
-#### 1. **保存弹窗问题**
+**目标**: 在蓝图中直接看到材质分配（不是运行时才应用）
 
-**问题**: 使用 `FEditorFileUtils::PromptForCheckoutAndSave()` 会弹出"是否保存"对话框
-
-**❌ 错误做法**:
 ```cpp
-TArray<UPackage*> PackagesToSave;
-PackagesToSave.Add(Package);
-FEditorFileUtils::PromptForCheckoutAndSave(PackagesToSave, false, true);  // 弹窗！
+void CreateBlueprintWithMaterialAssignment()
+{
+    // 1. 创建蓝图
+    UBlueprint* NewBP = CreateBlueprint("/Game/UEMotion/Blueprints/BP_MyActor");
+
+    // 2. 配置SCS
+    USimpleConstructionScript* SCS = NewBP->SimpleConstructionScript;
+    USCS_Node* MeshNode = SCS->CreateNode(UStaticMeshComponent::StaticClass(), TEXT("Mesh"));
+    
+    UStaticMeshComponent* MeshTemplate = Cast<UStaticMeshComponent>(MeshNode->ComponentTemplate);
+    
+    // 3. ✅ 关键：在这里分配材质UAsset（写入SCS模板）
+    UMaterialInterface* MyMaterial = LoadOrCreateMaterialUAsset("/Game/UEMotion/Materials/M_MyMaterial");
+    MeshTemplate->SetMaterial(0, MyMaterial);  // 这行让材质出现在蓝图的Details面板！
+
+    // 4. 编译并保存
+    FKismetEditorUtilities::CompileBlueprint(NewBP);
+    SaveBlueprintToDisk(NewBP);
+
+    // 5. Spawn时无需再设置材质（蓝图自带了）
+    AActor* Actor = World->SpawnActor<AActor>(NewBP->GeneratedClass, ...);
+    // Actor的Mesh组件已经自动应用了MyMaterial
+}
 ```
 
-**✅ 正确做法**:
-```cpp
-FSavePackageArgs SaveArgs;
-SaveArgs.SaveFlags = RF_Public | RF_Standalone;
+**效果**:
+- 打开BP_MyActor蓝图 → Details面板 → Mesh组件 → Materials[0] = M_MyMaterial ✅
+- 双击M_MyMaterial → 可在材质编辑器中调整参数 ✅
+- 其他开发者看到蓝图就知道用了什么材质 ✅
 
-FString PkgFilename = FPackageName::LongPackageNameToFilename(
-    Package->GetName(),
-    FPackageName::GetAssetPackageExtension()
-);
+---
 
-UPackage::SavePackage(Package, nullptr, *PkgFilename, SaveArgs);  // 静默保存
-```
+### ⚠️ **UE版本兼容性备忘录**
 
-#### 2. **材质参数名错误**
+| API | UE 5.4及以下 | UE 5.7 | 建议 |
+|-----|-------------|--------|------|
+| `UMaterial::Expressions` | ✅ 可访问 | ❌ 编译错误 | 改用MaterialInstanceConstant |
+| `UMaterial::BaseColor` | ✅ 可访问 | ❌ 编译错误 | 同上 |
+| `PostEditChange()` | 可选 | **必须调用** | 统一加上 |
+| `SavePackage(obj)` | 可传nullptr | **建议传对象** | 统一传对象 |
 
-**问题**: 使用错误的参数名导致材质颜色不生效
+**结论**: 如果你的代码要在多个UE版本运行，**始终使用MaterialInstanceConstant + PostEditChange + 对象引用**
 
-**❌ 错误做法**:
-```cpp
-NewMaterialInstance->SetVectorParameterValueEditorOnly(FName("Color"), Color);  // 参数名错误
-NewMaterialInstance->SetVectorParameterValueEditorOnly(FName("BaseColor"), FLinearColor::Black);  // 可能不明确
-```
+---
 
-**✅ 正确做法**:
-```cpp
-// 使用明确的RGBA值
-NewMaterialInstance->SetVectorParameterValueEditorOnly(
-    FName("BaseColor"), 
-    FLinearColor(0.0f, 0.0f, 0.0f, 1.0f)  // R, G, B, A
-);
-```
+### ✅ **质量检查清单（每次提交前必查）**
 
-#### 3. **地板旋转问题**
+- [ ] 所有材质都是**静态UAsset**（没有UMaterialInstanceDynamic）
+- [ ] 蓝图的SCS模板已配置材质（不是运行时SetMaterial）
+- [ ] 字符串匹配使用**EndsWith/StartsWith**（不用Contains）
+- [ ] 调用了**PostEditChange()**（#if WITH_EDITOR块内）
+- [ ] SavePackage传入了**对象指针**（不是nullptr）
+- [ ] 资产路径符合规范 `/Game/UEMotion/{Type}/{Name}`
+- [ ] 使用了正确的标志 `RF_Public | RF_Standalone | RF_Transactional`
+- [ ] 检查了**保存返回值**（失败时不使用无效对象）
+- [ ] Content Browser能看到所有生成的UAsset
+- [ ] 在UE编辑器中打开蓝图验证Material Slot
 
-**问题**: Spawn时使用 `FRotator(90, 0, 0)` 导致地板倾斜
+---
 
-**❌ 错误做法**:
-```cpp
-AActor* FloorActor = SceneWorld->SpawnActor<AActor>(
-    FloorClass,
-    FVector(0, 0, -0.01),
-    FRotator(90, 0, 0),  // ❌ 导致地板垂直！
-    SpawnParams
-);
-```
+### 🚨 **常见错误模式（警惕信号）**
 
-**✅ 正确做法**:
-```cpp
-AActor* FloorActor = SceneWorld->SpawnActor<AActor>(
-    FloorClass,
-    FVector(0, 0, -0.01),      // Z=-0.01 避免z-fighting
-    FRotator::ZeroRotator,     // ✅ 地板水平放置
-    SpawnParams
-);
-```
-
-**💡 原因**: Plane mesh 默认就是水平的，不需要额外旋转！
-
-#### 4. **Scale 设置错误**
-
-**问题**: 使用统一的scale值导致XY方向尺寸不够大
-
-**❌ 错误做法**:
-```cpp
-float FloorSize = 8.0f * 50.0f;  // = 400 cm (太小)
-MeshTemplate->SetRelativeScale3D(FVector(FloorSize / 200.0f));  // 统一缩放
-```
-
-**✅ 正确做法**:
-```cpp
-float FloorSizeX = 20.0f * 50.0f;  // = 1000 cm (10米)
-float FloorSizeY = 20.0f * 50.0f;  // = 1000 cm (10米)
-
-MeshTemplate->SetRelativeScale3D(FVector(
-    FloorSizeX / 200.0f,  // X: 5.0
-    FloorSizeY / 200.0f,  // Y: 5.0
-    1.0f                  // Z: 保持厚度不变
-));
-// 实际大小: 1000cm × 1000cm × 200cm (Plane默认200×200)
-```
-
-#### 5. **灯光配置（纯黑背景场景）**
-
-**目标**: Manim风格的纯黑数学可视化环境
+如果你看到这些代码，**立即重构**：
 
 ```cpp
-// DirectionalLight - 关闭主光源
-LightComp->SetIntensity(0.0f);           // 关闭光照
-LightComp->SetLightColor(FLinearColor::Black);  // 黑色光
+// 🚨 警告信号 #1: 动态材质
+UMaterialInstanceDynamic* DynMat = UMaterialInstanceDynamic::Create(Mat, this);
+// → 改为：预先创建MaterialInstanceConstant UAsset
 
-// SkyLight - 关闭天空光
-SkyComp->SetIntensity(0.0f);             // 关闭天空光
-SkyComp->SetRealTimeCaptureEnabled(false);  // 禁用实时捕获
-SkyComp->SetMobility(EComponentMobility::Movable);
+// 🚨 警告信号 #2: Contains做关键匹配
+if (Name.Contains("X")) { ... }
+// → 改为：Name.EndsWith("X")
+
+// 🚨 警告信号 #3: SavePackage传nullptr
+UPackage::SavePackage(Pkg, nullptr, path, args);
+// → 改为：UPackage::SavePackage(Pkg, ActualObject, path, args)
+
+// 🚨 警告信号 #4: Spawn后才设置材质
+AActor* Actor = SpawnActor(...);
+Actor->FindComponentByClass<UStaticMeshComponent>()->SetMaterial(0, Mat);
+// → 改为：在蓝图的SCS模板中设置
+
+// 🚨 警告信号 #5: 没有PostEditChange
+MIC->SetVectorParameter(Name, Value);
+// → 添加：MIC->PostEditChange();
 ```
 
 ---
 
-### 🔧 资产创建模板代码
+**最后的话**:
 
-#### 完整的蓝图+材质创建流程
+> **"如果它不在磁盘上作为一个.uasset文件存在，那它就不值得信任。"**
+> 
+> — 一个被动态材质折磨了3小时的AI助手
 
-```cpp
-// 1. 先创建材质uasset
-UMaterialInterface* Material = CreateOrLoadBlackMaterial();
-
-// 2. 再创建蓝图uasset（引用材质）
-UBlueprint* NewBP = CreateBlueprintWithMaterial(Material);
-
-// 3. 最后从蓝图spawn actor
-AActor* Actor = World->SpawnActor<AActor>(NewBP->GeneratedClass, ...);
-```
-
-#### 必要的头文件
-
-```cpp
-#include "Engine/Blueprint.h"
-#include "Factories/BlueprintFactory.h"
-#include "Kismet2/KismetEditorUtilities.h"
-#include "Engine/SimpleConstructionScript.h"
-#include "Engine/SCS_Node.h"
-#include "Materials/MaterialInstanceConstant.h"
-#include "Misc/PackageName.h"
-#include "AssetRegistry/AssetRegistryModule.h"
-#include "EditorAssetLibrary.h"
-```
-
----
-
-### 📊 资产清单示例
-
-运行脚本后应生成的标准资产结构：
-
-```
-/Game/UEMotion/
-├── Blueprints/
-│   ├── BP_Axis_X.uasset          # X轴蓝图 (红色)
-│   ├── BP_Axis_Y.uasset          # Y轴蓝图 (绿色)
-│   ├── BP_Axis_Z.uasset          # Z轴蓝图 (蓝色)
-│   └── BP_BlackFloor.uasset      # 黑色地板蓝图
-├── Materials/
-│   ├── M_Axis_X.uasset           # X轴红色材质实例
-│   ├── M_Axis_Y.uasset           # Y轴绿色材质实例
-│   ├── M_Axis_Z.uasset           # Z轴蓝色材质实例
-│   └── M_BlackBackground.uasset  # 纯黑背景材质实例
-├── Scenes/
-│   └── {SceneName}.umap          # 场景地图
-└── Sequences/
-    └── LS_{Sequence}.uasset      # Level Sequence
-```
-
----
-
-### ✅ 质量检查清单
-
-每次创建新资产时，确保：
-
-- [ ] 资产路径符合 `/Game/UEMotion/{Type}/{Name}` 规范
-- [ ] 使用 `RF_Public | RF_Standalone | RF_Transactional` 标志
-- [ ] 调用 `FAssetRegistryModule::AssetCreated()` 注册资产
-- [ ] 调用 `Package->MarkPackageDirty()` 标记为脏
-- [ ] 使用 `UPackage::SavePackage()` 静默保存（不用PromptForCheckoutAndSave）
-- [ ] 验证保存返回值 (`bool bSaveSuccess`)
-- [ ] 加载时检查返回值是否为nullptr
-- [ ] 损坏的资产自动删除并重建
-- [ ] 所有日志输出包含详细上下文信息
-
----
-
-### 🚀 性能优化建议
-
-1. **缓存静态资源**: BaseMaterial等引擎内置资源只需加载一次
-2. **复用已有资产**: 先检查 `DoesAssetExist()` 避免重复创建
-3. **批量保存**: 多个资产可以收集后一次性保存
-4. **延迟编译**: 蓝图可以在所有SCS节点配置完成后再编译
-
----
-
-### 📝 相关文件索引
-
-| 文件 | 功能 | 关键函数 |
-|------|------|----------|
-| `UEMotionScene.cpp` | 场景初始化与资产管理 | `SetupBlackBackgroundFloor()`, `CreateOrLoadBlackMaterial()`, `SetupCoordinateAxes()` |
-| `UEMotionAxisActor.cpp` | 坐标轴actor与材质 | `CreateAxisMaterials()`, `CreateStaticAxisMaterial()` |
-| `UEMotionScene.h` | 场景类声明 | 方法声明 |
-| `UEMotionAxisActor.h` | Axis actor类声明 | 方法声明 |
-
----
-
-**维护者备注**: 此文档应随着插件开发持续更新，确保最佳实践得到遵循。
+记住：**UAsset是你的朋友，内存对象是暂时的过客。** 让所有的材质、蓝图、mesh都成为持久的资产，你的未来自己会感谢现在的你！
