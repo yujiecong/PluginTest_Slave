@@ -410,22 +410,22 @@ void UUEMotionScene::SetupBlackBackgroundFloor()
 
 				FKismetEditorUtilities::CompileBlueprint(NewBP);
 
-				FAssetRegistryModule::AssetCreated(NewBP);
+				NewBP->SetFlags(RF_Public | RF_Standalone);
 				Package->MarkPackageDirty();
 
-				TArray<UPackage*> PackagesToSave;
-				PackagesToSave.Add(Package);
+#if WITH_EDITOR
+				NewBP->PostEditChange();
+#endif
 
-				FSavePackageArgs SaveArgs;
-				SaveArgs.SaveFlags = RF_Public | RF_Standalone;
+				FAssetRegistryModule::AssetCreated(NewBP);
 
-				for (UPackage* Pkg : PackagesToSave)
-				{
-				 FString PkgFilename = FPackageName::LongPackageNameToFilename(
-					 Pkg->GetName(), FPackageName::GetAssetPackageExtension());
+			 FString BPFilename = FPackageName::LongPackageNameToFilename(
+				 Package->GetName(), FPackageName::GetAssetPackageExtension());
 
-				 UPackage::SavePackage(Pkg, nullptr, *PkgFilename, SaveArgs);
-				}
+			 FSavePackageArgs SaveArgs;
+			 SaveArgs.SaveFlags = RF_Public | RF_Standalone;
+
+			 UPackage::SavePackage(Package, NewBP, *BPFilename, SaveArgs);
 
 				FloorClass = NewBP->GeneratedClass;
 				UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Created black floor blueprint '%s' with SCS configuration"), *FloorBlueprintPath);
@@ -504,9 +504,10 @@ UMaterialInterface* UUEMotionScene::CreateOrLoadBlackMaterial()
 #if WITH_EDITOR
 	FLinearColor DefaultBlack(0.0f, 0.0f, 0.0f, 1.0f);
 	BlackMIC->SetVectorParameterValueEditorOnly(FName("BaseColor"), DefaultBlack);
+	BlackMIC->PostEditChange();
 #endif
 
-	FAssetRegistryModule::AssetCreated(BlackMIC);
+	BlackMIC->SetFlags(RF_Public | RF_Standalone);
 	Package->MarkPackageDirty();
 
 	FString FilePath = FPaths::Combine(
@@ -519,7 +520,7 @@ UMaterialInterface* UUEMotionScene::CreateOrLoadBlackMaterial()
 
 	bool bSaveSuccess = UPackage::SavePackage(
 		Package,
-		nullptr,
+		BlackMIC,
 		*FilePath,
 		SaveArgs);
 
