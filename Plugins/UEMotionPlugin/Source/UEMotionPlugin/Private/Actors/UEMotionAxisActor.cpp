@@ -73,11 +73,7 @@ void AUEMotionAxisActor::SetAxisColor(const FLinearColor& InColor)
 
 	if (MeshComponent && AxisMaterial)
 	{
-		if (UMaterialInstanceDynamic* DynamicMat = UMaterialInstanceDynamic::Create(AxisMaterial, this))
-		{
-			DynamicMat->SetVectorParameterValue(FName("BaseColor"), AxisColor);
-			MeshComponent->SetMaterial(0, DynamicMat);
-		}
+		MeshComponent->SetMaterial(0, AxisMaterial);
 	}
 	else
 	{
@@ -156,6 +152,13 @@ void AUEMotionAxisActor::CreateOrLoadAxisMaterial()
 {
 	if (!MeshComponent) return;
 
+	if (MeshComponent->GetMaterial(0))
+	{
+		AxisMaterial = MeshComponent->GetMaterial(0);
+		UE_LOG(LogTemp, Log, TEXT("UEMotionAxisActor: Using material assigned in blueprint"));
+		return;
+	}
+
 	FString MaterialName;
 	switch (static_cast<EAxis::Type>(AxisType.GetValue()))
 	{
@@ -183,15 +186,7 @@ void AUEMotionAxisActor::CreateOrLoadAxisMaterial()
 
 	if (AxisMaterial)
 	{
-		if (UMaterialInstanceDynamic* DynamicMat = UMaterialInstanceDynamic::Create(AxisMaterial, this))
-		{
-			DynamicMat->SetVectorParameterValue(FName("Color"), AxisColor);
-			MeshComponent->SetMaterial(0, DynamicMat);
-		}
-		else
-		{
-			MeshComponent->SetMaterial(0, AxisMaterial);
-		}
+		MeshComponent->SetMaterial(0, AxisMaterial);
 	}
 }
 
@@ -247,8 +242,10 @@ UMaterialInterface* AUEMotionAxisActor::CreateStaticAxisMaterial(const FString& 
 
 #if WITH_EDITOR
 	NewMaterialInstance->SetVectorParameterValueEditorOnly(FName("Color"), Color);
+	NewMaterialInstance->PostEditChange();
 #endif
 
+	NewMaterialInstance->SetFlags(RF_Public | RF_Standalone);
 	FAssetRegistryModule::AssetCreated(NewMaterialInstance);
 	MaterialPackage->MarkPackageDirty();
 
@@ -262,7 +259,7 @@ UMaterialInterface* AUEMotionAxisActor::CreateStaticAxisMaterial(const FString& 
 
 	bool bSaveSuccess = UPackage::SavePackage(
 		MaterialPackage,
-		nullptr,
+		NewMaterialInstance,
 		*FilePath,
 		SaveArgs);
 

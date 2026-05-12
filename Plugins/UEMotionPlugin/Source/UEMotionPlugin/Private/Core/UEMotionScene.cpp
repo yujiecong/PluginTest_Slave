@@ -282,6 +282,41 @@ void UUEMotionScene::SetupCoordinateAxes()
 
 							MeshTemplate->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 							MeshTemplate->CastShadow = false;
+
+							FString MaterialName;
+							if (BPName.Contains(TEXT("X")))
+								MaterialName = TEXT("M_Axis_X");
+							else if (BPName.Contains(TEXT("Y")))
+								MaterialName = TEXT("M_Axis_Y");
+							else if (BPName.Contains(TEXT("Z")))
+								MaterialName = TEXT("M_Axis_Z");
+
+							if (!MaterialName.IsEmpty())
+							{
+								FString MaterialPath = FString::Printf(TEXT("/Game/UEMotion/Materials/%s"), *MaterialName);
+								UMaterialInterface* AxisMaterial = LoadObject<UMaterialInterface>(nullptr, *MaterialPath);
+
+								if (!AxisMaterial)
+								{
+									AUEMotionAxisActor* TempActor = SceneWorld.Get()->SpawnActor<AUEMotionAxisActor>(FVector::ZeroVector, FRotator::ZeroRotator);
+									if (TempActor)
+									{
+										TempActor->CreateAxisMaterials();
+										AxisMaterial = LoadObject<UMaterialInterface>(nullptr, *MaterialPath);
+										TempActor->Destroy();
+									}
+								}
+
+								if (AxisMaterial)
+								{
+									MeshTemplate->SetMaterial(0, AxisMaterial);
+									UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Assigned axis material '%s' to BP_%s mesh template"), *MaterialName, *BPName);
+								}
+								else
+								{
+									UE_LOG(LogTemp, Warning, TEXT("UEMotionScene: Failed to load/create axis material '%s' for BP_%s"), *MaterialName, *BPName);
+								}
+							}
 						}
 					}
 
