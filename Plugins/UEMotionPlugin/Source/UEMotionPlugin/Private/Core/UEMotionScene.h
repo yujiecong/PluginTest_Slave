@@ -248,6 +248,7 @@ private:
 	void SetupSkyEnvironment();
 	void SetupBlackBackgroundFloor();
 	UMaterialInterface* CreateOrLoadBlackMaterial();
+	UMaterialInterface* CreateOrLoadBlackParentMaterial(const FString& ParentMaterialPath);
 	void OpenLevelSequenceInEditor();
 
 	FGuid AddActorToSequencer(AActor* Actor);
