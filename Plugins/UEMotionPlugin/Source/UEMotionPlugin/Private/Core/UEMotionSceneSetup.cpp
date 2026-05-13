@@ -68,6 +68,13 @@ bool UUEMotionScene::CreateSceneMap()
 		if (FEditorFileUtils::LoadMap(*MapPath))
 		{
 			SceneWorld = GEditor->GetEditorWorldContext().World();
+。			if (SceneWorld.IsValid())
+			{
+				for (TActorIterator<APointLight> It(SceneWorld.Get()); It; ++It)
+				{
+					It->Destroy();
+				}
+			}
 			return SceneWorld != nullptr;
 		}
 		UE_LOG(LogTemp, Warning, TEXT("UEMotionScene: Failed to load existing map '%s', recreating"), *MapPath);
@@ -87,6 +94,11 @@ bool UUEMotionScene::CreateSceneMap()
 		{
 			Actor->Destroy();
 		}
+	}
+
+	for (TActorIterator<APointLight> It(SceneWorld.Get()); It; ++It)
+	{
+		It->Destroy();
 	}
 
 	AWorldSettings* WS = SceneWorld.Get()->GetWorldSettings();
