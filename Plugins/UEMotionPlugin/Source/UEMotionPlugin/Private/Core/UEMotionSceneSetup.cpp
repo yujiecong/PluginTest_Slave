@@ -335,7 +335,19 @@ void UUEMotionScene::SetupCoordinateAxes()
 			AActor* SpawnedActor = SceneWorld.Get()->SpawnActor<AActor>(AxisClass, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
 			if (AUEMotionAxisActor* AxisActor = Cast<AUEMotionAxisActor>(SpawnedActor))
 			{
-				EAxis::Type AxisType = static_cast<EAxis::Type>(i);
+				EAxis::Type AxisType;
+
+				if (bIs2DView)
+				{
+					if (i == 0) AxisType = EAxis::X;
+					else if (i == 1) AxisType = EAxis::Y;
+					else AxisType = EAxis::None;
+				}
+				else
+				{
+					AxisType = static_cast<EAxis::Type>(i);
+				}
+
 				AxisActor->InitializeAxis(AxisType, Len, Color);
 
 				UStaticMeshComponent* AxisMesh = AxisActor->GetMeshComponent();
@@ -362,7 +374,7 @@ void UUEMotionScene::SetupCoordinateAxes()
 					UE_LOG(LogTemp, Log,
 						TEXT("UEMotionScene: Setup axis %d (Type=%s) with rotation (%.0f, %.0f, %.0f) - Blueprint material preserved"),
 						i,
-						(AxisType == EAxis::X) ? TEXT("X") : (AxisType == EAxis::Y) ? TEXT("Y") : TEXT("Z"),
+						(AxisType == EAxis::X) ? TEXT("X") : (AxisType == EAxis::Y) ? TEXT("Y") : (AxisType == EAxis::Z) ? TEXT("Z") : TEXT("NONE"),
 						TargetRotation.Pitch, TargetRotation.Yaw, TargetRotation.Roll);
 				}
 			}
