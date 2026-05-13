@@ -10,6 +10,8 @@
 #include "Materials/MaterialInstanceConstant.h"
 #include "Materials/Material.h"
 #include "Materials/MaterialExpressionVectorParameter.h"
+#include "Materials/MaterialExpressionScalarParameter.h"
+#include "Materials/MaterialExpressionConstant.h"
 #include "Engine/Blueprint.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/SimpleConstructionScript.h"
@@ -680,16 +682,44 @@ UMaterialInterface* UUEMotionScene::CreateOrLoadBlackParentMaterial(const FStrin
 	ParentMaterial->BlendMode = EBlendMode::BLEND_Opaque;
 	ParentMaterial->TwoSided = true;
 
-	UMaterialExpressionVectorParameter* ColorParam = NewObject<UMaterialExpressionVectorParameter>(ParentMaterial);
-	ColorParam->ParameterName = FName("BaseColor");
-	ColorParam->DefaultValue = FLinearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	ParentMaterial->GetExpressionCollection().AddExpression(ColorParam);
+	UMaterialExpressionVectorParameter* BaseColorParam = NewObject<UMaterialExpressionVectorParameter>(ParentMaterial);
+	BaseColorParam->ParameterName = FName("BaseColor");
+	BaseColorParam->DefaultValue = FLinearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	ParentMaterial->GetExpressionCollection().AddExpression(BaseColorParam);
+
+	UMaterialExpressionScalarParameter* MetallicParam = NewObject<UMaterialExpressionScalarParameter>(ParentMaterial);
+	MetallicParam->ParameterName = FName("Metallic");
+	MetallicParam->DefaultValue = 0.0f;
+	ParentMaterial->GetExpressionCollection().AddExpression(MetallicParam);
+
+	UMaterialExpressionScalarParameter* SpecularParam = NewObject<UMaterialExpressionScalarParameter>(ParentMaterial);
+	SpecularParam->ParameterName = FName("Specular");
+	SpecularParam->DefaultValue = 0.0f;
+	ParentMaterial->GetExpressionCollection().AddExpression(SpecularParam);
+
+	UMaterialExpressionScalarParameter* RoughnessParam = NewObject<UMaterialExpressionScalarParameter>(ParentMaterial);
+	RoughnessParam->ParameterName = FName("Roughness");
+	RoughnessParam->DefaultValue = 1.0f;
+	ParentMaterial->GetExpressionCollection().AddExpression(RoughnessParam);
+
+	UMaterialExpressionVectorParameter* EmissiveParam = NewObject<UMaterialExpressionVectorParameter>(ParentMaterial);
+	EmissiveParam->ParameterName = FName("EmissiveColor");
+	EmissiveParam->DefaultValue = FLinearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	ParentMaterial->GetExpressionCollection().AddExpression(EmissiveParam);
 
 #if WITH_EDITORONLY_DATA
 	UMaterialEditorOnlyData* EditorData = ParentMaterial->GetEditorOnlyData();
 	if (EditorData)
 	{
-		EditorData->EmissiveColor.Expression = ColorParam;
+		EditorData->BaseColor.Expression = BaseColorParam;
+		EditorData->BaseColor.OutputIndex = 0;
+		EditorData->Metallic.Expression = MetallicParam;
+		EditorData->Metallic.OutputIndex = 0;
+		EditorData->Specular.Expression = SpecularParam;
+		EditorData->Specular.OutputIndex = 0;
+		EditorData->Roughness.Expression = RoughnessParam;
+		EditorData->Roughness.OutputIndex = 0;
+		EditorData->EmissiveColor.Expression = EmissiveParam;
 		EditorData->EmissiveColor.OutputIndex = 0;
 	}
 #endif
@@ -720,12 +750,9 @@ UMaterialInterface* UUEMotionScene::CreateOrLoadBlackParentMaterial(const FStrin
 		FAssetRegistryModule::AssetCreated(ParentMaterial);
 
 		UE_LOG(LogTemp, Log,
-			TEXT("UEMotionScene: Created black floor PARENT material UAsset '%s'")
-			TEXT("\n  Type: UMaterial (Custom Unlit Material)")
-			TEXT("\n  Shading Model: Unlit (Zero lighting calculations = no reflections)")
-			TEXT("\n  Parameter: BaseColor (VectorParameter → EmissiveColor output)")
-			TEXT("\n  Default Value: (0, 0, 0, 1) [Pure Black]")
-			TEXT("\n  ✓ Saved as .uasset file to disk"),
+			TEXT("UEMotionScene: Created VANTABLACK PARENT material UAsset '%s'")
+			TEXT("\n  [PBR] BaseColor=(0,0,0) Specular=0 Roughness=1 Metallic=0 Emissive=(0,0,0)")
+			TEXT("\n  [Result] Absorbs all light (Zero reflection)"),
 			*ParentFilePath);
 
 #if WITH_EDITOR
