@@ -1,6 +1,7 @@
 #include "UEMotionScene.h"
 #include "UEMotionCamera.h"
 #include "UEMotionMaterialManager.h"
+#include "UEMotionEnvironmentSetup.h"
 #include "Actors/UEMotionSceneActor.h"
 #include "Utils/UEMotionSequencerCompat.h"
 #include "Tracks/MovieSceneCameraCutTrack.h"
@@ -57,6 +58,9 @@ void UUEMotionScene::Initialize(const FString& InSceneName, int32 Width, int32 H
 		Camera->LookAt(FVector(0, 0, 0));
 
 		MaterialManager = NewObject<UUEMotionMaterialManager>(this);
+
+		EnvironmentSetup = NewObject<UUEMotionEnvironmentSetup>(this);
+		EnvironmentSetup->Initialize(SceneWorld.Get(), MaterialManager);
 
 		FGuid CameraBinding = AddActorToSequencer(SceneActor.Get());
 
@@ -116,10 +120,10 @@ void UUEMotionScene::Initialize(const FString& InSceneName, int32 Width, int32 H
 			}
 		}
 
-		SetupDefaultLighting();
-		SetupSkyEnvironment();
-		SetupBlackBackgroundFloor();
-		SetupCoordinateAxes();
+		EnvironmentSetup->SetupDefaultLighting(bUseUnlitMode);
+		EnvironmentSetup->SetupSkyEnvironment();
+		EnvironmentSetup->SetupBlackBackgroundFloor(FloorSize, MaterialManager);
+		EnvironmentSetup->SetupCoordinateAxes(bShowCoordinateAxes, CoordinateAxisLength, bIs2DView);
 		bInitialized = true;
 
 		UEditorLoadingAndSavingUtils::SaveMap(SceneWorld.Get(), GetMapPath());

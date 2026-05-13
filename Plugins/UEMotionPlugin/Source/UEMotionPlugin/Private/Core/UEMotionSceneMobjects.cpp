@@ -217,41 +217,6 @@ bool UUEMotionScene::DoesAssetExist(const FString& AssetPath)
 	return UUEMotionAssetFactory::DoesAssetExist(AssetPath);
 }
 
-void UUEMotionScene::AddDirectionalLight(const FVector& Direction, const FLinearColor& Color, float Intensity)
-{
-	if (!bInitialized || !SceneWorld.IsValid()) return;
-
-	ADirectionalLight* Light = SceneWorld->SpawnActor<ADirectionalLight>(FVector(300, -300, 600), Direction.Rotation());
-	if (Light)
-	{
-		UDirectionalLightComponent* LightComp = Cast<UDirectionalLightComponent>(Light->GetLightComponent());
-		if (LightComp)
-		{
-			LightComp->SetIntensity(Intensity);
-			LightComp->SetLightColor(Color);
-		}
-	}
-}
-
-void UUEMotionScene::AddPointLight(const FVector& Location, const FLinearColor& Color, float Intensity)
-{
-	if (!bInitialized || !SceneWorld.IsValid()) return;
-
-	APointLight* PointLight = SceneWorld->SpawnActor<APointLight>(Location, FRotator::ZeroRotator);
-	if (PointLight)
-	{
-		UPointLightComponent* LightComp = Cast<UPointLightComponent>(PointLight->GetLightComponent());
-		if (LightComp)
-		{
-			LightComp->SetIntensity(Intensity);
-			LightComp->SetLightColor(Color);
-
-			UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Added point light at (%.1f, %.1f, %.1f) with intensity=%.1f"),
-				Location.X, Location.Y, Location.Z, Intensity);
-		}
-	}
-}
-
 TArray<UUEMotionMobject*> UUEMotionScene::GetAllMobjects() const
 {
 	return Mobjects;

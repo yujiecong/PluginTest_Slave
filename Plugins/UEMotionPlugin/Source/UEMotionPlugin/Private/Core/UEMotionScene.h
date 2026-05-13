@@ -12,6 +12,7 @@ class UUEMotionAnimation;
 class UUEMotionRenderer;
 class UUEMotionAssetFactory;
 class UUEMotionMaterialManager;
+class UUEMotionEnvironmentSetup;
 class AUEMotionSceneActor;
 class ULevelSequence;
 class UMovieScene;
@@ -104,12 +105,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "UEMotion")
 	UUEMotionCamera* GetCamera();
-
-	UFUNCTION(BlueprintCallable, Category = "UEMotion")
-	void AddDirectionalLight(const FVector& Direction, const FLinearColor& Color, float Intensity = 10.0f);
-
-	UFUNCTION(BlueprintCallable, Category = "UEMotion")
-	void AddPointLight(const FVector& Location, const FLinearColor& Color, float Intensity = 5000.0f);
 
 	UFUNCTION(BlueprintCallable, Category = "UEMotion")
 	void Play(UUEMotionAnimation* Animation);
@@ -245,12 +240,11 @@ private:
 	UPROPERTY()
 	UUEMotionMaterialManager* MaterialManager = nullptr;
 
+	UPROPERTY()
+	UUEMotionEnvironmentSetup* EnvironmentSetup = nullptr;
+
 	bool CreateSceneMap();
 	bool CreateLevelSequenceAsset();
-	void SetupDefaultLighting();
-	void SetupCoordinateAxes();
-	void SetupSkyEnvironment();
-	void SetupBlackBackgroundFloor();
 	void OpenLevelSequenceInEditor();
 
 	FGuid AddActorToSequencer(AActor* Actor);
