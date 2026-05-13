@@ -115,10 +115,13 @@ void UUEMotionScene::Play(UUEMotionAnimation* Animation)
 	}
 	else if (UUEMotionGroupAnimation* GroupAnim = Cast<UUEMotionGroupAnimation>(Animation))
 	{
+		float GroupStart = CurrentTime;
 		for (UUEMotionAnimation* ChildAnim : GroupAnim->GetChildAnimations())
 		{
+			CurrentTime = GroupStart;
 			Play(ChildAnim);
 		}
+		CurrentTime = GroupStart + Duration;
 		return;
 	}
 
