@@ -254,6 +254,7 @@ private:
 	void RecordFloatKey(UMovieSceneFloatTrack* Track, int32 Frame, float Value);
 	void UpdateCameraCutRange(int32 EndFrame);
 	void UpdateCameraTransformRange(int32 EndFrame);
+	void GenerateShapeBoundaryVertices(UUEMotionMobject* Mobject, TArray<FVector>& OutVertices, int32 Resolution = 64);
 
 	UFUNCTION()
 	void OnRendererFinished(bool bSuccess);

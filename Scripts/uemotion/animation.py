@@ -20,6 +20,16 @@ class Animation:
         self._sequential = False
         return self
 
+    @staticmethod
+    def create_transform(source_mobject, target_mobject, duration=1.0, easing="linear", resolution=64):
+        transform_anim = unreal.UEMotionTransformAnimation()
+        transform_anim.set_duration(duration)
+        transform_anim.set_easing(easing)
+        transform_anim.set_source_mobject(source_mobject._ue)
+        transform_anim.set_target_mobject(target_mobject._ue)
+        transform_anim.set_morph_resolution(resolution)
+        return transform_anim
+
     def build(self):
         if len(self._ue_anims) == 0:
             return None

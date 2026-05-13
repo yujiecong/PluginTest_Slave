@@ -7,6 +7,8 @@
 #include "Anim/UEMotionColorAnimation.h"
 #include "Anim/UEMotionWaitAnimation.h"
 #include "Anim/UEMotionGroupAnimation.h"
+#include "Anim/UEMotionTransformAnimation.h"
+#include "Core/UEMotionMorphMaterialManager.h"
 #include "LevelSequence.h"
 #include "MovieScene.h"
 #include "Utils/UEMotionSequencerCompat.h"
@@ -113,6 +115,47 @@ void UUEMotionScene::Play(UUEMotionAnimation* Animation)
 			}
 		}
 	}
+	else if (UUEMotionTransformAnimation* TransformAnim = Cast<UUEMotionTransformAnimation>(Animation))
+	{
+		UUEMotionMobject* SourceMob = TransformAnim->GetSourceMobject();
+		UUEMotionMobject* TargetMob = TransformAnim->GetTargetMobject();
+
+		if (SourceMob && TargetMob && SourceMob->GetInternalActor())
+		{
+			TArray<FVector> SourceVerts;
+			TArray<FVector> TargetVerts;
+			int32 Resolution = TransformAnim->GetMorphResolution();
+
+			GenerateShapeBoundaryVertices(SourceMob, SourceVerts, Resolution);
+			GenerateShapeBoundaryVertices(TargetMob, TargetVerts, Resolution);
+
+			if (SourceVerts.Num() > 0 && TargetVerts.Num() > 0)
+			{
+				UUEMotionMorphMaterialManager* MorphManager = UUEMotionMorphMaterialManager::Get();
+				if (MorphManager)
+				{
+					MorphManager->GetOrCreateMorphMaterial(SourceMob, SourceVerts, TargetVerts);
+					MorphManager->ApplyMorphToMobject(SourceMob, 0.0f);
+				}
+
+				UMovieSceneFloatTrack* MorphTrack = GetOrCreateFloatTrack(SourceMob, TEXT("MorphProgress"));
+				if (MorphTrack)
+				{
+					RecordFloatKey(MorphTrack, StartFrame, 0.0f);
+					RecordFloatKey(MorphTrack, EndFrame, 1.0f);
+
+					UE_LOG(LogTemp, Log,
+						TEXT("UEMotionScene: Recorded transform morph keys for '%s' -> '%s' (Frames %d->%d)"),
+						*SourceMob->GetName(), *TargetMob->GetName(), StartFrame, EndFrame);
+				}
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning,
+					TEXT("UEMotionScene: Failed to generate vertices for transform"));
+			}
+		}
+	}
 	else if (UUEMotionGroupAnimation* GroupAnim = Cast<UUEMotionGroupAnimation>(Animation))
 	{
 		float GroupStart = CurrentTime;
@@ -188,4 +231,118 @@ void UUEMotionScene::UpdateAnimations(float DeltaTime)
 			ActiveAnimations.RemoveAt(i);
 		}
 	}
+}
+
+void UUEMotionScene::GenerateShapeBoundaryVertices(UUEMotionMobject* Mobject, TArray<FVector>& OutVertices, int32 Resolution)
+{
+	if (!Mobject)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("GenerateShapeBoundaryVertices: Null mobject"));
+		return;
+	}
+
+	AActor* Actor = Mobject->GetInternalActor();
+	if (!Actor)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("GenerateShapeBoundaryVertices: No internal actor"));
+		return;
+	}
+
+	FVector Origin, BoxExtent;
+	Mobject->GetBounds(Origin, BoxExtent);
+
+	FString MobName = Mobject->GetName();
+	float MaxDim = FMath::Max3(BoxExtent.X, BoxExtent.Y, BoxExtent.Z);
+	if (FMath::IsNearlyZero(MaxDim)) MaxDim = 50.0f;
+
+	OutVertices.SetNum(Resolution);
+
+	if (MobName.Contains(TEXT("Sphere"), ESearchCase::IgnoreCase))
+	{
+		for (int32 i = 0; i < Resolution; i++)
+		{
+			float Angle = (float)i / (float)Resolution * UE_TWO_PI;
+			OutVertices[i] = FVector(
+				FMath::Cos(Angle) * MaxDim,
+				FMath::Sin(Angle) * MaxDim,
+				0.0f
+			);
+		}
+	}
+	else if (MobName.Contains(TEXT("Cube"), ESearchCase::IgnoreCase) ||
+			 MobName.Contains(TEXT("Square"), ESearchCase::IgnoreCase))
+	{
+		int32 SideVerts = Resolution / 4;
+		for (int32 i = 0; i < Resolution; i++)
+		{
+			int32 Side = i / SideVerts;
+			float t = (float)(i % SideVerts) / (float)SideVerts;
+
+			switch (Side)
+			{
+			case 0:
+				OutVertices[i] = FVector(
+					FMath::Lerp(MaxDim, -MaxDim, t),
+					MaxDim,
+					0.0f
+				);
+				break;
+			case 1:
+				OutVertices[i] = FVector(
+					-MaxDim,
+					FMath::Lerp(MaxDim, -MaxDim, t),
+					0.0f
+				);
+				break;
+			case 2:
+				OutVertices[i] = FVector(
+					FMath::Lerp(-MaxDim, MaxDim, t),
+					-MaxDim,
+					0.0f
+				);
+				break;
+			default:
+				OutVertices[i] = FVector(
+					MaxDim,
+					FMath::Lerp(-MaxDim, MaxDim, t),
+					0.0f
+				);
+				break;
+			}
+		}
+	}
+	else if (MobName.Contains(TEXT("Cylinder"), ESearchCase::IgnoreCase) ||
+			 MobName.Contains(TEXT("Circle"), ESearchCase::IgnoreCase) ||
+			 MobName.Contains(TEXT("Torus"), ESearchCase::IgnoreCase))
+	{
+		for (int32 i = 0; i < Resolution; i++)
+		{
+			float Angle = (float)i / (float)Resolution * UE_TWO_PI;
+			OutVertices[i] = FVector(
+				FMath::Cos(Angle) * MaxDim,
+				FMath::Sin(Angle) * MaxDim,
+				0.0f
+			);
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log,
+			TEXT("GenerateShapeBoundaryVertices: Unknown shape '%s', using circle approximation"),
+			*MobName);
+
+		for (int32 i = 0; i < Resolution; i++)
+		{
+			float Angle = (float)i / (float)Resolution * UE_TWO_PI;
+			OutVertices[i] = FVector(
+				FMath::Cos(Angle) * MaxDim,
+				FMath::Sin(Angle) * MaxDim,
+				0.0f
+			);
+		}
+	}
+
+	UE_LOG(LogTemp, Log,
+		TEXT("GenerateShapeBoundaryVertices: Generated %d vertices for '%s' (MaxDim=%.2f)"),
+		Resolution, *MobName, MaxDim);
 }

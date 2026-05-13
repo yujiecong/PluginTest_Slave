@@ -261,6 +261,14 @@ class Scene:
     def wait(self, duration=1.0):
         self._ue.wait(duration)
 
+    def transform(self, source_mobject, target_mobject, duration=1.0, easing="linear", resolution=64):
+        transform_anim = Animation.create_transform(
+            source_mobject, target_mobject,
+            duration=duration, easing=easing, resolution=resolution
+        )
+        self._pending_animations.append(transform_anim)
+        return self
+
     def render(self, output_path, duration=5.0, fps=30, on_finished=None):
         output_dir = os.path.dirname(output_path)
         if output_dir and not os.path.exists(output_dir):
