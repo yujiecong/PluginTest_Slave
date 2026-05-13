@@ -20,6 +20,22 @@ COLOR_MAP = {
     "gold": unreal.LinearColor(1, 0.84, 0, 1),
 }
 
+RED = COLOR_MAP["red"]
+GREEN = COLOR_MAP["green"]
+BLUE = COLOR_MAP["blue"]
+YELLOW = COLOR_MAP["yellow"]
+ORANGE = COLOR_MAP["orange"]
+PURPLE = COLOR_MAP["purple"]
+CYAN = COLOR_MAP["cyan"]
+MAGENTA = COLOR_MAP["magenta"]
+WHITE = COLOR_MAP["white"]
+BLACK = COLOR_MAP["black"]
+GRAY = COLOR_MAP["gray"]
+GREY = COLOR_MAP["grey"]
+DARK_GRAY = COLOR_MAP["dark_gray"]
+PINK = COLOR_MAP["pink"]
+GOLD = COLOR_MAP["gold"]
+
 
 def resolve_color(color):
     if isinstance(color, str):

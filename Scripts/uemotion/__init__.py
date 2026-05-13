@@ -3,7 +3,7 @@ from .mobject import Mobject
 from .camera import Camera
 from .animation import Animation
 from .vector import MVector, to_mvector
-from .colors import resolve_color, vec, rot, COLOR_MAP
+from .colors import resolve_color, vec, rot, COLOR_MAP, RED, GREEN, BLUE, YELLOW, ORANGE, PURPLE, CYAN, MAGENTA, WHITE, BLACK, GRAY, GREY, DARK_GRAY, PINK, GOLD
 from .constants import (
     FRAME_HEIGHT, FRAME_WIDTH, ASPECT_RATIO,
     FRAME_Y_RADIUS, FRAME_X_RADIUS,
@@ -20,6 +20,7 @@ from .constants import (
     PROJECTION_PERSPECTIVE, PROJECTION_ORTHOGRAPHIC,
     ue_to_motion, ue_to_motion_vec,
     motion_to_ue, motion_to_ue_vec,
+    PI, TAU, DEGREES,
 )
 from .asset_library import AssetLibrary, AssetConfig, get_asset_library
 
@@ -27,6 +28,8 @@ __all__ = [
     'Scene', 'Mobject', 'Camera', 'Animation',
     'MVector', 'to_mvector',
     'resolve_color', 'vec', 'rot', 'COLOR_MAP',
+    'RED', 'GREEN', 'BLUE', 'YELLOW', 'ORANGE', 'PURPLE', 'CYAN', 'MAGENTA',
+    'WHITE', 'BLACK', 'GRAY', 'GREY', 'DARK_GRAY', 'PINK', 'GOLD',
     'FRAME_HEIGHT', 'FRAME_WIDTH', 'ASPECT_RATIO',
     'FRAME_Y_RADIUS', 'FRAME_X_RADIUS',
     'ORIGIN', 'UP', 'DOWN', 'LEFT', 'RIGHT', 'IN', 'OUT',
@@ -42,5 +45,6 @@ __all__ = [
     'PROJECTION_PERSPECTIVE', 'PROJECTION_ORTHOGRAPHIC',
     'ue_to_motion', 'ue_to_motion_vec',
     'motion_to_ue', 'motion_to_ue_vec',
+    'PI', 'TAU', 'DEGREES',
     'AssetLibrary', 'AssetConfig', 'get_asset_library',
 ]

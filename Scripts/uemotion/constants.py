@@ -1,4 +1,9 @@
 from .vector import MVector
+import math
+
+PI = math.pi
+TAU = 2 * math.pi
+DEGREES = PI / 180
 
 FRAME_HEIGHT = 8.0
 ASPECT_RATIO = 1.0
