@@ -1,9 +1,8 @@
 #include "UEMotionAxisActor.h"
-#include "Components/StaticMeshComponent.h"
+#include "ProceduralMeshComponent.h"
 #include "Materials/MaterialInterface.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Materials/MaterialInstanceConstant.h"
-#include "Engine/StaticMesh.h"
 #include "Engine/World.h"
 #include "UObject/ConstructorHelpers.h"
 #include "AssetRegistry/AssetRegistryModule.h"
@@ -16,19 +15,20 @@ AUEMotionAxisActor::AUEMotionAxisActor()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
-	SetRootComponent(MeshComponent);
+	LineMeshComponent = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("LineMeshComponent"));
+	SetRootComponent(LineMeshComponent);
 
-	MeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	MeshComponent->SetMobility(EComponentMobility::Movable);
-	MeshComponent->bReceivesDecals = false;
-	MeshComponent->CastShadow = false;
+	LineMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	LineMeshComponent->SetMobility(EComponentMobility::Movable);
+	LineMeshComponent->bReceivesDecals = false;
+	LineMeshComponent->CastShadow = false;
+	LineMeshComponent->bUseComplexAsSimpleCollision = false;
 
 	AxisType = EAxis::X;
-	AxisLength = 200.0f;
+	AxisLength = 400.0f;
 	AxisColor = FLinearColor::Red;
-
-	MeshComponent->SetRelativeScale3D(FVector(5.0f, 0.2f, 0.2f));
+	LineThickness = 2.0f;
+	LineSegments = 8;
 }
 
 void AUEMotionAxisActor::OnConstruction(const FTransform& Transform)
@@ -45,7 +45,7 @@ void AUEMotionAxisActor::InitializeAxis(EAxis::Type InAxis, float InLength, cons
 
 	SetupMesh();
 
-	if (MeshComponent)
+	if (LineMeshComponent)
 	{
 		FRotator TargetRotation = FRotator::ZeroRotator;
 		switch (InAxis)
@@ -63,7 +63,7 @@ void AUEMotionAxisActor::InitializeAxis(EAxis::Type InAxis, float InLength, cons
 			TargetRotation = FRotator::ZeroRotator;
 			break;
 		}
-		MeshComponent->SetRelativeRotation(TargetRotation);
+		LineMeshComponent->SetRelativeRotation(TargetRotation);
 	}
 }
 
@@ -71,9 +71,9 @@ void AUEMotionAxisActor::SetAxisColor(const FLinearColor& InColor)
 {
 	AxisColor = InColor;
 
-	if (MeshComponent && AxisMaterial)
+	if (LineMeshComponent && AxisMaterial)
 	{
-		MeshComponent->SetMaterial(0, AxisMaterial);
+		LineMeshComponent->SetMaterial(0, AxisMaterial);
 	}
 	else
 	{
@@ -81,9 +81,9 @@ void AUEMotionAxisActor::SetAxisColor(const FLinearColor& InColor)
 	}
 }
 
-UStaticMeshComponent* AUEMotionAxisActor::GetMeshComponent() const
+UProceduralMeshComponent* AUEMotionAxisActor::GetMeshComponent() const
 {
-	return MeshComponent;
+	return LineMeshComponent;
 }
 
 bool AUEMotionAxisActor::CreateAxisMaterials()
@@ -106,26 +106,101 @@ bool AUEMotionAxisActor::CreateAxisMaterials()
 	return bSuccess;
 }
 
+FVector AUEMotionAxisActor::GetAxisDirection() const
+{
+	switch (static_cast<EAxis::Type>(AxisType.GetValue()))
+	{
+	case EAxis::X:
+		return FVector::ForwardVector;
+	case EAxis::Y:
+		return FVector::RightVector;
+	case EAxis::Z:
+		return FVector::UpVector;
+	default:
+		return FVector::ForwardVector;
+	}
+}
+
 void AUEMotionAxisActor::SetupMesh()
 {
-	if (!MeshComponent) return;
+	if (!LineMeshComponent) return;
 
-	static const FString GizmoMeshPath = TEXT("/Engine/InteractiveToolsFramework/Meshes/GizmoArrowHandle.GizmoArrowHandle");
-	UStaticMesh* GizmoMesh = LoadObject<UStaticMesh>(nullptr, *GizmoMeshPath);
+	LineMeshComponent->ClearAllMeshSections();
 
-	if (GizmoMesh)
+	TArray<FVector> Vertices;
+	TArray<int32> Triangles;
+	TArray<FVector> Normals;
+	TArray<FVector2D> UVs;
+	TArray<FLinearColor> Colors;
+	TArray<FProcMeshTangent> Tangents;
+
+	const float HalfLength = AxisLength * 0.5f;
+	const float Radius = FMath::Max(LineThickness * 0.5f, 0.05f);
+	const int32 Segments = FMath::Max(LineSegments, 3);
+
+	FVector Direction = GetAxisDirection();
+	FVector Perp1, Perp2;
+	Direction.FindBestAxisVectors(Perp1, Perp2);
+
+	FProcMeshTangent BaseTangent(FVector::CrossProduct(Direction, Perp1).GetSafeNormal(), false);
+
+	for (int32 i = 0; i <= Segments; ++i)
 	{
-		MeshComponent->SetStaticMesh(GizmoMesh);
+		float Angle = (float)i / Segments * 2.0f * PI;
+		float CosA = FMath::Cos(Angle);
+		float SinA = FMath::Sin(Angle);
+
+		FVector Offset = (Perp1 * CosA + Perp2 * SinA) * Radius;
+		FVector Normal = (Perp1 * CosA + Perp2 * SinA).GetSafeNormal();
+
+		int32 BottomIdx = Vertices.Add(-Direction * HalfLength + Offset);
+		int32 TopIdx = Vertices.Add(Direction * HalfLength + Offset);
+
+		Normals.Add(Normal);
+		Normals.Add(Normal);
+
+		UVs.Add(FVector2D((float)i / Segments, 0.0f));
+		UVs.Add(FVector2D((float)i / Segments, 1.0f));
+
+		Colors.Add(AxisColor);
+		Colors.Add(AxisColor);
+
+		Tangents.Add(BaseTangent);
+		Tangents.Add(BaseTangent);
+
+		if (i > 0)
+		{
+			int32 PrevBottom = BottomIdx - 2;
+			int32 PrevTop = TopIdx - 2;
+
+			Triangles.Add(PrevBottom); Triangles.Add(BottomIdx); Triangles.Add(TopIdx);
+			Triangles.Add(PrevBottom); Triangles.Add(TopIdx); Triangles.Add(PrevTop);
+		}
 	}
+
+	int32 LastBottom = Segments * 2;
+	int32 LastTop = Segments * 2 + 1;
+	int32 FirstBottom = 0;
+	int32 FirstTop = 1;
+
+	Triangles.Add(LastBottom); Triangles.Add(FirstBottom); Triangles.Add(FirstTop);
+	Triangles.Add(LastBottom); Triangles.Add(FirstTop); Triangles.Add(LastTop);
+
+	LineMeshComponent->CreateMeshSection_LinearColor(
+		0, Vertices, Triangles, Normals, UVs, Colors, Tangents, true);
 
 	CreateOrLoadAxisMaterial();
 
-	MeshComponent->SetVisibility(true);
+	LineMeshComponent->SetVisibility(true);
+
+	UE_LOG(LogTemp, Log,
+		TEXT("UEMotionAxisActor: Created axis line mesh [Axis=%d, Length=%.1f, Thickness=%.1f, Segments=%d]"),
+		static_cast<int32>(AxisType.GetValue()), AxisLength, LineThickness, Segments);
 }
 
 void AUEMotionAxisActor::ApplyRotationForAxis()
 {
-	if (!MeshComponent) return;
+	if (!LineMeshComponent) return;
 
 	FRotator TargetRotation = FRotator::ZeroRotator;
 
@@ -145,16 +220,16 @@ void AUEMotionAxisActor::ApplyRotationForAxis()
 		break;
 	}
 
-	MeshComponent->SetRelativeRotation(TargetRotation);
+	LineMeshComponent->SetRelativeRotation(TargetRotation);
 }
 
 void AUEMotionAxisActor::CreateOrLoadAxisMaterial()
 {
-	if (!MeshComponent) return;
+	if (!LineMeshComponent) return;
 
-	if (MeshComponent->GetMaterial(0))
+	if (LineMeshComponent->GetMaterial(0))
 	{
-		AxisMaterial = MeshComponent->GetMaterial(0);
+		AxisMaterial = LineMeshComponent->GetMaterial(0);
 		UE_LOG(LogTemp, Log, TEXT("UEMotionAxisActor: Using material assigned in blueprint"));
 		return;
 	}
@@ -186,7 +261,7 @@ void AUEMotionAxisActor::CreateOrLoadAxisMaterial()
 
 	if (AxisMaterial)
 	{
-		MeshComponent->SetMaterial(0, AxisMaterial);
+		LineMeshComponent->SetMaterial(0, AxisMaterial);
 	}
 }
 

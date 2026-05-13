@@ -4,7 +4,7 @@
 #include "GameFramework/Actor.h"
 #include "UEMotionAxisActor.generated.h"
 
-class UStaticMeshComponent;
+class UProceduralMeshComponent;
 class UMaterialInterface;
 
 UCLASS()
@@ -30,23 +30,29 @@ public:
 	void SetAxisColor(const FLinearColor& InColor);
 
 	UFUNCTION(BlueprintPure, Category = "UEMotion|Axis")
-	UStaticMeshComponent* GetMeshComponent() const;
+	UProceduralMeshComponent* GetMeshComponent() const;
 
 	UFUNCTION(BlueprintCallable, Category = "UEMotion|Axis")
 	static bool CreateAxisMaterials();
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UEMotion|Axis")
-	UStaticMeshComponent* MeshComponent;
+	UProceduralMeshComponent* LineMeshComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UEMotion|Axis")
 	TEnumAsByte<EAxis::Type> AxisType;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UEMotion|Axis")
-	float AxisLength = 200.0f;
+	float AxisLength = 400.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UEMotion|Axis")
 	FLinearColor AxisColor = FLinearColor::Red;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UEMotion|Axis")
+	float LineThickness = 2.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UEMotion|Axis")
+	int32 LineSegments = 8;
 
 private:
 	UPROPERTY()
@@ -54,6 +60,7 @@ private:
 
 	void SetupMesh();
 	void ApplyRotationForAxis();
+	FVector GetAxisDirection() const;
 	void CreateOrLoadAxisMaterial();
 	static UMaterialInterface* CreateStaticAxisMaterial(const FString& MaterialName, const FLinearColor& Color);
 };

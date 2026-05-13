@@ -13,7 +13,7 @@
 #include "Materials/MaterialExpressionScalarParameter.h"
 #include "Materials/MaterialExpressionConstant.h"
 #include "Engine/Blueprint.h"
-#include "Components/StaticMeshComponent.h"
+#include "ProceduralMeshComponent.h"
 #include "Engine/SimpleConstructionScript.h"
 #include "Engine/SCS_Node.h"
 #include "GameFramework/WorldSettings.h"
@@ -256,21 +256,15 @@ void UUEMotionScene::SetupCoordinateAxes()
 						USCS_Node* RootNode = SCS->CreateNode(USceneComponent::StaticClass(), TEXT("DefaultSceneRoot"));
 						SCS->AddNode(RootNode);
 
-						USCS_Node* MeshNode = SCS->CreateNode(UStaticMeshComponent::StaticClass(), TEXT("Mesh"));
+						USCS_Node* MeshNode = SCS->CreateNode(UProceduralMeshComponent::StaticClass(), TEXT("LineMesh"));
 						RootNode->AddChildNode(MeshNode);
 
-						UStaticMeshComponent* MeshTemplate = Cast<UStaticMeshComponent>(MeshNode->ComponentTemplate);
+						UProceduralMeshComponent* MeshTemplate = Cast<UProceduralMeshComponent>(MeshNode->ComponentTemplate);
 						if (MeshTemplate)
 						{
-							UStaticMesh* GizmoMesh = LoadObject<UStaticMesh>(
-								nullptr, TEXT("/Engine/InteractiveToolsFramework/Meshes/GizmoArrowHandle.GizmoArrowHandle"));
-							if (GizmoMesh)
-							{
-								MeshTemplate->SetStaticMesh(GizmoMesh);
-							}
-
 							MeshTemplate->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 							MeshTemplate->CastShadow = false;
+							MeshTemplate->bUseComplexAsSimpleCollision = false;
 
 							FString MaterialName;
 							if (BPName.EndsWith(TEXT("X")))
@@ -299,7 +293,7 @@ void UUEMotionScene::SetupCoordinateAxes()
 								if (AxisMaterial)
 								{
 									MeshTemplate->SetMaterial(0, AxisMaterial);
-									UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Assigned axis material '%s' to BP_%s mesh template"), *MaterialName, *BPName);
+									UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Assigned axis material '%s' to BP_%s line mesh template"), *MaterialName, *BPName);
 								}
 								else
 								{
@@ -354,7 +348,7 @@ void UUEMotionScene::SetupCoordinateAxes()
 
 				AxisActor->InitializeAxis(AxisType, Len, Color);
 
-				UStaticMeshComponent* AxisMesh = AxisActor->GetMeshComponent();
+				UProceduralMeshComponent* AxisMesh = AxisActor->GetMeshComponent();
 				if (AxisMesh)
 				{
 					FRotator TargetRotation = FRotator::ZeroRotator;
@@ -364,7 +358,7 @@ void UUEMotionScene::SetupCoordinateAxes()
 						TargetRotation = FRotator(0, 0, 0);
 						break;
 					case EAxis::Y:
-						TargetRotation = FRotator(0, 90, 0);
+						TargetRotation = FRotator(0, -90, 0);
 						break;
 					case EAxis::Z:
 						TargetRotation = FRotator(90, 0, 0);
@@ -376,7 +370,7 @@ void UUEMotionScene::SetupCoordinateAxes()
 					AxisMesh->SetRelativeRotation(TargetRotation);
 
 					UE_LOG(LogTemp, Log,
-						TEXT("UEMotionScene: Setup axis %d (Type=%s) with rotation (%.0f, %.0f, %.0f) - Blueprint material preserved"),
+						TEXT("UEMotionScene: Setup axis %d (Type=%s) with rotation (%.0f, %.0f, %.0f) - Procedural line mesh"),
 						i,
 						(AxisType == EAxis::X) ? TEXT("X") : (AxisType == EAxis::Y) ? TEXT("Y") : (AxisType == EAxis::Z) ? TEXT("Z") : TEXT("NONE"),
 						TargetRotation.Pitch, TargetRotation.Yaw, TargetRotation.Roll);
