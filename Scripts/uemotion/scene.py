@@ -36,7 +36,7 @@ class Scene:
     def __init__(self, name="default", width=DEFAULT_PIXEL_WIDTH, height=DEFAULT_PIXEL_HEIGHT, mode="2d",
                  aspect_ratio=DEFAULT_CAMERA_ASPECT_RATIO,
                  background_color="#050508",
-                 show_axes=True,
+                 show_axes=False,
                  axis_length=4.0,
                  unlit=True):
         self._ue = unreal.UEMotionScene()

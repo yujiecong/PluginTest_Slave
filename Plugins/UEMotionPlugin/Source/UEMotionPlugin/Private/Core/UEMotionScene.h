@@ -188,7 +188,7 @@ public:
 	FLinearColor BackgroundColor = FLinearColor(0.02f, 0.02f, 0.04f, 1.0f);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UEMotion|Scene")
-	bool bShowCoordinateAxes = true;
+	bool bShowCoordinateAxes = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UEMotion|Scene")
 	bool bIs2DView = false;
