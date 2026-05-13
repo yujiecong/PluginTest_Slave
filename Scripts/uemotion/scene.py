@@ -227,12 +227,14 @@ class Scene:
 
     def directional_light(self, direction=(0, -1, -1), color="white", intensity=10):
         d = to_mvector(direction)
-        self._ue.add_directional_light(vec(d.x, d.y, d.z), resolve_color(color), intensity)
+        if hasattr(self._ue, 'add_directional_light'):
+            self._ue.add_directional_light(vec(d.x, d.y, d.z), resolve_color(color), intensity)
 
     def point_light(self, location=(0, 0, 200), color="white", intensity=5000):
         loc = to_mvector(location)
         ue_loc = motion_to_ue_vec(loc)
-        self._ue.add_point_light(vec(ue_loc.x, ue_loc.y, ue_loc.z), resolve_color(color), intensity)
+        if hasattr(self._ue, 'add_point_light'):
+            self._ue.add_point_light(vec(ue_loc.x, ue_loc.y, ue_loc.z), resolve_color(color), intensity)
 
     def play(self, *animations):
         all_ue_anims = list(self._pending_animations)
