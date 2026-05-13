@@ -8,7 +8,6 @@
 #include "Anim/UEMotionWaitAnimation.h"
 #include "Anim/UEMotionGroupAnimation.h"
 #include "Anim/UEMotionTransformAnimation.h"
-#include "Core/UEMotionMorphMaterialManager.h"
 #include "LevelSequence.h"
 #include "MovieScene.h"
 #include "Utils/UEMotionSequencerCompat.h"
@@ -120,40 +119,38 @@ void UUEMotionScene::Play(UUEMotionAnimation* Animation)
 		UUEMotionMobject* SourceMob = TransformAnim->GetSourceMobject();
 		UUEMotionMobject* TargetMob = TransformAnim->GetTargetMobject();
 
-		if (SourceMob && TargetMob && SourceMob->GetInternalActor())
+		if (SourceMob && TargetMob)
 		{
-			TArray<FVector> SourceVerts;
-			TArray<FVector> TargetVerts;
-			int32 Resolution = TransformAnim->GetMorphResolution();
+			FVector SourceLoc = SourceMob->GetLocation();
+			FLinearColor SourceColor = SourceMob->GetColor();
+			FVector SourceScale = SourceMob->GetScale();
 
-			GenerateShapeBoundaryVertices(SourceMob, SourceVerts, Resolution);
-			GenerateShapeBoundaryVertices(TargetMob, TargetVerts, Resolution);
+			TargetMob->SetLocation(SourceLoc);
+			TargetMob->SetColor(SourceColor);
+			TargetMob->SetScale(FVector(0.001f));
+			TargetMob->SetOpacity(0.0f);
 
-			if (SourceVerts.Num() > 0 && TargetVerts.Num() > 0)
+			if (TargetMob->GetInternalActor())
 			{
-				UUEMotionMorphMaterialManager* MorphManager = UUEMotionMorphMaterialManager::Get();
-				if (MorphManager)
+				UMovieScene3DTransformTrack* TargetTransformTrack = GetOrCreateTransformTrack(TargetMob);
+				if (TargetTransformTrack)
 				{
-					MorphManager->GetOrCreateMorphMaterial(SourceMob, SourceVerts, TargetVerts);
-					MorphManager->ApplyMorphToMobject(SourceMob, 0.0f);
+					FRotator TargetRot = TargetMob->GetRotation();
+					RecordTransformKey(TargetTransformTrack, StartFrame, SourceLoc, TargetRot, FVector(0.001f));
+					RecordTransformKey(TargetTransformTrack, EndFrame, SourceLoc, TargetRot, SourceScale);
 				}
 
-				UMovieSceneFloatTrack* MorphTrack = GetOrCreateFloatTrack(SourceMob, TEXT("MorphProgress"));
-				if (MorphTrack)
+				UMovieSceneFloatTrack* TargetOpacityTrack = GetOrCreateFloatTrack(TargetMob, TEXT("Opacity"));
+				if (TargetOpacityTrack)
 				{
-					RecordFloatKey(MorphTrack, StartFrame, 0.0f);
-					RecordFloatKey(MorphTrack, EndFrame, 1.0f);
-
-					UE_LOG(LogTemp, Log,
-						TEXT("UEMotionScene: Recorded transform morph keys for '%s' -> '%s' (Frames %d->%d)"),
-						*SourceMob->GetName(), *TargetMob->GetName(), StartFrame, EndFrame);
+					RecordFloatKey(TargetOpacityTrack, StartFrame, 0.0f);
+					RecordFloatKey(TargetOpacityTrack, EndFrame, 1.0f);
 				}
 			}
-			else
-			{
-				UE_LOG(LogTemp, Warning,
-					TEXT("UEMotionScene: Failed to generate vertices for transform"));
-			}
+
+			UE_LOG(LogTemp, Log,
+				TEXT("UEMotionScene: Recorded transform keys for '%s' -> '%s' (Frames %d->%d) [Replace+Crossfade]"),
+				*SourceMob->GetName(), *TargetMob->GetName(), StartFrame, EndFrame);
 		}
 	}
 	else if (UUEMotionGroupAnimation* GroupAnim = Cast<UUEMotionGroupAnimation>(Animation))

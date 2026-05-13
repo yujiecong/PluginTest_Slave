@@ -21,7 +21,7 @@ void UUEMotionRotateAnimation::UpdateAnimation(float DeltaTime, float EasedProgr
 		NormalizedAxis = FVector::UpVector;
 	}
 
-	FQuat DeltaQuat = FQuat(NormalizedAxis, FMath::DegreesToRadians(CurrentAngle));
+	FQuat DeltaQuat = FQuat(NormalizedAxis, CurrentAngle);
 	FQuat ResultQuat = DeltaQuat * StartQuat;
 	TargetMobject->SetRotation(ResultQuat.Rotator());
 }

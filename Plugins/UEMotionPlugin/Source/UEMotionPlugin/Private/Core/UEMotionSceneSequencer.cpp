@@ -79,11 +79,24 @@ UMovieSceneFloatTrack* UUEMotionScene::GetOrCreateFloatTrack(UUEMotionMobject* M
 	FGuid ObjectBinding = UEMotionCompat::FindOrAddPossessable(MovieScene, Actor, LevelSequence, SceneWorld.Get());
 	if (!ObjectBinding.IsValid()) return nullptr;
 
+	FName PropNameFName(*PropertyName);
+	const TArray<UMovieSceneTrack*>& ExistingTracks = MovieScene->GetTracks();
+	for (UMovieSceneTrack* ExistingTrack : ExistingTracks)
+	{
+		if (ExistingTrack == nullptr) continue;
+
+		UMovieSceneFloatTrack* FloatTrack = Cast<UMovieSceneFloatTrack>(ExistingTrack);
+		if (FloatTrack && FloatTrack->GetPropertyName() == PropNameFName)
+		{
+			return FloatTrack;
+		}
+	}
+
 	UMovieSceneFloatTrack* NewTrack = Cast<UMovieSceneFloatTrack>(
 		MovieScene->AddTrack<UMovieSceneFloatTrack>(ObjectBinding));
 	if (NewTrack)
 	{
-		NewTrack->SetPropertyNameAndPath(FName(*PropertyName), PropertyName);
+		NewTrack->SetPropertyNameAndPath(PropNameFName, PropertyName);
 		UEMotionCompat::CreateAndAddSection(NewTrack);
 	}
 
