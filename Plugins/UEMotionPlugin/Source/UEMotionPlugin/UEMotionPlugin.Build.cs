@@ -18,6 +18,7 @@ public class UEMotionPlugin : ModuleRules
 			"UnrealEd",
 			"PythonScriptPlugin",
 			"ProceduralMeshComponent",
+			"MeshDescription",
 			"ImageWriteQueue",
 			"MovieRenderPipelineCore",
 			"MovieRenderPipelineRenderPasses",

@@ -55,7 +55,7 @@ struct FMotionAssetConfig
 		if (MeshType == TEXT("cylinder")) return TEXT("/Engine/BasicShapes/Cylinder.Cylinder");
 		if (MeshType == TEXT("cone"))    return TEXT("/Engine/BasicShapes/Cone.Cone");
 		if (MeshType == TEXT("plane"))   return TEXT("/Engine/BasicShapes/Plane.Plane");
-		if (MeshType == TEXT("torus"))   return TEXT("/Engine/BasicShapes/Torus.Torus");
+		if (MeshType == TEXT("torus"))   return TEXT("/Game/UEMotion/Meshes/SM_UEMotion_Torus.SM_UEMotion_Torus");
 		return TEXT("/Engine/BasicShapes/Cube.Cube");
 	}
 };
@@ -98,11 +98,13 @@ public:
 
     UMaterialInterface* EnsureBaseTranslucentMaterial();
 
-private:
-    UPROPERTY()
-    UMaterialInterface* CachedBaseMaterial = nullptr;
+	UStaticMesh* CreateOrLoadTorusMesh(float OuterRadius, float InnerRadius);
 
-    UMaterialInterface* GetOrCreateBaseMaterial();
-    bool SaveAssetToObject(UObject* Asset, const FString& PackagePath, const FString& AssetName);
-    FString ResolveAssetPath(const FString& PackagePath, const FString& AssetName) const;
+private:
+	UPROPERTY()
+	UMaterialInterface* CachedBaseMaterial = nullptr;
+
+	UMaterialInterface* GetOrCreateBaseMaterial();
+	bool SaveAssetToObject(UObject* Asset, const FString& PackagePath, const FString& AssetName);
+	FString ResolveAssetPath(const FString& PackagePath, const FString& AssetName) const;
 };

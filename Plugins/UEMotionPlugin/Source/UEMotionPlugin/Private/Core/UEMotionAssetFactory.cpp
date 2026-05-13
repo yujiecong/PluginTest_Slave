@@ -2,6 +2,7 @@
 #include "Actors/UEMotionMobjectActor.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
+#include "MeshDescription.h"
 #include "Components/StaticMeshComponent.h"
 #include "Materials/MaterialInstanceConstant.h"
 #include "Materials/MaterialInstanceDynamic.h"
@@ -234,6 +235,10 @@ UClass* UUEMotionAssetFactory::CreateAndSaveBlueprintAsset(
 		if (MeshTemplate)
 		{
 			UStaticMesh* Mesh = LoadObject<UStaticMesh>(nullptr, *Config.GetMeshPath());
+			if (!Mesh && Config.MeshType == TEXT("torus"))
+			{
+				Mesh = CreateOrLoadTorusMesh(1.0f, 0.25f);
+			}
 			if (Mesh)
 			{
 				MeshTemplate->SetStaticMesh(Mesh);
@@ -322,4 +327,101 @@ UMaterialInstanceDynamic* UUEMotionAssetFactory::CreateDynamicMaterialFromConfig
 	MID->SetScalarParameterValue(FName("Roughness"), Config.Roughness);
 
 	return MID;
+}
+
+UStaticMesh* UUEMotionAssetFactory::CreateOrLoadTorusMesh(float OuterRadius, float InnerRadius)
+{
+	FString TorusPath = TEXT("/Game/UEMotion/Meshes/SM_UEMotion_Torus");
+
+	if (UEditorAssetLibrary::DoesAssetExist(TorusPath))
+	{
+		UStaticMesh* Existing = LoadObject<UStaticMesh>(nullptr, *TorusPath);
+		if (Existing)
+		{
+			UE_LOG(LogTemp, Log, TEXT("UEMotionAssetFactory: Reusing existing Torus mesh '%s'"), *TorusPath);
+			return Existing;
+		}
+	}
+
+	const int32 RadialSegments = 32;
+	const int32 TubularSegments = 24;
+
+	FMeshDescription MeshDesc;
+	TVertexAttributesRef<FVector3f> Positions = MeshDesc.GetVertexPositions();
+
+	TArray<FVertexID> VertexIDs;
+	for (int32 i = 0; i <= RadialSegments; i++)
+	{
+		float u = (float)i / (float)RadialSegments * UE_TWO_PI;
+		float cos_u = FMath::Cos(u);
+		float sin_u = FMath::Sin(u);
+
+		for (int32 j = 0; j <= TubularSegments; j++)
+		{
+			float v = (float)j / (float)TubularSegments * UE_TWO_PI;
+			float cos_v = FMath::Cos(v);
+			float sin_v = FMath::Sin(v);
+
+			FVertexID VID = MeshDesc.CreateVertex();
+			Positions[VID] = FVector3f(
+				(OuterRadius + InnerRadius * cos_v) * cos_u,
+				(OuterRadius + InnerRadius * cos_v) * sin_u,
+				InnerRadius * sin_v
+			) * 100.0f;
+
+			VertexIDs.Add(VID);
+		}
+	}
+
+	FPolygonGroupID PGID = MeshDesc.CreatePolygonGroup();
+	TArray<FVertexInstanceID> PolyVertices;
+	PolyVertices.SetNum(4);
+	for (int32 i = 0; i < RadialSegments; i++)
+	{
+		for (int32 j = 0; j < TubularSegments; j++)
+		{
+			int32 a = i * (TubularSegments + 1) + j;
+			int32 b = a + TubularSegments + 1;
+
+			PolyVertices[0] = MeshDesc.CreateVertexInstance(VertexIDs[a]);
+			PolyVertices[1] = MeshDesc.CreateVertexInstance(VertexIDs[b]);
+			PolyVertices[2] = MeshDesc.CreateVertexInstance(VertexIDs[b + 1]);
+			PolyVertices[3] = MeshDesc.CreateVertexInstance(VertexIDs[a + 1]);
+			MeshDesc.CreatePolygon(PGID, PolyVertices);
+		}
+	}
+
+	UPackage* MeshPackage = CreatePackage(TEXT("/Game/UEMotion/Meshes"));
+	if (!MeshPackage) return nullptr;
+
+	UStaticMesh* NewMesh = NewObject<UStaticMesh>(MeshPackage, FName(TEXT("SM_UEMotion_Torus")), RF_Public | RF_Standalone);
+	if (!NewMesh) return nullptr;
+
+#if WITH_EDITORONLY_DATA
+	NewMesh->AddSourceModel();
+	FStaticMeshSourceModel& SourceModel = NewMesh->GetSourceModel(0);
+	SourceModel.BuildSettings.bRemoveDegenerates = true;
+	SourceModel.BuildSettings.bRecomputeNormals = true;
+	SourceModel.BuildSettings.bRecomputeTangents = true;
+	SourceModel.BuildSettings.bGenerateLightmapUVs = true;
+
+	TArray<const FMeshDescription*> MeshDescPtrs;
+	MeshDescPtrs.Add(&MeshDesc);
+	NewMesh->BuildFromMeshDescriptions(MeshDescPtrs);
+
+	NewMesh->SetMaterial(0, nullptr);
+	NewMesh->PostEditChange();
+
+#if ENGINE_MAJOR_VERSION >= 5
+	NewMesh->Build(false);
+#endif
+#endif
+
+	SaveAssetToObject(NewMesh, TEXT("/Game/UEMotion/Meshes"), TEXT("SM_UEMotion_Torus"));
+
+	UE_LOG(LogTemp, Log,
+		TEXT("UEMotionAssetFactory: Created Torus mesh with R=%.1f r=%.1f (%d verts, %d polys)"),
+		OuterRadius, InnerRadius, VertexIDs.Num(), MeshDesc.Polygons().Num());
+
+	return NewMesh;
 }
