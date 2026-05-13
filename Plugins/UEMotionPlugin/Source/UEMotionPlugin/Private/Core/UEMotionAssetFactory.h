@@ -12,6 +12,8 @@ class UMaterial;
 class AActor;
 class UBlueprint;
 
+class UUEMotionMaterialManager;
+
 USTRUCT(BlueprintType)
 struct FMotionAssetConfig
 {
@@ -96,13 +98,19 @@ public:
 
     static const FString TranslucentMaterialPath;
 
-    UMaterialInterface* EnsureBaseTranslucentMaterial();
+	UFUNCTION(BlueprintCallable, Category = "UEMotion|Asset")
+	void SetMaterialManager(UUEMotionMaterialManager* InMaterialManager);
+
+	UMaterialInterface* EnsureBaseTranslucentMaterial();
 
 	UStaticMesh* CreateOrLoadTorusMesh(float OuterRadius, float InnerRadius);
 
 private:
 	UPROPERTY()
 	UMaterialInterface* CachedBaseMaterial = nullptr;
+
+	UPROPERTY()
+	UUEMotionMaterialManager* ExternalMaterialManager = nullptr;
 
 	UMaterialInterface* GetOrCreateBaseMaterial();
 	bool SaveAssetToObject(UObject* Asset, const FString& PackagePath, const FString& AssetName);

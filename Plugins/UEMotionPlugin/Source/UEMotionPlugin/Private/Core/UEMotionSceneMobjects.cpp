@@ -65,6 +65,10 @@ UUEMotionAssetFactory* UUEMotionScene::GetAssetFactory()
 	if (!AssetFactory)
 	{
 		AssetFactory = NewObject<UUEMotionAssetFactory>(this);
+		if (MaterialManager)
+		{
+			AssetFactory->SetMaterialManager(MaterialManager);
+		}
 		UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Created AssetFactory instance"));
 	}
 	return AssetFactory;

@@ -1,5 +1,6 @@
 #include "UEMotionScene.h"
 #include "UEMotionCamera.h"
+#include "UEMotionMaterialManager.h"
 #include "Actors/UEMotionSceneActor.h"
 #include "Utils/UEMotionSequencerCompat.h"
 #include "Tracks/MovieSceneCameraCutTrack.h"
@@ -54,6 +55,8 @@ void UUEMotionScene::Initialize(const FString& InSceneName, int32 Width, int32 H
 		Camera = NewObject<UUEMotionCamera>(this);
 		Camera->Init(SceneActor.Get());
 		Camera->LookAt(FVector(0, 0, 0));
+
+		MaterialManager = NewObject<UUEMotionMaterialManager>(this);
 
 		FGuid CameraBinding = AddActorToSequencer(SceneActor.Get());
 

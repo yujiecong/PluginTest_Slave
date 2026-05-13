@@ -1,4 +1,5 @@
 #include "UEMotionAssetFactory.h"
+#include "UEMotionMaterialManager.h"
 #include "Actors/UEMotionMobjectActor.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
@@ -28,6 +29,11 @@
 
 const FString UUEMotionAssetFactory::TranslucentMaterialPath = TEXT("/Game/UEMotion/Materials/M_UEMotionBaseTranslucent");
 
+void UUEMotionAssetFactory::SetMaterialManager(UUEMotionMaterialManager* InMaterialManager)
+{
+	ExternalMaterialManager = InMaterialManager;
+}
+
 FString UUEMotionAssetFactory::ResolveAssetPath(const FString& PackagePath, const FString& AssetName) const
 {
 	return FString::Printf(TEXT("%s/%s"), *PackagePath, *AssetName);
@@ -35,6 +41,11 @@ FString UUEMotionAssetFactory::ResolveAssetPath(const FString& PackagePath, cons
 
 UMaterialInterface* UUEMotionAssetFactory::EnsureBaseTranslucentMaterial()
 {
+	if (ExternalMaterialManager)
+	{
+		return ExternalMaterialManager->EnsureBaseTranslucentMaterial(TranslucentMaterialPath);
+	}
+
 	FString PackageName = TranslucentMaterialPath;
 	UPackage* Package = CreatePackage(*PackageName);
 	if (!Package) return nullptr;
@@ -92,6 +103,12 @@ UMaterialInterface* UUEMotionAssetFactory::EnsureBaseTranslucentMaterial()
 UMaterialInterface* UUEMotionAssetFactory::GetOrCreateBaseMaterial()
 {
 	if (CachedBaseMaterial) return CachedBaseMaterial;
+
+	if (ExternalMaterialManager)
+	{
+		CachedBaseMaterial = ExternalMaterialManager->GetOrCreateBaseMaterial();
+		return CachedBaseMaterial;
+	}
 
 	UMaterialInterface* TranslucentMat = EnsureBaseTranslucentMaterial();
 	if (TranslucentMat)

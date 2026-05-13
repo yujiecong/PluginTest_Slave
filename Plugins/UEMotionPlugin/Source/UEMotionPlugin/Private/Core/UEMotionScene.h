@@ -11,6 +11,7 @@ class UUEMotionCamera;
 class UUEMotionAnimation;
 class UUEMotionRenderer;
 class UUEMotionAssetFactory;
+class UUEMotionMaterialManager;
 class AUEMotionSceneActor;
 class ULevelSequence;
 class UMovieScene;
@@ -241,14 +242,15 @@ private:
 	UPROPERTY()
 	UUEMotionAssetFactory* AssetFactory = nullptr;
 
+	UPROPERTY()
+	UUEMotionMaterialManager* MaterialManager = nullptr;
+
 	bool CreateSceneMap();
 	bool CreateLevelSequenceAsset();
 	void SetupDefaultLighting();
 	void SetupCoordinateAxes();
 	void SetupSkyEnvironment();
 	void SetupBlackBackgroundFloor();
-	UMaterialInterface* CreateOrLoadBlackMaterial();
-	UMaterialInterface* CreateOrLoadBlackParentMaterial(const FString& ParentMaterialPath);
 	void OpenLevelSequenceInEditor();
 
 	FGuid AddActorToSequencer(AActor* Actor);
