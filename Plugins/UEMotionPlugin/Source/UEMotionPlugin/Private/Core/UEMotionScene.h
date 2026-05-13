@@ -27,7 +27,7 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "UEMotion")
 	FOnUEMotionRenderFinished OnRenderFinished;
 	UFUNCTION(BlueprintCallable, Category = "UEMotion")
-	void Initialize(const FString& SceneName = TEXT("default"), int32 Width = 1920, int32 Height = 1080);
+	void Initialize(const FString& SceneName = TEXT("default"), int32 Width = 1920, int32 Height = 1080, bool bInIs2DView = false);
 
 	UFUNCTION(BlueprintCallable, Category = "UEMotion")
 	bool IsInitialized() const;

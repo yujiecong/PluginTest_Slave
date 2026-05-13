@@ -54,7 +54,7 @@ void AUEMotionAxisActor::InitializeAxis(EAxis::Type InAxis, float InLength, cons
 			TargetRotation = FRotator(0, 0, 0);
 			break;
 		case EAxis::Y:
-			TargetRotation = FRotator(0, 90, 0);
+			TargetRotation = FRotator(0, -90, 0);
 			break;
 		case EAxis::Z:
 			TargetRotation = FRotator(90, 0, 0);
@@ -135,7 +135,7 @@ void AUEMotionAxisActor::ApplyRotationForAxis()
 		TargetRotation = FRotator(0, 0, 0);
 		break;
 	case EAxis::Y:
-		TargetRotation = FRotator(0, 90, 0);
+		TargetRotation = FRotator(0, -90, 0);
 		break;
 	case EAxis::Z:
 		TargetRotation = FRotator(90, 0, 0);

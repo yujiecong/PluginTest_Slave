@@ -17,9 +17,11 @@ FString UUEMotionScene::GetSequencePath() const
 	return FString::Printf(TEXT("/Game/UEMotion/Sequences/LS_%s"), *SceneName);
 }
 
-void UUEMotionScene::Initialize(const FString& InSceneName, int32 Width, int32 Height)
+void UUEMotionScene::Initialize(const FString& InSceneName, int32 Width, int32 Height, bool bInIs2DView)
 {
 	if (bInitialized) return;
+
+	bIs2DView = bInIs2DView;
 
 	SceneName = InSceneName.IsEmpty() ? TEXT("default") : InSceneName;
 	ResolutionWidth = Width;

@@ -341,45 +341,29 @@ void UUEMotionScene::SetupCoordinateAxes()
 				UStaticMeshComponent* AxisMesh = AxisActor->GetMeshComponent();
 				if (AxisMesh)
 				{
-					FString MaterialName;
+					FRotator TargetRotation = FRotator::ZeroRotator;
 					switch (AxisType)
 					{
 					case EAxis::X:
-						MaterialName = TEXT("M_Axis_X");
+						TargetRotation = FRotator(0, 0, 0);
 						break;
 					case EAxis::Y:
-						MaterialName = TEXT("M_Axis_Y");
+						TargetRotation = FRotator(0, -90, 0);
 						break;
 					case EAxis::Z:
-						MaterialName = TEXT("M_Axis_Z");
+						TargetRotation = FRotator(90, 0, 0);
 						break;
 					default:
-						MaterialName = TEXT("M_Axis_X");
 						break;
 					}
 
-					FString MaterialPath = FString::Printf(TEXT("/Game/UEMotion/Materials/%s"), *MaterialName);
-					UMaterialInterface* AxisMaterial = LoadObject<UMaterialInterface>(nullptr, *MaterialPath);
+					AxisMesh->SetRelativeRotation(TargetRotation);
 
-					if (!AxisMaterial)
-					{
-						AxisActor->CreateAxisMaterials();
-						AxisMaterial = LoadObject<UMaterialInterface>(nullptr, *MaterialPath);
-					}
-
-					if (AxisMaterial)
-					{
-						AxisMesh->SetMaterial(0, AxisMaterial);
-						UE_LOG(LogTemp, Log,
-							TEXT("UEMotionScene: Applied material '%s' to %s axis mesh"),
-							*MaterialName, *BPName);
-					}
-					else
-					{
-						UE_LOG(LogTemp, Warning,
-							TEXT("UEMotionScene: Failed to apply material '%s' to %s axis"),
-							*MaterialName, *BPName);
-					}
+					UE_LOG(LogTemp, Log,
+						TEXT("UEMotionScene: Setup axis %d (Type=%s) with rotation (%.0f, %.0f, %.0f) - Blueprint material preserved"),
+						i,
+						(AxisType == EAxis::X) ? TEXT("X") : (AxisType == EAxis::Y) ? TEXT("Y") : TEXT("Z"),
+						TargetRotation.Pitch, TargetRotation.Yaw, TargetRotation.Roll);
 				}
 			}
 		}
@@ -619,6 +603,7 @@ UMaterialInterface* UUEMotionScene::CreateOrLoadBlackMaterial()
 	if (bSaveSuccess)
 	{
 		FAssetRegistryModule::AssetCreated(BlackMIC);
+
 		UE_LOG(LogTemp, Log,
 			TEXT("UEMotionScene: Created non-reflective black floor material UAsset '%s'")
 			TEXT("\n  Parent: M_Unlit (Unlit Shading Model)")
@@ -626,10 +611,36 @@ UMaterialInterface* UUEMotionScene::CreateOrLoadBlackMaterial()
 			TEXT("\n  Properties: Zero reflectivity, no lighting calculations")
 			TEXT("\n  Type: MaterialInstanceConstant (Static UAsset)"),
 			*FilePath);
+
+		UE_LOG(LogTemp, Log,
+			TEXT("UEMotionScene: BlackFloor material saved successfully!")
+			TEXT("\n  Full Path: %s")
+			TEXT("\n  Package: %s"),
+			*FilePath, *Package->GetName());
+
+#if WITH_EDITOR
+		FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
+		TArray<FString> MaterialPaths;
+		MaterialPaths.Add(MaterialPath);
+		AssetRegistryModule.Get().ScanPathsSynchronous(MaterialPaths);
+
+		UE_LOG(LogTemp, Log, TEXT("UEMotionScene: Force synced asset registry for '%s'"), *MaterialPath);
+#endif
 	}
 	else
 	{
 		UE_LOG(LogTemp, Error, TEXT("UEMotionScene: Failed to save black floor material to '%s'"), *FilePath);
+
+#if WITH_EDITOR
+		if (FPlatformFileManager::Get().GetPlatformFile().FileExists(*FilePath))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("UEMotionScene: File exists but SavePackage returned false - possible registry issue"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("UEMotionScene: File does NOT exist at path: %s"), *FilePath);
+		}
+#endif
 		return nullptr;
 	}
 
